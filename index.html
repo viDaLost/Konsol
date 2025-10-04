@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Universal Code Console — v2 (Single Editor + Auto‑Detect)</title>
+  <meta name="description" content="Единая песочница: один редактор, авто‑определение языка (HTML/CSS/JS, JS, TS, Python, Lua), предпросмотр для HTML/CSS, единая консоль и удобный UI. Готово для GitHub Pages." />
+
+  <style>
+    :root{
+      --bg:#0f1117; --panel:#111827; --panel-2:#0b1220; --text:#e5e7eb; --muted:#9aa4b2;
+      --accent:#7aa2f7; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; --shadow:0 10px 25px rgba(0,0,0,.25);
+      --radius:18px; --radius-sm:12px; --pad:14px; --gap:14px; --border:1px solid rgba(255,255,255,.08);
+    }
+    [data-theme="light"]{
+      --bg:#f6f7fb; --panel:#ffffff; --panel-2:#f5f7fb; --text:#0b1220; --muted:#495469; --accent:#3b82f6; --shadow:0 10px 24px rgba(2,6,23,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    code,textarea,pre{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Fira Code", monospace}
+
+    .app{min-height:100%;display:flex;flex-direction:column;gap:var(--gap);padding:clamp(10px,2vw,18px)}
+    header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .title{display:flex;align-items:center;gap:10px}
+    .title b{font-size:16px}
+    .buttons{display:flex;flex-wrap:wrap;gap:8px}
+    button,.chip,select{border:var(--border);background:var(--panel);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:8px}
+    button:active{transform:translateY(1px)}
+    .primary{background:linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 75%, #000 25%)); border:none; color:white}
+    .ghost{background:var(--panel-2)}
+    .danger{border-color:color-mix(in oklab, var(--err) 50%, #000 50%); color:var(--err)}
+
+    .layout{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr;gap:var(--gap);}  
+    .card{background:var(--panel);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+    .card h3{margin:0;padding:10px 12px;border-bottom:var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--panel-2)}
+    .card .body{padding:0;display:flex;flex:1;min-height:0}
+
+    /* Single editor */
+    .editorWrap{display:grid;grid-template-rows:auto 1fr auto;min-height:0}
+    .editorToolbar{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:var(--border);background:var(--panel-2)}
+    .hint{font-size:12px;color:var(--muted)}
+    .detected{font-size:12px;opacity:.85;padding:4px 8px;border-radius:999px;background:color-mix(in oklab, var(--accent) 20%, transparent)}
+    textarea#editor{width:100%;height:100%;padding:12px;resize:none;border:0;outline:0;background:transparent;color:var(--text)}
+    .statusbar{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-top:var(--border);color:var(--muted);font-size:12px}
+
+    .previewArea{display:grid;grid-template-rows:1fr 260px;gap:var(--gap)}
+    iframe{width:100%;height:100%;border:0;background:white;border-top:var(--border);border-bottom:var(--border)}
+
+    .console{background:var(--panel);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0}
+    .console .toolbar{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:var(--border);background:var(--panel-2)}
+    .console .log{flex:1;overflow:auto;padding:10px}
+    .row{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:var(--radius-sm)}
+    .row.info{background:color-mix(in oklab, var(--accent) 15%, transparent)}
+    .row.warn{background:color-mix(in oklab, var(--warn) 18%, transparent)}
+    .row.error{background:color-mix(in oklab, var(--err) 18%, transparent)}
+    .row .tag{font-weight:700;min-width:46px;text-transform:uppercase;opacity:.8}
+    .row pre{margin:0;white-space:pre-wrap;word-break:break-word}
+
+    /* Mobile */
+    @media (max-width:1100px){
+      .layout{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}
+      .previewArea{grid-template-rows:min(58vh,52dvh) 240px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6a3 3 0 0 1 3-3h4l2 2h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Z" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 14.5 10 12l-2.5-2.5M13 15h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <b>Universal Code Console</b>
+        <span class="hint" id="status">Автосохранение включено • Ctrl/⌘+Enter — запуск</span>
+      </div>
+      <div class="buttons">
+        <span class="chip">Определён: <b id="detected" class="detected">—</b></span>
+        <select id="override">
+          <option value="auto">Авто</option>
+          <option value="html">HTML/CSS/JS (предпросмотр)</option>
+          <option value="css">CSS (предпросмотр)</option>
+          <option value="js">JavaScript</option>
+          <option value="ts">TypeScript → JS</option>
+          <option value="py">Python (Pyodide)</option>
+          <option value="lua">Lua (Fengari)</option>
+        </select>
+        <button class="primary" id="runBtn">▶ Запустить</button>
+        <span class="chip"><input id="autoRun" type="checkbox" style="display:none"><label for="autoRun">Автозапуск</label></span>
+        <button class="ghost" id="downloadBtn">⬇ Скачать код</button>
+        <button class="ghost" id="resetBtn">↺ Сброс</button>
+        <button class="ghost" id="themeBtn">🌓 Тема</button>
+        <button class="ghost" id="helpBtn">❔ Помощь</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- Single editor card -->
+      <div class="card editorWrap">
+        <div class="editorToolbar">
+          <span class="hint">Вставь любой код. Можно подсказать язык в первой строке: <code>// lang: ts</code>, <code># lang: py</code>, <code>-- lang: lua</code>.</span>
+        </div>
+        <div class="body"><textarea id="editor" spellcheck="false"></textarea></div>
+        <div class="statusbar">
+          <span id="count">0 симв.</span>
+          <span id="pos">1:1</span>
+        </div>
+      </div>
+
+      <!-- Preview + Console column -->
+      <div class="previewArea">
+        <div class="card" id="previewCard" style="display:none">
+          <h3>Предпросмотр</h3>
+          <div class="body"><iframe id="frame" sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer"></iframe></div>
+        </div>
+
+        <div class="console" id="consoleCard">
+          <div class="toolbar">
+            <button id="clearConsole" class="ghost">Очистить</button>
+            <span class="hint">Единая консоль: вывод, предупреждения, ошибки</span>
+          </div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="tpl-help">
+    <div style="padding:12px;line-height:1.6;color:var(--text)">
+      <b>Подсказки:</b>
+      <ul>
+        <li>Определение языка: <i>Авто</i> по содержимому. Приоритет: явная подсказка <code>lang:</code> → HTML → CSS → TS → Python → Lua → JS (по умолчанию).</li>
+        <li>HTML/CSS: для одного CSS‑файла предпросмотр оборачивает его в пустую HTML‑страницу.</li>
+        <li>Горячие клавиши: <b>Ctrl/⌘+Enter</b> — запуск; <b>Ctrl/⌘+S</b> — сохранить в LocalStorage; <b>Esc</b> — очистка консоли.</li>
+        <li>TypeScript транспилируется в браузере и выполняется как JS в песочнице.</li>
+        <li>Python (Pyodide) и Lua (Fengari) грузятся по требованию.</li>
+      </ul>
+    </div>
+  </template>
+
+  <script>
+    const $ = s=>document.querySelector(s);
+    const logEl = $('#log');
+
+    const LS = { code:'ucc2_code', autorun:'ucc2_autorun', theme:'ucc2_theme', override:'ucc2_override' };
+
+    const DEFAULT = `<!-- Пример HTML -->\n<!doctype html>\n<html><head><meta charset=\"utf-8\"><style>body{font:16px system-ui;background:#0f172a;color:#e2e8f0;display:grid;place-items:center;min-height:100svh}button{padding:10px 14px;border-radius:12px;border:0;background:#7aa2f7;color:#fff}</style></head><body><h1>Привет, Universal Console v2 👋</h1><button id=\"b\">Клик</button><script>console.log('JS внутри HTML работает');document.getElementById('b').onclick=()=>console.log('Клик!')<\/script></body></html>`;
+
+    function setStatus(t){ $('#status').textContent = t; }
+
+    function addRow(kind, text){
+      const row = document.createElement('div'); row.className = `row ${kind}`;
+      const tag = document.createElement('span'); tag.className='tag'; tag.textContent = kind.toUpperCase();
+      const pre = document.createElement('pre'); pre.textContent = text;
+      row.appendChild(tag); row.appendChild(pre); logEl.appendChild(row);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    function clearConsole(){ logEl.innerHTML=''; }
+
+    // Cursor position + count
+    const ed = $('#editor');
+    ed.addEventListener('input', ()=>{ save(); updateMeta(); if($('#autoRun').checked){ clearTimeout(window.__t); window.__t=setTimeout(run, 500);} });
+    ed.addEventListener('keyup', updateCaret); ed.addEventListener('click', updateCaret);
+    function updateMeta(){ $('#count').textContent = (ed.value||'').length + ' симв.'; detectAndShow(); }
+    function updateCaret(){ const s=ed.selectionStart; const lines=ed.value.slice(0,s).split(/\n/); $('#pos').textContent = lines.length+":"+(lines[lines.length-1].length+1); }
+
+    function save(){ localStorage.setItem(LS.code, ed.value); localStorage.setItem(LS.autorun, $('#autoRun').checked? '1':'0'); localStorage.setItem(LS.override, $('#override').value); setStatus('Сохранено'); }
+    function load(){ const code = localStorage.getItem(LS.code) ?? DEFAULT; ed.value = code; $('#autoRun').checked = (localStorage.getItem(LS.autorun) ?? '1')==='1'; $('#override').value = localStorage.getItem(LS.override) ?? 'auto'; updateMeta(); updateCaret(); }
+
+    // Theme
+    $('#themeBtn').addEventListener('click', ()=>{ const cur = document.documentElement.getAttribute('data-theme'); const next = cur==='light'?'dark':'light'; document.documentElement.setAttribute('data-theme', next); localStorage.setItem(LS.theme,next); });
+    (function(){ const t=localStorage.getItem(LS.theme); if(t) document.documentElement.setAttribute('data-theme', t); })();
+
+    // Download current code
+    function downloadCode(){ const blob=new Blob([ed.value],{type:'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='code.txt'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1500); }
+
+    // Help
+    $('#helpBtn').addEventListener('click', ()=>{
+      const tpl = document.getElementById('tpl-help');
+      const w = window.open('', '_blank', 'width=480,height=420');
+      if(w){ w.document.write(`<link rel=\"stylesheet\" href=\"\">${tpl.innerHTML}`); w.document.close(); }
+    });
+
+    // Console controls
+    $('#clearConsole').addEventListener('click', clearConsole);
+
+    // Buttons
+    $('#runBtn').addEventListener('click', run);
+    $('#downloadBtn').addEventListener('click', downloadCode);
+    $('#resetBtn').addEventListener('click', ()=>{ if(!confirm('Сбросить код к примеру?')) return; ed.value = DEFAULT; save(); updateMeta(); run(); });
+    $('#override').addEventListener('change', ()=>{ save(); detectAndShow(); if($('#autoRun').checked) run(); });
+
+    // Hotkeys
+    window.addEventListener('keydown', (e)=>{
+      if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ e.preventDefault(); run(); }
+      if((e.ctrlKey||e.metaKey) && (e.key==='s'||e.key==='S')){ e.preventDefault(); save(); }
+      if(e.key==='Escape'){ clearConsole(); }
+    });
+
+    // ==== Language detection ====
+    function explicitLangHint(t){
+      const m = /^(?:\s*(?:#|\/\/|--))\s*lang\s*:\s*([a-z]+)/i.exec(t);
+      return m? m[1].toLowerCase(): null;
+    }
+    function looksHTML(t){ return /<\s*(!doctype|html|head|body)\b/i.test(t) || /<\/?[a-zA-Z][^>]*>/.test(t) && /<script|<style|<div|<span|<h1/i.test(t); }
+    function looksCSS(t){ return /{[^}]*}/.test(t) && /[.#][\w-]+\s*\{|\b(v?min|max|clamp|calc)\(/.test(t) && !/function\s*\(|=>|class\s+\w+/.test(t) && !looksHTML(t); }
+    function looksTS(t){ return /:\s*(number|string|boolean|any|unknown|never|void)\b|\binterface\b|\benum\b|\btype\s+\w+\s*=/.test(t); }
+    function looksPy(t){ return /\bdef\s+\w+\(|\bimport\s+\w+|print\s*\(|^\s*class\s+\w+\s*:\s*$/m.test(t) && !/[;{}]/.test(t); }
+    function looksLua(t){ return /\bfunction\b|\blocal\b|\bend\b|\bthen\b|\bdo\b/.test(t) && !/=>|class\s+\w+/.test(t); }
+    function detectLang(t){
+      const ov = $('#override').value; if(ov!=='auto') return ov;
+      const hint = explicitLangHint(t); if(hint) return mapAlias(hint);
+      if(looksHTML(t)) return 'html';
+      if(looksCSS(t)) return 'css';
+      if(looksTS(t)) return 'ts';
+      if(looksPy(t)) return 'py';
+      if(looksLua(t)) return 'lua';
+      return 'js';
+    }
+    function mapAlias(x){ if(x==='javascript'||x==='node') return 'js'; if(x==='typescript') return 'ts'; if(x==='python') return 'py'; return x; }
+    function detectAndShow(){ const lang = detectLang(ed.value); $('#detected').textContent = lang.toUpperCase(); $('#previewCard').style.display = (lang==='html'||lang==='css')? 'flex':'none'; }
+
+    // === Runtimes ===
+    const Runtimes = { js:{ready:Promise.resolve(true), run:runJS}, ts:{ready:null, run:runTS}, py:{ready:null, run:runPy}, lua:{ready:null, run:runLua} };
+    function loadScriptOnce(id, src){ return new Promise((res, rej)=>{ if(document.getElementById(id)) return res(); const s=document.createElement('script'); s.id=id; s.src=src; s.onload=res; s.onerror=()=>rej(new Error('Не удалось загрузить '+src)); document.head.appendChild(s); }); }
+
+    // Sandbox for JS/HTML/CSS
+    const frame = document.createElement('iframe');
+    // The actual iframe is in DOM already, grab it:
+    const previewFrame = document.getElementById('frame');
+
+    function hookConsoleIntoIframe(){
+      // Nothing to do here: we always render with a hook script (see docForIframe)
+    }
+
+    function docForIframe(html, css, js){
+      const hook = `\n<script>\n(function(){\n  function send(kind, args){ parent.postMessage({type:'console', level:kind, args:[].slice.call(args)}, '*'); }\n  ['log','info','warn','error'].forEach(fn=>{ const o=console[fn]; console[fn]=function(){ send(fn, arguments); o&&o.apply(console, arguments);} });\n  addEventListener('error', e=>parent.postMessage({type:'error', msg:String(e.message||e.error), src:e.filename, lin:e.lineno, col:e.colno, stack:(e.error&&e.error.stack)||''}, '*'));\n  addEventListener('unhandledrejection', e=>parent.postMessage({type:'error', msg:'Unhandled promise rejection: '+ (e.reason && (e.reason.message||e.reason))}, '*'));\n})();\n<\/script>`;
+      return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank">\n<style>${css}\n</style></head><body>\n${html}\n${hook}\n<script>${js}<\/script>\n</body></html>`;
+    }
+
+    function runHTML(html){
+      clearConsole();
+      previewFrame.srcdoc = html; // html уже включает hook, если генерируем через helpers ниже
+    }
+    function runHTMLBundle(raw){
+      // raw может содержать <html>… или фрагмент. Пытаемся аккуратно встроить hook.
+      const hasFull = /<\s*html\b/i.test(raw);
+      let html = raw;
+      if(!hasFull){ html = docForIframe(raw, '', ''); }
+      else {
+        // Вставляем hook перед </body>
+        html = raw.replace(/<\/body>/i, `\n<script>(function(){function s(k,a){parent.postMessage({type:'console',level:k,args:[].slice.call(a)}, '*')}['log','info','warn','error'].forEach(fn=>{const o=console[fn];console[fn]=function(){s(fn,arguments);o&&o.apply(console,arguments)}});addEventListener('error',e=>parent.postMessage({type:'error',msg:String(e.message||e.error),src:e.filename,lin:e.lineno,col:e.colno,stack:(e.error&&e.error.stack)||''}, '*'));addEventListener('unhandledrejection',e=>parent.postMessage({type:'error',msg:'Unhandled promise rejection: '+(e.reason&&(e.reason.message||e.reason))}, '*'));})()<\/script>\n</body>`);
+      }
+      runHTML(html);
+    }
+    function runCSS(css){
+      const html = docForIframe('<main class="wrap"><h1>CSS предпросмотр</h1><p class="hint">Ваш CSS применён к этой пустой странице.</p></main>', css, '');
+      runHTML(html);
+    }
+    function runJS(code){
+      clearConsole();
+      const html = docForIframe('', '', `try{\n${code}\n}catch(e){console.error(e);} `);
+      previewFrame.srcdoc = html;
+      addRow('info','JS запущен в изолированной песочнице');
+    }
+
+    // TypeScript
+    async function ensureTS(){
+      if(!Runtimes.ts.ready){ setStatus('Загрузка TypeScript...'); Runtimes.ts.ready = loadScriptOnce('tslib','https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js'); await Runtimes.ts.ready; setStatus('TypeScript готов'); }
+    }
+    async function runTS(code){ await ensureTS(); try{ const js = window.ts.transpile(code,{target:'ES2020', module:'ESNext'}); addRow('info','Транспилировано из TS → JS'); runJS(js); }catch(e){ addRow('error', String(e)); } }
+
+    // Python via Pyodide
+    let pyodide = null;
+    async function ensurePy(){
+      if(!Runtimes.py.ready){
+        setStatus('Загрузка Pyodide...');
+        Runtimes.py.ready = (async()=>{
+          await loadScriptOnce('pyodide-js','https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
+          pyodide = await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'});
+          pyodide.setStdout({batched:(s)=>addRow('log', s)});
+          pyodide.setStderr({batched:(s)=>addRow('error', s)});
+        })();
+        await Runtimes.py.ready; setStatus('Pyodide готов');
+      }
+    }
+    async function runPy(code){ clearConsole(); await ensurePy(); try{ await pyodide.runPythonAsync(code); addRow('info','Python выполнен'); }catch(e){ addRow('error', String(e)); } }
+
+    // Lua via Fengari
+    async function ensureLua(){ if(!Runtimes.lua.ready){ setStatus('Загрузка Fengari...'); Runtimes.lua.ready = loadScriptOnce('fengari','https://unpkg.com/fengari-web/dist/fengari-web.js'); await Runtimes.lua.ready; setStatus('Lua готов'); } }
+    async function runLua(code){ clearConsole(); await ensureLua(); try{
+      const L = fengari.lauxlib.luaL_newstate();
+      fengari.lualib.luaL_openlibs(L);
+      const { lua, lauxlib, to_luastring } = fengari;
+      lua.lua_pushjsfunction(L, function(){ const n = lua.lua_gettop(L); let parts=[]; for(let i=1;i<=n;i++){ parts.push(fengari.to_jsstring(lua.lua_tolstring(L,i))); } addRow('log', parts.join(' ')); return 0; });
+      lua.lua_setglobal(L, to_luastring('print'));
+      lauxlib.luaL_dostring(L, to_luastring(code));
+      addRow('info','Lua выполнен');
+    }catch(e){ addRow('error', String(e)); } }
+
+    // Message bridge from iframe → console
+    window.addEventListener('message', (e)=>{
+      const d = e.data || {}; if(d.type==='console'){
+        const txt = (d.args||[]).map(x=>{ try{return typeof x==='string'? x: JSON.stringify(x,null,2);}catch{ return String(x);} }).join(' ');
+        const level = d.level==='info'?'info': d.level==='warn'?'warn': d.level==='error'?'error':'log';
+        addRow(level, txt);
+      } else if(d.type==='error'){
+        const pos = d.src?`\n@ ${d.src}:${d.lin||''}:${d.col||''}`:'';
+        const txt = (d.msg||'Ошибка') + pos + (d.stack?`\n${d.stack}`:'');
+        addRow('error', txt);
+      }
+    });
+
+    // Dispatcher
+    async function run(){
+      const raw = ed.value; const lang = detectLang(raw); $('#detected').textContent = lang.toUpperCase();
+      if(lang==='html') return runHTMLBundle(raw);
+      if(lang==='css')  return runCSS(raw);
+      if(lang==='js')   return runJS(raw);
+      if(lang==='ts')   return runTS(raw);
+      if(lang==='py')   return runPy(raw);
+      if(lang==='lua')  return runLua(raw);
+    }
+
+    // Init
+    load();
+    if($('#autoRun').checked) run();
+  </script>
+</body>
+</html>
