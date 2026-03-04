@@ -9,7 +9,7 @@
         :root {
             --bg-color: #f7f0eb;
             --text-color: #4a3b32;
-            --tree-brown: #8a5a3a; /* Чуть более теплый цвет ствола, как на фото */
+            --tree-brown: #825a3d;
             --line-color: #2b2b2b;
         }
 
@@ -93,6 +93,7 @@
             width: 45%;
             opacity: 0;
             transform: translateX(40px);
+            /* Ускоренное появление текста */
             transition: opacity 1.2s ease, transform 1.2s ease;
             z-index: 20;
             display: flex;
@@ -136,17 +137,19 @@
         /* --- ДЕРЕВО --- */
         #tree-container {
             position: absolute;
-            bottom: calc(6% + 4px); 
+            bottom: calc(6% + 4px); /* Жестко стоит на линии */
             left: 50%;
             transform: translateX(-50%) scale(1.1);
             transform-origin: bottom center;
-            width: 500px;
-            height: 550px;
+            width: 350px;
+            height: 500px;
             z-index: 5;
+            /* Ускоренный сдвиг дерева */
             transition: all 1.2s ease-in-out;
             pointer-events: none;
         }
 
+        /* Сдвиг и уменьшение дерева вправо */
         #tree-container.shifted {
             left: 75%;
             transform: translateX(-50%) scale(0.85);
@@ -158,8 +161,9 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 45px; 
+            width: 55px; /* Более тонкое основание */
             height: 0; 
+            /* Быстрый рост ствола */
             transition: height 0.4s ease-out;
         }
 
@@ -167,16 +171,29 @@
             width: 100%;
             height: 100%;
             background-color: var(--tree-brown);
-            /* Сужаем ствол снизу вверх, как на фото */
-            clip-path: polygon(10% 100%, 90% 100%, 65% 0, 35% 0);
+            /* Сужение до ~15px на макушке */
+            clip-path: polygon(0 100%, 100% 100%, 63% 0, 37% 0);
+        }
+
+        /* Скрывает острый срез верхушки ствола */
+        .trunk-cap {
+            position: absolute;
+            top: -7px;
+            left: calc(50% - 7px);
+            width: 14px;
+            height: 14px;
+            background-color: var(--tree-brown);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
 
         /* Крона (Сердечки) */
         .leaves-container {
             position: absolute;
-            bottom: 120px; /* Опускаем крону, чтобы покрывала все ветки */
-            width: 500px;
-            height: 500px;
+            bottom: 150px; /* Крона сидит прямо на ветках */
+            width: 340px;
+            height: 320px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 6;
@@ -184,9 +201,10 @@
 
         .leaf-heart {
             position: absolute;
-            width: 18px; height: 18px; /* Немного увеличили для густоты */
+            width: 16px; height: 16px;
             transform: rotate(-45deg) scale(0);
             opacity: 0;
+            /* Быстрое появление листиков */
             transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
         }
 
@@ -209,10 +227,11 @@
             animation: fall 3s ease-in forwards !important;
         }
 
+        /* --- АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ --- */
         @media (max-width: 900px) {
             #tree-container.shifted {
                 left: 50%;
-                transform: translateX(-50%) scale(0.65);
+                transform: translateX(-50%) scale(0.65); /* Сильнее уменьшаем на мобильных */
             }
 
             #text-section {
@@ -260,6 +279,7 @@
     <div id="tree-container">
         <div class="tree-trunk-wrapper" id="trunk-wrapper">
             <div class="tree-trunk-visual"></div>
+            <div class="trunk-cap" id="trunk-cap"></div>
         </div>
         <div class="leaves-container" id="leaves"></div>
     </div>
@@ -276,61 +296,67 @@
             setTimeout(() => {
                 startScreen.style.display = 'none';
                 growTree();
-            }, 400); 
+            }, 400); // Быстрое скрытие начального экрана
         }
 
         function growTree() {
             const trunkW = document.getElementById('trunk-wrapper');
-            trunkW.style.height = '280px'; 
+            trunkW.style.height = '290px'; // Высота основного ствола
             
-            // Архитектура веток точно как на фото: (отступ снизу, угол, толщина, длина, задержка, [побочные])
-            
-            // Нижняя левая ветка (изогнутая вверх)
-            createSpecificBranch(trunkW, '80px', -40, 10, 110, 100, [
-                { bottom: '50px', rotate: 35, width: 6, height: 50, delay: 100 }
-            ]);
-            // Средняя правая ветка
-            createSpecificBranch(trunkW, '130px', 45, 9, 100, 150, [
-                { bottom: '40px', rotate: -35, width: 5, height: 45, delay: 100 }
-            ]);
-            
-            // Верхняя левая
-            createSpecificBranch(trunkW, '190px', -35, 7, 80, 200, []);
-            // Верхняя правая
-            createSpecificBranch(trunkW, '210px', 30, 6, 70, 250, []);
+            setTimeout(() => { document.getElementById('trunk-cap').style.opacity = '1'; }, 350);
 
-            // Тонкие макушки (раздвоение)
-            createSpecificBranch(trunkW, '270px', -20, 5, 60, 300, []);
-            createSpecificBranch(trunkW, '270px', 20, 5, 60, 300, []);
+            // Точная структура веток (как на фото)
+            // (родитель, отступ снизу, угол, толщина, длина, задержка появления, [побочные ветки])
+            
+            // Левая нижняя
+            createSpecificBranch(trunkW, '70px', -45, 9, 120, 100, [
+                { bottom: '40px', rotate: 35, width: 6, height: 60, delay: 100 }
+            ]);
+            // Правая нижняя
+            createSpecificBranch(trunkW, '100px', 50, 8, 110, 150, []);
+            
+            // Левая средняя
+            createSpecificBranch(trunkW, '150px', -35, 7, 130, 200, [
+                { bottom: '50px', rotate: 40, width: 5, height: 65, delay: 100 }
+            ]);
+            //няя
+            createSpecificBranch(trunkW, '180px', 40, 7, 120, 250, [
+                { bottom: '45px', rotate: -35, width: 5, height: 60, delay: 100 }
+            ]);
 
-            setTimeout(() => { spawnLeavesInHeartShape(); }, 800);
+            // Верхние боковые
+            createSpecificBranch(trunkW, '230px', -25, 6, 90, 300, []);
+            createSpecificBranch(trunkW, '250px', 30, 6, 80, 350, []);
+
+            // Разветвление на самой макушке (Y)
+            createSpecificBranch(trunkW, '285px', -15, 5, 75, 400, []);
+            createSpecificBranch(trunkW, '285px', 15, 5, 75, 400, []);
+
+            // Запуск листьев и анимации сдвига намного быстрее
+            setTimeout(()avesInHeartShape(); }, 800);
         }
 
+        // Функция для точного создания закругленных веток с эффектом "вытягивания"
         function createSpecificBranch(parent, bottom, rotate, width, height, delay, subBranches = []) {
             const branch = document.createElement('div');
             branch.style.position = 'absolute';
             branch.style.bottom = bottom;
             branch.style.left = '50%';
             branch.style.width = width + 'px';
-            branch.style.height = '0px'; 
+            branch.style.height = '0px'; // Начинаем с 0 для эффекта роста
             branch.style.backgroundColor = 'var(--tree-brown)';
-            
-            // Используем clip-path для сужения веток. Если нет побочных веток — делаем конец острым.
-            const isTip = subBranches.length === 0;
-            if (isTip) {
-                branch.style.clipPath = 'polygon(0% 100%, 100% 100%, 50% 0%)'; // Острая макушка
-            } else {
-                branch.style.clipPath = 'polygon(0% 100%, 100% 100%, 75% 0%, 25% 0%)'; // Сужающаяся ветка
-            }
-            
+            branch.style.borderRadius = '10px'; // Закругленные аккуратные концы
             branch.style.transformOrigin = 'bottom center';
             branch.style.transform = `translateX(-50%) rotate(${rotate}deg)`;
-            branch.style.transition = 'height 0.4s ease-out';
+            branch.style.transition = 'height 0.4s ease-out'; // Очень быстрый рост
             
             parent.appendChild(branch);
 
+            // Активируем рост
             setTimeout(() => {
                 branch.style.height = height + 'px';
+
+                // Запускаем рост побочных веточек, когда основная почти выросла
                 subBranches.forEach(sb => {
                     setTimeout(() => {
                         createSpecificBranch(branch, sb.bottom, sb.rotate, sb.width, sb.height, 0, []);
@@ -341,8 +367,8 @@
 
         function spawnLeavesInHeartShape() {
             const container = document.getElementById('leaves');
-            const totalLeaves = 450; // Увеличили количество сердечек для густоты
-            const radius = 160; // Расширили зону кроны
+            const totalLeaves = 350; 
+            const radius = 145; 
             let count = 0;
             let attempts = 0;
 
@@ -358,22 +384,22 @@
                     leaf.className = 'leaf-heart';
                     leaf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                     
-                    // Центрируем внутри контейнера 500x500
-                    leaf.style.left = (x * radius + 240) + 'px';
-                    leaf.style.top = (y * radius + 220) + 'px';
+                    leaf.style.left = (x * radius + 170) + 'px';
+                    leaf.style.top = (y * radius + 160) + 'px';
                     
-                    const scale = 0.5 + Math.random() * 0.7; // Сделали листья чуть крупнее
+                    const scale = 0.4 + Math.random() * 0.6;
                     container.appendChild(leaf);
 
+                    // Быстрое появление
                     setTimeout(() => {
                         leaf.style.transform = `rotate(${Math.random() * 60 - 75}deg) scale(${scale})`;
-                        leaf.style.opacity = '1';
-                    }, Math.random() * 800); 
+                        leaf.style.opacity = }, Math.random() * 800); // Максимум 0.8 секунд на все листья
                     count++;
                 }
                 attempts++;
             }
 
+            // БЫСТРЫЙ СДВИГ (через 1.5 секунды после старта листьев)
             setTimeout(() => {
                 document.getElementById('tree-container').classList.add('shifted');
                 document.getElementById('text-section').classList.add('visible');
@@ -419,3 +445,4 @@
     </script>
 </body>
 </html>
+
