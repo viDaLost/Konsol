@@ -141,7 +141,7 @@
             transform: translateX(-50%) scale(1.1);
             transform-origin: bottom center;
             width: 500px;
-            height: 400px; /* Высота синхронизирована с viewBox SVG */
+            height: 400px;
             z-index: 5;
             transition: all 1.2s ease-in-out;
             pointer-events: none;
@@ -152,7 +152,7 @@
             transform: translateX(-50%) scale(0.85);
         }
 
-        /* Крона (Сердечки) - теперь растянута на весь контейнер дерева */
+        /* Крона (Сердечки) */
         .leaves-container {
             position: absolute;
             top: 0;
@@ -165,9 +165,10 @@
         .leaf-heart {
             position: absolute;
             width: 18px; height: 18px; 
+            /* Сердечки стартуют со scale(0) — это тоже эффект роста, а не скрытия */
             transform: rotate(-45deg) scale(0);
             opacity: 0;
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
         }
 
         .leaf-heart::before, .leaf-heart::after {
@@ -238,7 +239,7 @@
     </div>
 
     <div id="tree-container">
-        </div>
+    </div>
 
     <div class="ground-line"></div>
 
@@ -258,33 +259,73 @@
         function growTree() {
             const treeContainer = document.getElementById('tree-container');
             
-            // Внедряем SVG с кривыми Безье для создания органичных изгибов.
-            // Анимация реализуется через clipPath, который "открывает" дерево снизу вверх.
+            // Вставляем SVG. Маски (clip-path) удалены.
+            // Теперь каждая фигура плавно морфируется из крошечной скрытой точки (from)
+            // в конечную пропорциональную ветку (to).
             treeContainer.innerHTML = `
                 <svg id="tree-svg" viewBox="0 0 500 400" style="position:absolute; bottom:0; left:0; width:100%; height:100%; z-index:5;">
-                    <defs>
-                        <clipPath id="tree-clip">
-                            <rect x="0" y="400" width="500" height="0">
-                                <animate attributeName="y" from="400" to="0" dur="1.2s" fill="freeze" />
-                                <animate attributeName="height" from="0" to="400" dur="1.2s" fill="freeze" />
-                            </rect>
-                        </clipPath>
-                    </defs>
-                    <g clip-path="url(#tree-clip)" fill="var(--tree-brown)">
-                        <path d="M 225,400 Q 240,250 247.5,60 L 252.5,60 Q 260,250 275,400 Z" />
+                    <g fill="var(--tree-brown)">
+                        <path>
+                            <animate attributeName="d"
+                                from="M 235,400 Q 250,400 250,400 L 250,400 Q 250,400 265,400 Z"
+                                to="M 235,400 Q 242,230 247.5,60 L 252.5,60 Q 258,230 265,400 Z"
+                                dur="1.2s" fill="freeze" />
+                        </path>
                         
-                        <path d="M 235,320 Q 150,320 80,180 Q 160,280 242,295 Z" /> <path d="M 262,290 Q 350,290 420,160 Q 340,260 256,265 Z" /> <path d="M 242,220 Q 180,210 110,90 Q 190,180 246,195 Z" /> <path d="M 254,180 Q 320,170 390,70 Q 310,150 249,160 Z" /> <path d="M 246,120 Q 200,100 160,20 Q 210,80 250,100 Z" /> <path d="M 251,90 Q 290,70 340,10 Q 280,60 248,70 Z" /> </g>
+                        <path>
+                            <animate attributeName="d"
+                                from="M 241,280 Q 242.5,277.5 242.5,277.5 Q 242.5,277.5 244,275 Z"
+                                to="M 241,280 Q 180,260 120,160 Q 190,240 244,275 Z"
+                                begin="0.3s" dur="0.9s" fill="freeze" />
+                        </path>
+                        
+                        <path>
+                            <animate attributeName="d"
+                                from="M 254,235 Q 255.5,237.5 255.5,237.5 Q 255.5,237.5 257,240 Z"
+                                to="M 254,235 Q 320,210 390,130 Q 310,235 257,240 Z"
+                                begin="0.4s" dur="0.9s" fill="freeze" />
+                        </path>
+                        
+                        <path>
+                            <animate attributeName="d"
+                                from="M 246,180 Q 247,177.5 247,177.5 Q 247,177.5 248,175 Z"
+                                to="M 246,180 Q 190,160 140,80 Q 200,145 248,175 Z"
+                                begin="0.6s" dur="0.8s" fill="freeze" />
+                        </path>
+                        
+                        <path>
+                            <animate attributeName="d"
+                                from="M 251,135 Q 252,137.5 252,137.5 Q 252,137.5 253,140 Z"
+                                to="M 251,135 Q 310,110 360,60 Q 300,135 253,140 Z"
+                                begin="0.7s" dur="0.8s" fill="freeze" />
+                        </path>
+                        
+                        <path>
+                            <animate attributeName="d"
+                                from="M 247.5,95 Q 248.25,92.5 248.25,92.5 Q 248.25,92.5 249,90 Z"
+                                to="M 247.5,95 Q 210,75 180,20 Q 220,65 249,90 Z"
+                                begin="0.9s" dur="0.7s" fill="freeze" />
+                        </path>
+                        
+                        <path>
+                            <animate attributeName="d"
+                                from="M 250,75 Q 250.75,77.5 250.75,77.5 Q 250.75,77.5 251.5,80 Z"
+                                to="M 250,75 Q 280,55 310,15 Q 275,75 251.5,80 Z"
+                                begin="0.95s" dur="0.7s" fill="freeze" />
+                        </path>
+                    </g>
                 </svg>
                 <div class="leaves-container" id="leaves"></div>
             `;
 
+            // Запускаем рост сердечек после того, как ствол окрепнет
             setTimeout(() => { spawnLeavesInHeartShape(); }, 1200);
         }
 
         function spawnLeavesInHeartShape() {
             const container = document.getElementById('leaves');
-            const totalLeaves = 650; // Увеличено для густоты разросшейся кроны
-            const radius = 180; // Расширенный радиус математически перекрывает концы всех веток
+            const totalLeaves = 650; 
+            const radius = 180; 
             let count = 0;
             let attempts = 0;
 
@@ -300,18 +341,17 @@
                     leaf.className = 'leaf-heart';
                     leaf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                     
-                    // Смещаем центр кроны ниже (y = 150) внутри пространства 500x400
-                    // -9px центрирует само 18px сердечко относительно рассчитанной точки
                     leaf.style.left = (x * radius + 250 - 9) + 'px';
                     leaf.style.top = (y * radius + 150 - 9) + 'px';
                     
                     const scale = 0.5 + Math.random() * 0.7; 
                     container.appendChild(leaf);
 
+                    // Листья распускаются случайным образом, увеличиваясь в размере
                     setTimeout(() => {
                         leaf.style.transform = `rotate(${Math.random() * 60 - 75}deg) scale(${scale})`;
                         leaf.style.opacity = '1';
-                    }, Math.random() * 800); 
+                    }, Math.random() * 1000); 
                     count++;
                 }
                 attempts++;
@@ -322,7 +362,7 @@
                 document.getElementById('text-section').classList.add('visible');
                 startTimer();
                 startFallingLeaves();
-            }, 1500); 
+            }, 1800); 
         }
 
         function startTimer() {
