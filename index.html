@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>San Valentín</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Dancing+Script:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f7f0eb;
+            --text-color: #4a3b32;
+            --tree-brown: #825a3d;
+            --line-color: #2b2b2b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row; /* Текст слева, дерево справа */
+            position: relative;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* --- СТАРТОВЫЙ ЭКРАН --- */
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            background-color: var(--bg-color);
+            transition: opacity 0.8s ease;
+        }
+
+        .start-heart {
+            width: 80px; height: 80px;
+            background-color: #d9383a;
+            position: relative;
+            transform: rotate(-45deg);
+            animation: pulse 1.5s infinite;
+        }
+
+        .start-heart::before, .start-heart::after {
+            content: ''; width: 80px; height: 80px;
+            background-color: #d9383a;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .start-heart::before { top: -40px; left: 0; }
+        .start-heart::after { top: 0; left: 40px; }
+
+        .start-text {
+            margin-top: 40px;
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: #d9383a;
+        }
+
+        @keyframes pulse {
+            0% { transform: rotate(-45deg) scale(1); }
+            50% { transform: rotate(-45deg) scale(1.1); }
+            100% { transform: rotate(-45deg) scale(1); }
+        }
+
+        /* --- РАЗДЕЛЕНИЕ ЭКРАНА --- */
+        #text-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 2s ease-in;
+        }
+
+        #tree-section {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Прижимаем дерево к низу */
+        }
+
+        /* Линия земли */
+        .ground-line {
+            position: absolute;
+            bottom: 8%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: var(--line-color);
+            z-index: 10;
+        }
+
+        /* --- ТЕКСТ И СЧЕТЧИК --- */
+        #poem-container {
+            font-family: 'Caveat', cursive;
+            font-size: 2.5rem;
+            line-height: 1.2;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .poem-line { margin-bottom: 20px; }
+        .author { margin-top: 30px; font-weight: 600; }
+
+        .timer-title {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .timer-numbers {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .timer-numbers span.num { font-size: 2.5rem; font-weight: 600; }
+        .timer-label { font-size: 1rem; margin-right: 15px; color: #666; }
+
+        /* --- ДЕРЕВО И ВЕТКИ --- */
+        #animation-container {
+            position: absolute;
+            bottom: 8%; /* Стоит на линии земли */
+            width: 400px;
+            height: 70%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Ствол: основание 90px, верхушка 30px */
+        .tree-trunk-container {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            height: 0; 
+            transition: height 1.5s ease-out;
+        }
+
+        .tree-trunk-visual {
+            width: 100%;
+            height: 100%;
+            background-color: var(--tree-brown);
+            clip-path: polygon(0 100%, 100% 100%, 66.66% 0, 33.33% 0);
+        }
+
+        /* Крона (Сердечки) */
+        .leaves-container {
+            position: absolute;
+            bottom: 200px; /* Высота над стволом */
+            width: 320px;
+            height: 320px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 6;
+        }
+
+        .leaf-heart {
+            position: absolute;
+            width: 16px; height: 16px;
+            transform: rotate(-45deg) scale(0);
+            opacity: 0;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.8s ease;
+        }
+
+        .leaf-heart::before, .leaf-heart::after {
+            content: ''; width: 100%; height: 100%;
+            border-radius: 50%;
+            position: absolute;
+            background-color: inherit;
+        }
+
+        .leaf-heart::before { top: -50%; left: 0; }
+        .leaf-heart::after { top: 0; left: 50%; }
+
+        /* Анимация падения в ЛЕВЫЙ УГОЛ */
+        @keyframes fall {
+            0% { transform: translate(0, 0) rotate(-45deg) scale(1); opacity: 1; }
+            100% { transform: translate(-35vw, 70vh) rotate(-90deg) scale(0.6); opacity: 0; }
+        }
+
+        .falling {
+            animation: fall 3.5s ease-in forwards !important;
+        }
+
+        /* --- АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ --- */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column; /* Текст сверху, дерево снизу */
+                justify-content: space-between;
+            }
+            #text-section {
+                flex: 0 0 auto;
+                margin-top: 5%;
+                transform: scale(0.85); /* Уменьшаем текст чтобы влез */
+            }
+            #tree-section {
+                flex: 1;
+                width: 100%;
+                transform: scale(0.8); /* Уменьшаем дерево */
+                transform-origin: bottom center;
+            }
+            .ground-line { bottom: 3%; }
+            #animation-container { bottom: 3%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" onclick="startAnimation()">
+        <div class="start-heart"></div>
+        <div class="start-text">San Valentín</div>
+    </div>
+
+    <div id="text-section">
+        <div id="poem-container">
+            <div class="poem-line">Para el amor de mi vida:</div>
+            <div class="poem-line">Si pudiera elegir un lugar<br>seguro, sería a tu lado.</div>
+            <div class="poem-line">Cuanto más tiempo estoy<br>contigo más te amo.</div>
+            <div class="author">— I Love You!</div>
+        </div>
+        <div class="timer-container" id="timer-box">
+            <div class="timer-title">Mi amor por ti comenzó hace...</div>
+            <div class="timer-numbers">
+                <span class="num" id="days">0</span> <span class="timer-label">días</span> 
+                <span class="num" id="hours">0</span> <span class="timer-label">horas</span> 
+                <span class="num" id="mins">0</span> <span class="timer-label">minutos</span> 
+                <span class="num" id="secs">0</span> <span class="timer-label">segundos</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="tree-section">
+        <div id="animation-container">
+            <div class="tree-trunk-container" id="trunk-container">
+                <div class="tree-trunk-visual"></div>
+            </div>
+            <div class="leaves-container" id="leaves"></div>
+        </div>
+    </div>
+
+    <div class="ground-line"></div>
+
+    <script>
+        // ДАТА НАЧАЛА ОТНОШЕНИЙ: Год, Месяц (0-11), День, Час, Минута
+        const startDate = new Date(2025, 1, 14, 12, 0, 0); 
+        const colors = ['#a62c2b', '#d9383a', '#f27b82', '#f7b2b7', '#c92a2a', '#e85d68'];
+
+        function startAnimation() {
+            const startScreen = document.getElementById('start-screen');
+            startScreen.style.opacity = '0';
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                growTree();
+            }, 800);
+        }
+
+        function growTree() {
+            const trunkC = document.getElementById('trunk-container');
+            trunkC.style.height = '240px'; // Рост основного ствола
+
+            // ВЕТКИ РАСТУТ ИЗ СТВОЛА (level 1 означает, что у них будут веточки level 0)
+            // parent, bottomOffset, leftOffset, rotation, baseWidth, topWidth, height, level
+            setTimeout(() => {
+                createBranch(trunkC, '60px', '45px', -45, 26, 12, 110, 1);
+                createBranch(trunkC, '110px', '45px', 40, 22, 10, 95, 1);
+                createBranch(trunkC, '160px', '45px', -35, 18, 8, 80, 1);
+                createBranch(trunkC, '200px', '45px', 30, 14, 6, 60, 0); // Самая верхняя без веточек
+            }, 1000);
+
+            setTimeout(() => { spawnLeavesInHeartShape(); }, 1800);
+        }
+
+        // РЕКУРСИВНАЯ ФУНКЦИЯ ДЛЯ ВЕТОК И ВЕТОЧЕК
+        function createBranch(parent, bottom, left, rotate, wBase, wTop, height, level) {
+            const branchC = document.createElement('div');
+            branchC.style.position = 'absolute';
+            branchC.style.bottom = bottom;
+            branchC.style.left = left;
+            branchC.style.width = wBase + 'px';
+            branchC.style.height = height + 'px';
+            branchC.style.transformOrigin = 'bottom center';
+            branchC.style.transform = `translateX(-50%) rotate(${rotate}deg)`;
+            
+            const branchV = document.createElement('div');
+            branchV.style.width = '100%';
+            branchV.style.height = '100%';
+            branchV.style.backgroundColor = 'var(--tree-brown)';
+            
+            // Вычисляем обрезку для сужения ветки
+            const topPct = (1 - wTop/wBase)/2 * 100;
+            branchV.style.clipPath = `polygon(0 100%, 100% 100%, ${100-topPct}% 0, ${topPct}% 0)`;
+            
+            branchV.style.opacity = '0';
+            branchV.style.transition = 'opacity 1s ease-in';
+            
+            branchC.appendChild(branchV);
+            parent.appendChild(branchC);
+            
+            setTimeout(() => { branchV.style.opacity = '1'; }, 100);
+
+            // Если level > 0, создаем дополнительные веточки, растущие из этой ветки
+            if (level > 0) {
+                setTimeout(() => {
+                    createBranch(branchC, (height * 0.3) + 'px', '50%', -30, wBase * 0.5, wTop * 0.5, height * 0.65, level - 1);
+                }, 400);
+                setTimeout(() => {
+                    createBranch(branchC, (height * 0.6) + 'px', '50%', 35, wBase * 0.4, wTop * 0.4, height * 0.55, level - 1);
+                }, 600);
+            }
+        }
+
+        function spawnLeavesInHeartShape() {
+            const container = document.getElementById('leaves');
+            const totalLeaves = 350; // Увеличено для более плотного сердца
+            const radius = 135; // Размер кроны
+            let count = 0;
+            let attempts = 0;
+
+            // Генерация листьев строго по математической формуле сердца
+            while (count < totalLeaves && attempts < 10000) {
+                const x = (Math.random() * 2 - 1) * 1.5; 
+                const y = (Math.random() * 2 - 1) * 1.5;
+                const y_math = -y; 
+                
+                // Формула: (x^2 + y^2 - 1)^3 - x^2 * y^3 <= 0
+                const eq = Math.pow(x*x + y_math*y_math - 1, 3) - (x*x * Math.pow(y_math, 3));
+                
+                if (eq <= 0) {
+                    const leaf = document.createElement('div');
+                    leaf.className = 'leaf-heart';
+                    leaf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    // Центрируем внутри контейнера (320px)
+                    leaf.style.left = (x * radius + 160) + 'px';
+                    leaf.style.top = (y * radius + 150) + 'px';
+                    
+                    const scale = 0.4 + Math.random() * 0.6;
+                    container.appendChild(leaf);
+
+                    setTimeout(() => {
+                        leaf.style.transform = `rotate(${Math.random() * 60 - 75}deg) scale(${scale})`;
+                        leaf.style.opacity = '1';
+                    }, Math.random() * 2000);
+                    count++;
+                }
+                attempts++;
+            }
+
+            setTimeout(() => {
+                document.getElementById('text-section').style.opacity = '1';
+                startTimer();
+                startFallingLeaves();
+            }, 2500);
+        }
+
+        function startTimer() {
+            function update() {
+                const now = new Date();
+                const diff = now - startDate;
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const mins = Math.floor((diff / 1000 / 60) % 60);
+                const secs = Math.floor((diff / 1000) % 60);
+
+                document.getElementById('days').innerText = days;
+                document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+                document.getElementById('mins').innerText = mins.toString().padStart(2, '0');
+                document.getElementById('secs').innerText = secs.toString().padStart(2, '0');
+            }
+            update();
+            setInterval(update, 1000);
+        }
+
+        function startFallingLeaves() {
+            const leaves = document.querySelectorAll('.leaf-heart');
+            setInterval(() => {
+                if(leaves.length > 0) {
+                    const randomLeaf = leaves[Math.floor(Math.random() * leaves.length)];
+                    const fallingLeaf = randomLeaf.cloneNode(true);
+                    
+                    fallingLeaf.style.transform = randomLeaf.style.transform; 
+                    document.getElementById('leaves').appendChild(fallingLeaf);
+                    
+                    setTimeout(() => fallingLeaf.classList.add('falling'), 50);
+                    setTimeout(() => fallingLeaf.remove(), 3500);
+                }
+            }, 800);
+        }
+    </script>
+</body>
+</html>
