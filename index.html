@@ -25,8 +25,6 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            display: flex;
-            flex-direction: row; /* Текст слева, дерево справа */
             position: relative;
             font-family: 'Inter', sans-serif;
         }
@@ -76,31 +74,10 @@
             100% { transform: rotate(-45deg) scale(1); }
         }
 
-        /* --- РАЗДЕЛЕНИЕ ЭКРАНА --- */
-        #text-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            z-index: 20;
-            opacity: 0;
-            transition: opacity 2s ease-in;
-        }
-
-        #tree-section {
-            flex: 1;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end; /* Прижимаем дерево к низу */
-        }
-
-        /* Линия земли */
+        /* --- ЛИНИЯ ЗЕМЛИ --- */
         .ground-line {
             position: absolute;
-            bottom: 8%;
+            bottom: 6%; /* Поднято, чтобы не проваливалось */
             left: 0;
             width: 100%;
             height: 4px;
@@ -109,20 +86,40 @@
         }
 
         /* --- ТЕКСТ И СЧЕТЧИК --- */
+        #text-section {
+            position: absolute;
+            top: 25%;
+            left: 8%;
+            width: 45%;
+            opacity: 0;
+            /* Текст "выезжает" справа налево */
+            transform: translateX(40px);
+            transition: opacity 2s ease, transform 2s ease;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #text-section.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
         #poem-container {
             font-family: 'Caveat', cursive;
             font-size: 2.5rem;
             line-height: 1.2;
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
         
         .poem-line { margin-bottom: 20px; }
-        .author { margin-top: 30px; font-weight: 600; }
+        .author { margin-top: 20px; font-weight: 600; }
 
         .timer-title {
             font-size: 1.2rem;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             text-align: center;
         }
 
@@ -130,24 +127,35 @@
             display: flex;
             align-items: baseline;
             justify-content: center;
+            flex-wrap: wrap;
             gap: 5px;
         }
 
         .timer-numbers span.num { font-size: 2.5rem; font-weight: 600; }
         .timer-label { font-size: 1rem; margin-right: 15px; color: #666; }
 
-        /* --- ДЕРЕВО И ВЕТКИ --- */
-        #animation-container {
+        /* --- ДЕРЕВО --- */
+        #tree-container {
             position: absolute;
-            bottom: 8%; /* Стоит на линии земли */
-            width: 400px;
-            height: 70%;
-            pointer-events: none;
+            bottom: calc(6% + 4px); /* Идеально стоит на линии земли */
+            left: 50%;
+            transform: translateX(-50%) scale(1.1); /* Сначала по центру и крупнее */
+            transform-origin: bottom center;
+            width: 350px;
+            height: 500px;
             z-index: 5;
+            transition: all 2s ease-in-out;
+            pointer-events: none;
         }
 
-        /* Ствол: основание 90px, верхушка 30px */
-        .tree-trunk-container {
+        /* Класс для сдвига дерева вправо и уменьшения */
+        #tree-container.shifted {
+            left: 75%;
+            transform: translateX(-50%) scale(0.85);
+        }
+
+        /* Ствол */
+        .tree-trunk-wrapper {
             position: absolute;
             bottom: 0;
             left: 50%;
@@ -161,13 +169,27 @@
             width: 100%;
             height: 100%;
             background-color: var(--tree-brown);
-            clip-path: polygon(0 100%, 100% 100%, 66.66% 0, 33.33% 0);
+            /* Сужение от 90px к 15px */
+            clip-path: polygon(0 100%, 100% 100%, calc(50% + 7.5px) 0, calc(50% - 7.5px) 0);
+        }
+
+        /* Закругленная макушка ствола, чтобы избежать острого среза */
+        .trunk-cap {
+            position: absolute;
+            top: -7.5px;
+            left: calc(50% - 7.5px);
+            width: 15px;
+            height: 15px;
+            background-color: var(--tree-brown);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
 
         /* Крона (Сердечки) */
         .leaves-container {
             position: absolute;
-            bottom: 200px; /* Высота над стволом */
+            bottom: 110px; /* Крона сидит прямо на ветках */
             width: 320px;
             height: 320px;
             left: 50%;
@@ -193,10 +215,9 @@
         .leaf-heart::before { top: -50%; left: 0; }
         .leaf-heart::after { top: 0; left: 50%; }
 
-        /* Анимация падения в ЛЕВЫЙ УГОЛ */
         @keyframes fall {
             0% { transform: translate(0, 0) rotate(-45deg) scale(1); opacity: 1; }
-            100% { transform: translate(-35vw, 70vh) rotate(-90deg) scale(0.6); opacity: 0; }
+            100% { transform: translate(-30vw, 70vh) rotate(-90deg) scale(0.6); opacity: 0; }
         }
 
         .falling {
@@ -205,23 +226,25 @@
 
         /* --- АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ --- */
         @media (max-width: 900px) {
-            body {
-                flex-direction: column; /* Текст сверху, дерево снизу */
-                justify-content: space-between;
+            #tree-container.shifted {
+                left: 50%; /* На мобильном остается по центру */
+                transform: translateX(-50%) scale(0.7); /* Сильнее уменьшается вниз */
             }
+
             #text-section {
-                flex: 0 0 auto;
-                margin-top: 5%;
-                transform: scale(0.85); /* Уменьшаем текст чтобы влез */
+                top: 5%;
+                left: 5%;
+                width: 90%;
+                transform: translateY(-30px); /* Выезжает сверху-вниз */
             }
-            #tree-section {
-                flex: 1;
-                width: 100%;
-                transform: scale(0.8); /* Уменьшаем дерево */
-                transform-origin: bottom center;
+
+            #text-section.visible {
+                transform: translateY(0);
             }
-            .ground-line { bottom: 3%; }
-            #animation-container { bottom: 3%; }
+
+            #poem-container { font-size: 2rem; margin-bottom: 20px; }
+            .timer-numbers span.num { font-size: 2rem; }
+            .timer-label { margin-right: 8px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -250,19 +273,18 @@
         </div>
     </div>
 
-    <div id="tree-section">
-        <div id="animation-container">
-            <div class="tree-trunk-container" id="trunk-container">
-                <div class="tree-trunk-visual"></div>
-            </div>
-            <div class="leaves-container" id="leaves"></div>
+    <div id="tree-container">
+        <div class="tree-trunk-wrapper" id="trunk-wrapper">
+            <div class="tree-trunk-visual"></div>
+            <div class="trunk-cap" id="trunk-cap"></div>
         </div>
+        <div class="leaves-container" id="leaves"></div>
     </div>
 
     <div class="ground-line"></div>
 
     <script>
-        // ДАТА НАЧАЛА ОТНОШЕНИЙ: Год, Месяц (0-11), День, Час, Минута
+        // ДАТА НАЧАЛА ОТНОШЕНИЙ
         const startDate = new Date(2025, 1, 14, 12, 0, 0); 
         const colors = ['#a62c2b', '#d9383a', '#f27b82', '#f7b2b7', '#c92a2a', '#e85d68'];
 
@@ -276,74 +298,66 @@
         }
 
         function growTree() {
-            const trunkC = document.getElementById('trunk-container');
-            trunkC.style.height = '240px'; // Рост основного ствола
+            const trunkW = document.getElementById('trunk-wrapper');
+            trunkW.style.height = '240px'; 
+            
+            // Показываем круглую шапочку ствола
+            setTimeout(() => { document.getElementById('trunk-cap').style.opacity = '1'; }, 1000);
 
-            // ВЕТКИ РАСТУТ ИЗ СТВОЛА (level 1 означает, что у них будут веточки level 0)
-            // parent, bottomOffset, leftOffset, rotation, baseWidth, topWidth, height, level
+            // Создаем закругленные ветки
             setTimeout(() => {
-                createBranch(trunkC, '60px', '45px', -45, 26, 12, 110, 1);
-                createBranch(trunkC, '110px', '45px', 40, 22, 10, 95, 1);
-                createBranch(trunkC, '160px', '45px', -35, 18, 8, 80, 1);
-                createBranch(trunkC, '200px', '45px', 30, 14, 6, 60, 0); // Самая верхняя без веточек
+                // parent, bottom, left, rotate, width, height, level
+                createBranch(trunkW, '70px', '50%', -45, 14, 110, 1);
+                createBranch(trunkW, '120px', '50%', 40, 12, 95, 1);
+                createBranch(trunkW, '170px', '50%', -35, 10, 80, 1);
+                createBranch(trunkW, '210px', '50%', 25, 8, 55, 0); 
             }, 1000);
 
+            // Появление листьев
             setTimeout(() => { spawnLeavesInHeartShape(); }, 1800);
         }
 
-        // РЕКУРСИВНАЯ ФУНКЦИЯ ДЛЯ ВЕТОК И ВЕТОЧЕК
-        function createBranch(parent, bottom, left, rotate, wBase, wTop, height, level) {
-            const branchC = document.createElement('div');
-            branchC.style.position = 'absolute';
-            branchC.style.bottom = bottom;
-            branchC.style.left = left;
-            branchC.style.width = wBase + 'px';
-            branchC.style.height = height + 'px';
-            branchC.style.transformOrigin = 'bottom center';
-            branchC.style.transform = `translateX(-50%) rotate(${rotate}deg)`;
+        // Функция создания веток с закругленными краями (border-radius)
+        function createBranch(parent, bottom, left, rotate, width, height, level) {
+            const branch = document.createElement('div');
+            branch.style.position = 'absolute';
+            branch.style.bottom = bottom;
+            branch.style.left = left;
+            branch.style.width = width + 'px';
+            branch.style.height = height + 'px';
+            branch.style.backgroundColor = 'var(--tree-brown)';
+            branch.style.borderRadius = '15px'; // Делает ветки аккуратными и круглыми
+            branch.style.transformOrigin = 'bottom center';
+            branch.style.transform = `translateX(-50%) rotate(${rotate}deg)`;
+            branch.style.opacity = '0';
+            branch.style.transition = 'opacity 1s ease-in, height 1s ease-out';
             
-            const branchV = document.createElement('div');
-            branchV.style.width = '100%';
-            branchV.style.height = '100%';
-            branchV.style.backgroundColor = 'var(--tree-brown)';
-            
-            // Вычисляем обрезку для сужения ветки
-            const topPct = (1 - wTop/wBase)/2 * 100;
-            branchV.style.clipPath = `polygon(0 100%, 100% 100%, ${100-topPct}% 0, ${topPct}% 0)`;
-            
-            branchV.style.opacity = '0';
-            branchV.style.transition = 'opacity 1s ease-in';
-            
-            branchC.appendChild(branchV);
-            parent.appendChild(branchC);
-            
-            setTimeout(() => { branchV.style.opacity = '1'; }, 100);
+            parent.appendChild(branch);
+            setTimeout(() => { branch.style.opacity = '1'; }, 100);
 
-            // Если level > 0, создаем дополнительные веточки, растущие из этой ветки
+            // Второстепенные веточки
             if (level > 0) {
                 setTimeout(() => {
-                    createBranch(branchC, (height * 0.3) + 'px', '50%', -30, wBase * 0.5, wTop * 0.5, height * 0.65, level - 1);
+                    createBranch(branch, (height * 0.4) + 'px', '50%', -35, width * 0.7, height * 0.65, level - 1);
                 }, 400);
                 setTimeout(() => {
-                    createBranch(branchC, (height * 0.6) + 'px', '50%', 35, wBase * 0.4, wTop * 0.4, height * 0.55, level - 1);
+                    createBranch(branch, (height * 0.7) + 'px', '50%', 35, width * 0.6, height * 0.55, level - 1);
                 }, 600);
             }
         }
 
         function spawnLeavesInHeartShape() {
             const container = document.getElementById('leaves');
-            const totalLeaves = 350; // Увеличено для более плотного сердца
-            const radius = 135; // Размер кроны
+            const totalLeaves = 350; 
+            const radius = 135; 
             let count = 0;
             let attempts = 0;
 
-            // Генерация листьев строго по математической формуле сердца
             while (count < totalLeaves && attempts < 10000) {
                 const x = (Math.random() * 2 - 1) * 1.5; 
                 const y = (Math.random() * 2 - 1) * 1.5;
                 const y_math = -y; 
                 
-                // Формула: (x^2 + y^2 - 1)^3 - x^2 * y^3 <= 0
                 const eq = Math.pow(x*x + y_math*y_math - 1, 3) - (x*x * Math.pow(y_math, 3));
                 
                 if (eq <= 0) {
@@ -351,7 +365,6 @@
                     leaf.className = 'leaf-heart';
                     leaf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                     
-                    // Центрируем внутри контейнера (320px)
                     leaf.style.left = (x * radius + 160) + 'px';
                     leaf.style.top = (y * radius + 150) + 'px';
                     
@@ -367,11 +380,13 @@
                 attempts++;
             }
 
+            // ЗАПУСК ЭФФЕКТА СДВИГА И ПОЯВЛЕНИЯ ТЕКСТА
             setTimeout(() => {
-                document.getElementById('text-section').style.opacity = '1';
+                document.getElementById('tree-container').classList.add('shifted');
+                document.getElementById('text-section').classList.add('visible');
                 startTimer();
                 startFallingLeaves();
-            }, 2500);
+            }, 4500); // Ждем пока дерево полностью сформируется
         }
 
         function startTimer() {
