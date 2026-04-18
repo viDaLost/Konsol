@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Love Galaxy Deluxe</title>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(122, 48, 255, 0.22), transparent 35%),
+                radial-gradient(circle at 80% 30%, rgba(39, 111, 255, 0.16), transparent 28%),
+                radial-gradient(circle at 50% 80%, rgba(255, 78, 166, 0.14), transparent 34%),
+                #02030a;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #loading {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: clamp(18px, 2vw, 28px);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            z-index: 20;
+            background: radial-gradient(circle, rgba(6, 10, 24, 0.4), rgba(2, 3, 10, 0.82));
+            backdrop-filter: blur(8px);
+            transition: opacity 0.7s ease, visibility 0.7s ease;
+        }
+
+        #loading.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .vignette {
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at center, transparent 50%, rgba(0, 0, 0, 0.28) 75%, rgba(0, 0, 0, 0.7) 100%),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent 20%, transparent 80%, rgba(255, 255, 255, 0.03));
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Загрузка красивой вселенной...</div>
+    <div id="canvas-container">
+        <div class="vignette"></div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const container = document.getElementById('canvas-container');
+        const loadingEl = document.getElementById('loading');
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x090b16, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1200);
+        camera.position.set(0, 11, 24);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.18;
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.045;
+        controls.minDistance = 8;
+        controls.maxDistance = 55;
+        controls.maxPolarAngle = Math.PI * 0.72;
+        controls.autoRotate = false;
+
+        const galaxyGroup = new THREE.Group();
+        scene.add(galaxyGroup);
+
+        const decorativeGroup = new THREE.Group();
+        scene.add(decorativeGroup);
+
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.setCrossOrigin('anonymous');
+
+        const romanticPhrases = [
+            'Люблю тебя',
+            'Ты моё чудо',
+            'Навсегда вместе',
+            'Ты моя вселенная',
+            'Моё сердце твоё',
+            'Нежность',
+            'С тобой светлее',
+            'Бесконечно люблю'
+        ];
+
+        const params = {
+            count: 28000,
+            dustCount: 18000,
+            radius: 24,
+            branches: 5,
+            spin: 1.25,
+            randomness: 0.28,
+            randomnessPower: 3.1,
+            insideColor: '#ffd0f0',
+            midColor: '#b06cff',
+            outsideColor: '#4ca5ff',
+            particleSize: 0.16,
+            dustSize: 0.08
+        };
+
+        const floatingObjects = [];
+        const cloudPlanes = [];
+        const starSpheres = [];
+
+        function createRadialSpriteTexture(innerColor = 'rgba(255,255,255,1)', outerColor = 'rgba(255,255,255,0)') {
+            const size = 128;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+            gradient.addColorStop(0, innerColor);
+            gradient.addColorStop(0.22, 'rgba(255,255,255,0.95)');
+            gradient.addColorStop(0.55, 'rgba(255,255,255,0.26)');
+            gradient.addColorStop(1, outerColor);
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.colorSpace = THREE.SRGBColorSpace;
+            return texture;
+        }
+
+        function createNebulaTexture(colors = []) {
+            const size = 1024;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, size, size);
+
+            for (let i = 0; i < 14; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const radius = 120 + Math.random() * 220;
+                const color = colors[i % colors.length] || `hsla(${Math.random() * 360}, 80%, 65%, 0.32)`;
+                const gradient = ctx.createRadialGradient(x, y, radius * 0.1, x, y, radius);
+                gradient.addColorStop(0, color);
+                gradient.addColorStop(0.45, color.replace(/0\.[0-9]+\)/, '0.12)'));
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+            }
+
+            for (let i = 0; i < 420; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const alpha = 0.1 + Math.random() * 0.35;
+                const starSize = Math.random() < 0.96 ? 1 : 2.5;
+                ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+                ctx.beginPath();
+                ctx.arc(x, y, starSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.colorSpace = THREE.SRGBColorSpace;
+            return texture;
+        }
+
+        function createBackgroundDome() {
+            const texture = createNebulaTexture([
+                'rgba(160, 110, 255, 0.26)',
+                'rgba(66, 124, 255, 0.22)',
+                'rgba(255, 100, 180, 0.18)',
+                'rgba(108, 255, 245, 0.12)'
+            ]);
+
+            const geometry = new THREE.SphereGeometry(420, 48, 48);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide,
+                transparent: true,
+                opacity: 0.9,
+                depthWrite: false
+            });
+
+            const dome = new THREE.Mesh(geometry, material);
+            scene.add(dome);
+            return dome;
+        }
+
+        function addAmbientLights() {
+            const ambient = new THREE.AmbientLight(0xffffff, 0.45);
+            scene.add(ambient);
+
+            const hemi = new THREE.HemisphereLight(0x88aaff, 0x120a30, 0.8);
+            scene.add(hemi);
+
+            const pinkGlow = new THREE.PointLight(0xff99dd, 35, 100, 2);
+            pinkGlow.position.set(0, 0, 0);
+            scene.add(pinkGlow);
+
+            const blueGlow = new THREE.PointLight(0x6ea7ff, 14, 140, 2);
+            blueGlow.position.set(-10, 8, -12);
+            scene.add(blueGlow);
+        }
+
+        function addCoreGlow() {
+            const glowTexture = createRadialSpriteTexture('rgba(255,240,255,1)', 'rgba(255,255,255,0)');
+
+            const glowMaterial = new THREE.SpriteMaterial({
+                map: glowTexture,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                opacity: 1
+            });
+
+            const coreGlow = new THREE.Sprite(glowMaterial);
+            coreGlow.scale.set(14, 14, 1);
+            coreGlow.position.set(0, 0, 0);
+            galaxyGroup.add(coreGlow);
+
+            const halo = new THREE.Mesh(
+                new THREE.SphereGeometry(1.2, 24, 24),
+                new THREE.MeshBasicMaterial({ color: 0xffddff, transparent: true, opacity: 0.9 })
+            );
+            galaxyGroup.add(halo);
+        }
+
+        function addDeepSpaceStars() {
+            const starTexture = createRadialSpriteTexture('rgba(255,255,255,1)', 'rgba(255,255,255,0)');
+            const count = 1600;
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+            const colorA = new THREE.Color('#ffffff');
+            const colorB = new THREE.Color('#8ec5ff');
+            const colorC = new THREE.Color('#ffc8e8');
+
+            for (let i = 0; i < count; i++) {
+                const i3 = i * 3;
+                const radius = 120 + Math.random() * 240;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i3 + 1] = radius * Math.cos(phi);
+                positions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+
+                const mixed = colorA.clone();
+                mixed.lerp(Math.random() > 0.5 ? colorB : colorC, Math.random() * 0.7);
+                colors[i3] = mixed.r;
+                colors[i3 + 1] = mixed.g;
+                colors[i3 + 2] = mixed.b;
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.95,
+                map: starTexture,
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                vertexColors: true,
+                sizeAttenuation: true,
+                opacity: 0.9
+            });
+
+            const stars = new THREE.Points(geometry, material);
+            scene.add(stars);
+            return stars;
+        }
+
+        function generateGalaxy() {
+            const positions = new Float32Array(params.count * 3);
+            const colors = new Float32Array(params.count * 3);
+
+            const inner = new THREE.Color(params.insideColor);
+            const mid = new THREE.Color(params.midColor);
+            const outer = new THREE.Color(params.outsideColor);
+
+            for (let i = 0; i < params.count; i++) {
+                const i3 = i * 3;
+                const radius = Math.pow(Math.random(), 1.22) * params.radius;
+                const spinAngle = radius * params.spin;
+                const branchAngle = ((i % params.branches) / params.branches) * Math.PI * 2;
+
+                const randomX = Math.pow(Math.random(), params.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * params.randomness * radius;
+                const randomY = Math.pow(Math.random(), params.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * params.randomness * 0.38 * radius;
+                const randomZ = Math.pow(Math.random(), params.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * params.randomness * radius;
+
+                positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+                positions[i3 + 1] = randomY;
+                positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+                const mixedColor = inner.clone();
+                mixedColor.lerp(mid, Math.min(radius / (params.radius * 0.45), 1));
+                mixedColor.lerp(outer, radius / params.radius);
+
+                colors[i3] = mixedColor.r;
+                colors[i3 + 1] = mixedColor.g;
+                colors[i3 + 2] = mixedColor.b;
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: params.particleSize,
+                map: createRadialSpriteTexture('rgba(255,255,255,1)', 'rgba(255,255,255,0)'),
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                vertexColors: true,
+                sizeAttenuation: true,
+                opacity: 0.92
+            });
+
+            const stars = new THREE.Points(geometry, material);
+            galaxyGroup.add(stars);
+            return stars;
+        }
+
+        function addGalaxyDust() {
+            const positions = new Float32Array(params.dustCount * 3);
+            const colors = new Float32Array(params.dustCount * 3);
+            const a = new THREE.Color('#ffffff');
+            const b = new THREE.Color('#ffc1ea');
+            const c = new THREE.Color('#84b7ff');
+
+            for (let i = 0; i < params.dustCount; i++) {
+                const i3 = i * 3;
+                const radius = Math.random() * (params.radius * 1.06);
+                const angle = Math.random() * Math.PI * 2;
+                const spread = (Math.random() - 0.5) * 2.4;
+
+                positions[i3] = Math.cos(angle) * radius + (Math.random() - 0.5) * 3;
+                positions[i3 + 1] = spread;
+                positions[i3 + 2] = Math.sin(angle) * radius + (Math.random() - 0.5) * 3;
+
+                const mixed = a.clone();
+                mixed.lerp(Math.random() > 0.5 ? b : c, Math.random() * 0.85);
+                colors[i3] = mixed.r;
+                colors[i3 + 1] = mixed.g;
+                colors[i3 + 2] = mixed.b;
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: params.dustSize,
+                map: createRadialSpriteTexture('rgba(255,255,255,0.55)', 'rgba(255,255,255,0)'),
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                vertexColors: true,
+                sizeAttenuation: true,
+                opacity: 0.42
+            });
+
+            const dust = new THREE.Points(geometry, material);
+            galaxyGroup.add(dust);
+            return dust;
+        }
+
+        function addRoundStarSpheres() {
+            const sphereGeometry = new THREE.SphereGeometry(1, 16, 16);
+            const palette = ['#ffd7ef', '#9bc8ff', '#d8b3ff', '#ffffff'];
+
+            for (let i = 0; i < 110; i++) {
+                const radius = 2 + Math.random() * (params.radius - 2);
+                const spinAngle = radius * params.spin;
+                const branchAngle = ((i % params.branches) / params.branches) * Math.PI * 2;
+                const spread = 0.8 + Math.random() * 1.1;
+                const x = Math.cos(branchAngle + spinAngle) * radius + (Math.random() - 0.5) * spread;
+                const y = (Math.random() - 0.5) * 2.5;
+                const z = Math.sin(branchAngle + spinAngle) * radius + (Math.random() - 0.5) * spread;
+
+                const color = new THREE.Color(palette[Math.floor(Math.random() * palette.length)]);
+                const material = new THREE.MeshStandardMaterial({
+                    color,
+                    emissive: color,
+                    emissiveIntensity: 1.5,
+                    roughness: 0.15,
+                    metalness: 0.05,
+                    transparent: true,
+                    opacity: 0.95
+                });
+
+                const star = new THREE.Mesh(sphereGeometry, material);
+                const scale = 0.03 + Math.random() * 0.12;
+                star.scale.setScalar(scale);
+                star.position.set(x, y, z);
+                star.userData = {
+                    pulseSpeed: 0.8 + Math.random() * 1.8,
+                    pulseOffset: Math.random() * Math.PI * 2,
+                    baseScale: scale
+                };
+
+                starSpheres.push(star);
+                galaxyGroup.add(star);
+            }
+        }
+
+        function addNebulaClouds() {
+            const cloudTexture = createNebulaTexture([
+                'rgba(255, 125, 190, 0.28)',
+                'rgba(138, 117, 255, 0.24)',
+                'rgba(89, 191, 255, 0.22)',
+                'rgba(255, 255, 255, 0.08)'
+            ]);
+
+            for (let i = 0; i < 8; i++) {
+                const geometry = new THREE.PlaneGeometry(18 + Math.random() * 12, 10 + Math.random() * 8);
+                const material = new THREE.MeshBasicMaterial({
+                    map: cloudTexture,
+                    transparent: true,
+                    opacity: 0.18 + Math.random() * 0.08,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    side: THREE.DoubleSide
+                });
+
+                const cloud = new THREE.Mesh(geometry, material);
+                cloud.position.set(
+                    (Math.random() - 0.5) * 26,
+                    (Math.random() - 0.5) * 4,
+                    (Math.random() - 0.5) * 26
+                );
+                cloud.rotation.x = (Math.random() - 0.5) * 0.3;
+                cloud.rotation.y = Math.random() * Math.PI;
+                cloud.rotation.z = Math.random() * Math.PI;
+                cloud.userData = {
+                    rotateSpeed: (Math.random() - 0.5) * 0.04,
+                    drift: (Math.random() - 0.5) * 0.06
+                };
+
+                cloudPlanes.push(cloud);
+                decorativeGroup.add(cloud);
+            }
+        }
+
+        function createTextSprite(text) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const fontSize = 44;
+            const paddingX = 28;
+            const paddingY = 24;
+
+            ctx.font = `700 ${fontSize}px Arial`;
+            const metrics = ctx.measureText(text);
+            canvas.width = Math.ceil(metrics.width + paddingX * 2);
+            canvas.height = fontSize + paddingY * 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = `700 ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const glow = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            glow.addColorStop(0, '#ffd8ef');
+            glow.addColorStop(0.5, '#ffffff');
+            glow.addColorStop(1, '#b7cfff');
+
+            ctx.shadowColor = 'rgba(255, 140, 220, 0.85)';
+            ctx.shadowBlur = 18;
+            ctx.fillStyle = glow;
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.colorSpace = THREE.SRGBColorSpace;
+
+            const material = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                depthWrite: false,
+                opacity: 0.9
+            });
+
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(canvas.width / 95, canvas.height / 95, 1);
+            return sprite;
+        }
+
+        function createImageCard(url) {
+            const group = new THREE.Group();
+
+            const frame = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.95, 1.95),
+                new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.9,
+                    side: THREE.DoubleSide
+                })
+            );
+            frame.position.z = -0.01;
+            group.add(frame);
+
+            const photoMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.96,
+                side: THREE.DoubleSide
+            });
+
+            const photo = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.7), photoMaterial);
+            group.add(photo);
+
+            const glow = new THREE.Sprite(
+                new THREE.SpriteMaterial({
+                    map: createRadialSpriteTexture('rgba(255,255,255,0.75)', 'rgba(255,255,255,0)'),
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    opacity: 0.32
+                })
+            );
+            glow.scale.set(2.6, 2.6, 1);
+            glow.position.z = -0.03;
+            group.add(glow);
+
+            textureLoader.load(
+                url,
+                (texture) => {
+                    texture.colorSpace = THREE.SRGBColorSpace;
+                    photoMaterial.map = texture;
+                    photoMaterial.needsUpdate = true;
+                },
+                undefined,
+                () => {
+                    const fallbackCanvas = document.createElement('canvas');
+                    fallbackCanvas.width = 256;
+                    fallbackCanvas.height = 256;
+                    const ctx = fallbackCanvas.getContext('2d');
+                    const gradient = ctx.createLinearGradient(0, 0, 256, 256);
+                    gradient.addColorStop(0, '#ff9ed0');
+                    gradient.addColorStop(1, '#7ab7ff');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, 256, 256);
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                    ctx.font = 'bold 26px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Фото', 128, 118);
+                    ctx.fillText('любви', 128, 148);
+                    const fallbackTexture = new THREE.CanvasTexture(fallbackCanvas);
+                    fallbackTexture.colorSpace = THREE.SRGBColorSpace;
+                    photoMaterial.map = fallbackTexture;
+                    photoMaterial.needsUpdate = true;
+                }
+            );
+
+            return group;
+        }
+
+        function addFloatingElements() {
+            const total = 28;
+            for (let i = 0; i < total; i++) {
+                const isText = i % 2 === 0;
+                const object = isText
+                    ? createTextSprite(romanticPhrases[Math.floor(Math.random() * romanticPhrases.length)])
+                    : createImageCard(`https://picsum.photos/seed/love-galaxy-${i}/420/420`);
+
+                const radius = 5 + Math.random() * (params.radius - 7);
+                const spinAngle = radius * params.spin;
+                const branchAngle = ((i % params.branches) / params.branches) * Math.PI * 2;
+                const spread = isText ? 1.2 : 0.8;
+
+                const x = Math.cos(branchAngle + spinAngle) * radius + (Math.random() - 0.5) * spread;
+                const z = Math.sin(branchAngle + spinAngle) * radius + (Math.random() - 0.5) * spread;
+                const y = (Math.random() - 0.5) * 3.2;
+
+                object.position.set(x, y, z);
+                object.rotation.z = (Math.random() - 0.5) * 0.14;
+                object.userData = {
+                    basePosition: object.position.clone(),
+                    floatSpeed: 0.4 + Math.random() * 0.8,
+                    floatOffset: Math.random() * Math.PI * 2,
+                    swaySpeed: 0.2 + Math.random() * 0.45,
+                    swayOffset: Math.random() * Math.PI * 2,
+                    isPhoto: !isText
+                };
+
+                if (!isText) {
+                    object.scale.setScalar(0.92);
+                } else {
+                    object.scale.multiplyScalar(0.84);
+                }
+
+                floatingObjects.push(object);
+                galaxyGroup.add(object);
+            }
+        }
+
+        const backgroundDome = createBackgroundDome();
+        addAmbientLights();
+        addCoreGlow();
+        const deepStars = addDeepSpaceStars();
+        const galaxyStars = generateGalaxy();
+        const galaxyDust = addGalaxyDust();
+        addRoundStarSpheres();
+        addNebulaClouds();
+        addFloatingElements();
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const t = clock.getElapsedTime();
+
+            galaxyGroup.rotation.y = t * 0.045;
+            decorativeGroup.rotation.y = -t * 0.01;
+            backgroundDome.rotation.y = t * 0.003;
+            backgroundDome.rotation.z = Math.sin(t * 0.03) * 0.02;
+            deepStars.rotation.y = t * 0.0025;
+            galaxyDust.rotation.y = -t * 0.01;
+            galaxyStars.rotation.y = t * 0.006;
+
+            for (const obj of floatingObjects) {
+                obj.position.y = obj.userData.basePosition.y + Math.sin(t * obj.userData.floatSpeed + obj.userData.floatOffset) * 0.32;
+                obj.position.x = obj.userData.basePosition.x + Math.cos(t * obj.userData.swaySpeed + obj.userData.swayOffset) * 0.12;
+
+                if (obj.userData.isPhoto) {
+                    obj.quaternion.copy(camera.quaternion);
+                }
+            }
+
+            for (const cloud of cloudPlanes) {
+                cloud.rotation.z += cloud.userData.rotateSpeed * 0.002;
+                cloud.position.y += Math.sin(t * 0.18 + cloud.userData.drift) * 0.0008;
+                cloud.quaternion.slerp(camera.quaternion, 0.02);
+            }
+
+            for (const star of starSpheres) {
+                const pulse = 0.82 + Math.sin(t * star.userData.pulseSpeed + star.userData.pulseOffset) * 0.18;
+                star.scale.setScalar(star.userData.baseScale * pulse);
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        });
+
+        setTimeout(() => {
+            loadingEl.classList.add('hidden');
+        }, 900);
+    </script>
+</body>
+</html>
