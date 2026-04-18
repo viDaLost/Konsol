@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Love Galaxy Hearts Static</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Marck+Script&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      touch-action: none;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #000;
+    }
+    #canvas-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    #loading {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 10;
+      color: rgba(255,255,255,0.95);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: clamp(16px, 2vw, 26px);
+      background: radial-gradient(circle, rgba(10,10,10,0.15), rgba(0,0,0,0.9));
+      transition: opacity .6s ease, visibility .6s ease;
+    }
+    #loading.hidden { opacity: 0; visibility: hidden; }
+    .vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background:
+        radial-gradient(circle at center, transparent 52%, rgba(0,0,0,0.18) 74%, rgba(0,0,0,0.72) 100%),
+        linear-gradient(to bottom, rgba(255,255,255,0.02), transparent 20%, transparent 80%, rgba(255,255,255,0.02));
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">Загрузка галактики любви...</div>
+  <div id="canvas-container"><div class="vignette"></div></div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const container = document.getElementById('canvas-container');
+    const loadingEl = document.getElementById('loading');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = new THREE.FogExp2(0x000000, 0.0036);
+
+    const camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 1800);
+    camera.position.set(0, 12, 40);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.045;
+    controls.minDistance = 12;
+    controls.maxDistance = 86;
+    controls.maxPolarAngle = Math.PI * 0.78;
+    controls.target.set(0, 0.2, 0);
+
+    const galaxyGroup = new THREE.Group();
+    const backgroundGroup = new THREE.Group();
+    const uiObjects = [];
+    scene.add(backgroundGroup, galaxyGroup);
+
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.setCrossOrigin('anonymous');
+
+    await document.fonts.load('64px "Marck Script"');
+    await document.fonts.ready;
+
+    let deepStars, heartCore, mainHearts, outerHearts, dustHearts, foregroundHearts;
+    const photoCards = [];
+    const textCards = [];
+
+    const phrases = [
+      'Люблю тебя',
+      'Ты моё сердце',
+      'Ты моя вселенная',
+      'С тобой навсегда',
+      'Нежность',
+      'Бесконечно люблю',
+      'Моё счастье',
+      'Только ты',
+      'Ты мой свет',
+      'Ты моё чудо',
+      'Ты мой чёртик',
+      'Зайка моя',
+      'Обожаю тебя',
+      'Моя богиня',
+      'Моя принцесса'
+    ];
+
+    const palette = {
+      white: new THREE.Color('#ffffff'),
+      pink: new THREE.Color('#ff8ccd'),
+      violet: new THREE.Color('#9f7cff'),
+      red: new THREE.Color('#ff4a5e')
+    };
+
+    const params = {
+      radius: 30,
+      innerVoid: 7.4,
+      arms: 4,
+      spin: 5.15,
+      mainCount: 18000,
+      outerCount: 9000,
+      dustCount: 7000,
+      foregroundCount: 420
+    };
+
+    function createRadialTexture(inner, middle, outer, size = 128) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      g.addColorStop(0, inner);
+      g.addColorStop(0.35, middle);
+      g.addColorStop(1, outer);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+      ctx.fill();
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    function createHeartTexture(fill = '#ffffff', glow = 'rgba(0,0,0,0)', size = 128) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, size, size);
+      ctx.save();
+      ctx.translate(size / 2, size / 2 + size * 0.05);
+      ctx.scale(size * 0.0086, size * 0.0086);
+      ctx.shadowColor = glow;
+      ctx.shadowBlur = size * 0.08;
+      ctx.beginPath();
+      ctx.moveTo(0, 14);
+      ctx.bezierCurveTo(0, 4, -18, -12, -30, -12);
+      ctx.bezierCurveTo(-48, -12, -48, 12, -48, 12);
+      ctx.bezierCurveTo(-48, 30, -28, 42, 0, 62);
+      ctx.bezierCurveTo(28, 42, 48, 30, 48, 12);
+      ctx.bezierCurveTo(48, 12, 48, -12, 30, -12);
+      ctx.bezierCurveTo(18, -12, 0, 4, 0, 14);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.restore();
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    function createStarTexture(size = 96) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.25, 'rgba(255,255,255,0.95)');
+      g.addColorStop(0.5, 'rgba(255,255,255,0.22)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+      ctx.fill();
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    function addBackground() {
+      const starCount = 2600;
+      const pos = new Float32Array(starCount * 3);
+      const col = new Float32Array(starCount * 3);
+      const colors = [palette.white, palette.pink, palette.violet, palette.red];
+      for (let i = 0; i < starCount; i++) {
+        const i3 = i * 3;
+        const radius = 180 + Math.random() * 420;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        pos[i3] = radius * Math.sin(phi) * Math.cos(theta);
+        pos[i3 + 1] = radius * Math.cos(phi);
+        pos[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+        const mixed = colors[Math.floor(Math.random() * colors.length)].clone().lerp(palette.white, Math.random() * 0.55);
+        col[i3] = mixed.r; col[i3 + 1] = mixed.g; col[i3 + 2] = mixed.b;
+      }
+      const starGeo = new THREE.BufferGeometry();
+      starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      starGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      deepStars = new THREE.Points(
+        starGeo,
+        new THREE.PointsMaterial({
+          size: 0.95,
+          map: createStarTexture(),
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          vertexColors: true,
+          sizeAttenuation: true,
+          opacity: 0.9
+        })
+      );
+      backgroundGroup.add(deepStars);
+    }
+
+    function addLights() {
+      const ambient = new THREE.AmbientLight(0xffffff, 0.44);
+      const hemi = new THREE.HemisphereLight(0xffffff, 0x08080d, 0.95);
+      const pointA = new THREE.PointLight(0xff4a5e, 20, 210, 2);
+      pointA.position.set(0, 5, 5);
+      const pointB = new THREE.PointLight(0x9f7cff, 12, 240, 2);
+      pointB.position.set(-18, 12, -22);
+      scene.add(ambient, hemi, pointA, pointB);
+    }
+
+    function spiralPosition(radius, arm, offset = 0, tightness = params.spin) {
+      const base = (arm / params.arms) * Math.PI * 2;
+      const angle = base + radius * tightness * 0.17 + offset;
+      return { x: Math.cos(angle) * radius, z: Math.sin(angle) * radius, angle };
+    }
+
+    function colorForRadius(radius) {
+      const t = Math.min(radius / params.radius, 1);
+      const mixed = palette.white.clone();
+      if (t < 0.34) {
+        mixed.lerp(palette.pink, t / 0.34 * 0.65);
+      } else if (t < 0.68) {
+        mixed.copy(palette.pink).lerp(palette.violet, (t - 0.34) / 0.34);
+      } else {
+        mixed.copy(palette.violet).lerp(palette.red, (t - 0.68) / 0.32 * 0.8);
+      }
+      return mixed;
+    }
+
+    function createHeartPoints(count, size, opacity, spreadMultiplier = 1, radiusBoost = 0, extraYOffset = 0) {
+      const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+
+      for (let i = 0; i < count; i++) {
+        const i3 = i * 3;
+        const arm = i % params.arms;
+        const radius = params.innerVoid + radiusBoost + Math.pow(Math.random(), 0.74) * (params.radius - params.innerVoid + spreadMultiplier * 4);
+        const swirl = spiralPosition(radius, arm, (Math.random() - 0.5) * (0.09 + radius * 0.018), params.spin + radiusBoost * 0.06);
+        const tangent = (Math.random() - 0.5) * (0.16 + radius * 0.04) * spreadMultiplier;
+        const radial = (Math.random() - 0.5) * (0.10 + radius * 0.032) * spreadMultiplier;
+        const dirX = Math.cos(swirl.angle);
+        const dirZ = Math.sin(swirl.angle);
+        const tanX = -dirZ;
+        const tanZ = dirX;
+
+        positions[i3] = swirl.x + tanX * tangent + dirX * radial;
+        positions[i3 + 1] = (Math.random() - 0.5) * (0.28 + radius * 0.045) + extraYOffset;
+        positions[i3 + 2] = swirl.z + tanZ * tangent + dirZ * radial;
+
+        const mixed = colorForRadius(radius);
+        colors[i3] = mixed.r; colors[i3 + 1] = mixed.g; colors[i3 + 2] = mixed.b;
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      const material = new THREE.PointsMaterial({
+        size,
+        map: createHeartTexture('#ffffff', 'rgba(255,255,255,0)', 128),
+        transparent: true,
+        depthWrite: false,
+        vertexColors: true,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        opacity,
+        alphaTest: 0.08
+      });
+      const points = new THREE.Points(geometry, material);
+      galaxyGroup.add(points);
+      return points;
+    }
+
+    function createForegroundHearts() {
+      const count = params.foregroundCount;
+      const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+      const colorsList = [palette.white, palette.pink, palette.violet, palette.red];
+      for (let i = 0; i < count; i++) {
+        const i3 = i * 3;
+        positions[i3] = (Math.random() - 0.5) * 90;
+        positions[i3 + 1] = -10 + Math.random() * 18;
+        positions[i3 + 2] = -12 + Math.random() * 36;
+        const mixed = colorsList[Math.floor(Math.random() * colorsList.length)].clone().lerp(palette.white, Math.random() * 0.45);
+        colors[i3] = mixed.r; colors[i3 + 1] = mixed.g; colors[i3 + 2] = mixed.b;
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      const material = new THREE.PointsMaterial({
+        size: 0.82,
+        map: createHeartTexture('#ffffff', 'rgba(255,255,255,0)', 96),
+        transparent: true,
+        depthWrite: false,
+        vertexColors: true,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        opacity: 0.36,
+        alphaTest: 0.06
+      });
+      foregroundHearts = new THREE.Points(geometry, material);
+      scene.add(foregroundHearts);
+    }
+
+    function createHeartShapeGeometry() {
+      const points = [];
+      for (let i = 0; i <= 220; i++) {
+        const t = (i / 220) * Math.PI * 2;
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+        points.push(new THREE.Vector2(x * 0.18, y * 0.18));
+      }
+      const shape = new THREE.Shape(points);
+      const geometry = new THREE.ExtrudeGeometry(shape, {
+        depth: 1.25,
+        bevelEnabled: true,
+        bevelSegments: 8,
+        steps: 1,
+        bevelSize: 0.14,
+        bevelThickness: 0.18,
+        curveSegments: 48
+      });
+      geometry.center();
+      return geometry;
+    }
+
+    function addHeartCore() {
+      const geometry = createHeartShapeGeometry();
+      const material = new THREE.MeshPhysicalMaterial({
+        color: '#ff3348',
+        emissive: '#65000f',
+        emissiveIntensity: 1.0,
+        roughness: 0.18,
+        metalness: 0.03,
+        clearcoat: 0.55,
+        clearcoatRoughness: 0.16,
+        transmission: 0.02,
+        thickness: 0.4
+      });
+      heartCore = new THREE.Mesh(geometry, material);
+      heartCore.scale.set(1.5, 1.5, 1.18);
+      heartCore.position.set(0, 0.1, 0);
+      galaxyGroup.add(heartCore);
+    }
+
+    function createTextLabel(text) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const fontSize = 62;
+      const padX = 64;
+      const padY = 34;
+      ctx.font = `400 ${fontSize}px "Marck Script", cursive`;
+      const m = ctx.measureText(text);
+      canvas.width = Math.ceil(m.width + padX * 2);
+      canvas.height = fontSize + padY * 2 + 26;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const bgRadius = 34;
+      const bgX = 12;
+      const bgY = 12;
+      const bgW = canvas.width - 24;
+      const bgH = canvas.height - 24;
+      const bgGradient = ctx.createLinearGradient(0, bgY, 0, bgY + bgH);
+      bgGradient.addColorStop(0, 'rgba(7, 5, 12, 0.76)');
+      bgGradient.addColorStop(1, 'rgba(0, 0, 0, 0.62)');
+      ctx.fillStyle = bgGradient;
+      roundRect(ctx, bgX, bgY, bgW, bgH, bgRadius);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 2;
+      roundRect(ctx, bgX, bgY, bgW, bgH, bgRadius);
+      ctx.stroke();
+
+      ctx.font = `400 ${fontSize}px "Marck Script", cursive`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,0.92)';
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 2;
+
+      const textGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      textGradient.addColorStop(0, '#ffffff');
+      textGradient.addColorStop(0.5, '#fff4fb');
+      textGradient.addColorStop(1, '#f6ebff');
+      ctx.fillStyle = textGradient;
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.99
+      });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(canvas.width / 82, canvas.height / 82, 1);
+      return sprite;
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function createPhotoCard(url) {
+      const group = new THREE.Group();
+      const frame = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.72, 3.28),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.98, side: THREE.DoubleSide })
+      );
+      frame.position.z = -0.015;
+      group.add(frame);
+
+      const inner = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.42, 2.96),
+        new THREE.MeshBasicMaterial({ color: 0x130c13, transparent: true, opacity: 0.18, side: THREE.DoubleSide })
+      );
+      inner.position.z = -0.01;
+      group.add(inner);
+
+      const photoMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1, side: THREE.DoubleSide });
+      const photo = new THREE.Mesh(new THREE.PlaneGeometry(2.26, 2.80), photoMaterial);
+      photo.position.z = 0.01;
+      group.add(photo);
+
+      textureLoader.load(
+        url,
+        (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          photoMaterial.map = texture;
+          photoMaterial.needsUpdate = true;
+        },
+        undefined,
+        () => {
+          const fallback = document.createElement('canvas');
+          fallback.width = 380;
+          fallback.height = 480;
+          const ctx = fallback.getContext('2d');
+          const grad = ctx.createLinearGradient(0, 0, 380, 480);
+          grad.addColorStop(0, '#ff9ec0');
+          grad.addColorStop(1, '#a68cff');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 380, 480);
+          ctx.fillStyle = 'rgba(255,255,255,0.96)';
+          ctx.font = 'bold 40px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('Ваше фото', 190, 240);
+          const texture = new THREE.CanvasTexture(fallback);
+          texture.colorSpace = THREE.SRGBColorSpace;
+          photoMaterial.map = texture;
+          photoMaterial.needsUpdate = true;
+        }
+      );
+
+      return group;
+    }
+
+    function addFixedOrbitItems() {
+      const textSlots = [
+        { angle: 0.15, radius: 22.4, y: 1.8 },
+        { angle: 0.62, radius: 22.2, y: 1.0 },
+        { angle: 1.05, radius: 22.6, y: 1.9 },
+        { angle: 1.52, radius: 22.1, y: 0.8 },
+        { angle: 1.98, radius: 22.5, y: 1.6 },
+        { angle: 2.42, radius: 22.8, y: 1.1 },
+        { angle: 2.90, radius: 22.2, y: 1.9 },
+        { angle: 3.36, radius: 22.7, y: 0.9 },
+        { angle: 3.83, radius: 22.1, y: 1.7 },
+        { angle: 4.28, radius: 22.6, y: 1.0 },
+        { angle: 4.74, radius: 22.3, y: 1.8 },
+        { angle: 5.19, radius: 22.8, y: 1.0 },
+        { angle: 5.64, radius: 22.2, y: 1.7 },
+        { angle: 6.08, radius: 22.6, y: 0.9 },
+        { angle: 0.96, radius: 25.1, y: -0.3 }
+      ];
+
+      const photoSlots = [
+        { angle: 0.54, radius: 31.4, y: 3.2 },
+        { angle: 1.38, radius: 31.7, y: 2.7 },
+        { angle: 2.28, radius: 31.5, y: 3.1 },
+        { angle: 3.18, radius: 31.8, y: 2.8 },
+        { angle: 4.08, radius: 31.4, y: 3.3 },
+        { angle: 4.98, radius: 31.7, y: 2.7 },
+        { angle: 5.86, radius: 31.5, y: 3.2 }
+      ];
+
+      textSlots.forEach((slot, idx) => {
+        const label = createTextLabel(phrases[idx % phrases.length]);
+        label.userData = {
+          slot,
+          speed: 0.020,
+          bob: 0.32 + idx * 0.02,
+          bobOffset: idx * 0.75
+        };
+        textCards.push(label);
+        scene.add(label);
+      });
+
+      photoSlots.forEach((slot, idx) => {
+        const card = createPhotoCard(`https://picsum.photos/seed/love-galaxy-photo-${idx + 1}/720/920`);
+        card.userData = {
+          slot,
+          speed: 0.018,
+          bob: 0.22 + idx * 0.03,
+          bobOffset: idx * 0.65,
+          scale: 1.14
+        };
+        card.scale.setScalar(card.userData.scale);
+        photoCards.push(card);
+        scene.add(card);
+      });
+    }
+
+    function buildGalaxy() {
+      mainHearts = createHeartPoints(params.mainCount, 0.34, 0.95, 1.0, 0.0, 0.0);
+      outerHearts = createHeartPoints(params.outerCount, 0.28, 0.68, 1.34, 1.6, 0.0);
+      dustHearts = createHeartPoints(params.dustCount, 0.20, 0.34, 1.9, 3.8, 0.0);
+      createForegroundHearts();
+      addHeartCore();
+    }
+
+    function updateOrbitItems(t) {
+      textCards.forEach((obj) => {
+        const u = obj.userData;
+        const angle = u.slot.angle + t * u.speed;
+        obj.position.set(
+          Math.cos(angle) * u.slot.radius,
+          u.slot.y + Math.sin(t * u.bob + u.bobOffset) * 0.28,
+          Math.sin(angle) * u.slot.radius
+        );
+        obj.lookAt(camera.position);
+      });
+
+      photoCards.forEach((obj) => {
+        const u = obj.userData;
+        const angle = u.slot.angle + t * u.speed;
+        obj.position.set(
+          Math.cos(angle) * u.slot.radius,
+          u.slot.y + Math.sin(t * u.bob + u.bobOffset) * 0.20,
+          Math.sin(angle) * u.slot.radius
+        );
+        obj.lookAt(camera.position);
+      });
+    }
+
+    addBackground();
+    addLights();
+    buildGalaxy();
+    addFixedOrbitItems();
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      backgroundGroup.rotation.y = t * 0.0012;
+      if (deepStars) deepStars.rotation.y = t * 0.0011;
+      if (mainHearts) mainHearts.rotation.y = t * 0.03;
+      if (outerHearts) outerHearts.rotation.y = t * 0.028;
+      if (dustHearts) dustHearts.rotation.y = t * 0.022;
+      if (foregroundHearts) {
+        foregroundHearts.rotation.y = -t * 0.008;
+        foregroundHearts.position.y = Math.sin(t * 0.3) * 0.16;
+      }
+
+      const pulse = 1 + Math.sin(t * 2.2) * 0.05 + Math.sin(t * 4.4) * 0.015;
+      if (heartCore) {
+        heartCore.scale.set(1.5 * pulse, 1.5 * pulse, 1.18 * pulse);
+        heartCore.rotation.x = Math.sin(t * 0.4) * 0.08;
+        heartCore.rotation.y = Math.sin(t * 0.32) * 0.18;
+        heartCore.rotation.z = 0;
+      }
+
+      const mainSize = 0.34 + Math.sin(t * 1.2) * 0.02;
+      const outerSize = 0.28 + Math.sin(t * 1.1 + 1) * 0.018;
+      const dustSize = 0.20 + Math.sin(t * 0.9 + 0.6) * 0.014;
+      if (mainHearts) mainHearts.material.size = mainSize;
+      if (outerHearts) outerHearts.material.size = outerSize;
+      if (dustHearts) dustHearts.material.size = dustSize;
+      if (foregroundHearts) foregroundHearts.material.size = 0.82 + Math.sin(t * 0.7) * 0.06;
+
+      uiObjects.forEach(({ object, strength = 0.02 }) => {
+        object.quaternion.slerp(camera.quaternion, strength);
+      });
+      updateOrbitItems(t);
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+    });
+
+    setTimeout(() => loadingEl.classList.add('hidden'), 850);
+  </script>
+</body>
+</html>
