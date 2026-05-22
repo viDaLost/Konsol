@@ -3,150 +3,193 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Universal Code Console — v3.1 (Full Screen & Clipboard)</title>
+  <title>Universal Code Console — v4.0 PRO Mobile</title>
   
   <style>
     :root {
-      --bg:#0f1117; --panel:#111827; --panel-2:#0b1220; --text:#e5e7eb; --muted:#9aa4b2;
-      --accent:#7aa2f7; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; --shadow:0 10px 25px rgba(0,0,0,.25);
-      --radius:16px; --radius-sm:10px; --pad:14px; --gap:14px; --border:1px solid rgba(255,255,255,.08);
+      --bg: #090b10; --panel: #111420; --panel-2: #161b2d; --text: #f1f5f9; --muted: #64748b;
+      --accent: #3b82f6; --ok: #10b981; --warn: #f59e0b; --err: #ef4444; --shadow: 0 12px 30px rgba(0,0,0,.4);
+      --radius: 12px; --border: 1px solid rgba(255,255,255,.06);
     }
     [data-theme="light"] {
-      --bg:#f6f7fb; --panel:#ffffff; --panel-2:#f5f7fb; --text:#0b1220; --muted:#495469; 
-      --accent:#3b82f6; --shadow:0 10px 24px rgba(2,6,23,.08); --border:1px solid rgba(0,0,0,.08);
+      --bg: #f8fafc; --panel: #ffffff; --panel-2: #f1f5f9; --text: #0f172a; --muted: #64748b; 
+      --accent: #2563eb; --shadow: 0 10px 25px rgba(15,23,42,.05); --border: 1px solid rgba(0,0,0,.06);
     }
-    * { box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height:100%; margin:0; overflow:hidden; }
-    body { background:var(--bg); color:var(--text); font:14px/1.5 system-ui,-apple-system,sans-serif; display:flex; flex-direction:column; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; overflow: hidden; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
     
-    .app { flex:1; display:flex; flex-direction:column; gap:var(--gap); padding:clamp(10px,2vw,18px); min-height:0; }
-    header { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-    .title { display:flex; align-items:center; gap:10px; }
-    .title b { font-size:16px; }
-    .buttons { display:flex; flex-wrap:wrap; gap:8px; }
+    .app { height: 100%; display: flex; flex-direction: column; }
     
-    button, .chip, select { 
-      border:var(--border); background:var(--panel); color:var(--text); padding:8px 12px; 
-      border-radius:10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:13px;
+    /* Адаптивный компактный Хедер */
+    header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--panel); border-bottom: var(--border); gap: 8px; }
+    .brand { display: flex; flex-direction: column; }
+    .brand b { font-size: 14px; letter-spacing: -0.3px; }
+    .brand span { font-size: 11px; color: var(--ok); font-weight: 500; }
+    
+    .controls { display: flex; align-items: center; gap: 6px; }
+    button, select { 
+      border: var(--border); background: var(--panel-2); color: var(--text); padding: 8px 10px; 
+      border-radius: var(--radius); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s;
     }
-    button:active { transform:scale(0.97); }
-    .primary { background:var(--accent); color:#fff; border:none; font-weight:600; }
-    .ghost { background:var(--panel-2); }
+    button:active { transform: scale(0.95); opacity: 0.8; }
+    .primary { background: var(--accent); color: #fff; border: none; font-weight: 600; padding: 8px 14px; }
     
-    .layout { display:flex; flex:1; gap:var(--gap); min-height:0; }
-    .col { flex:1; display:flex; flex-direction:column; gap:var(--gap); min-width:0; }
+    /* Layout */
+    .layout { flex: 1; display: flex; overflow: hidden; position: relative; }
+    .col { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--bg); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     
-    .card { background:var(--panel); border:var(--border); border-radius:var(--radius); box-shadow:var(--shadow); display:flex; flex-direction:column; min-height:0; flex:1; overflow:hidden; }
-    .card h3 { margin:0; padding:10px 14px; border-bottom:var(--border); background:var(--panel-2); font-size:13px; font-weight:600; color:var(--muted); display:flex; justify-content:space-between; align-items: center; }
+    /* Тулбар над редактором */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--panel-2); border-bottom: var(--border); }
+    .btn-group { display: flex; gap: 4px; }
+    .toolbar button { padding: 5px 8px; font-size: 12px; border-radius: 6px; }
     
-    /* Editor & Toolbar */
-    .editorWrap { flex: 1.2; position: relative; }
-    .editor-toolbar { display:flex; gap:6px; padding:8px 14px; background:var(--panel-2); border-bottom:var(--border); }
-    .editor-toolbar button { padding: 4px 8px; font-size: 12px; border-radius: 6px; }
-    #editor { flex:1; width:100%; font-family: 'Fira Code', monospace; font-size: 14px; }
-    
-    /* Console */
-    .consoleCard { flex:1; }
-    .log { flex:1; overflow-y:auto; padding:10px; font-family: monospace; font-size: 13px; }
-    .row { display:flex; gap:8px; padding:6px 8px; border-radius:var(--radius-sm); border-bottom: 1px solid rgba(128,128,128,0.1); word-break: break-word; }
-    .row.info { color: var(--accent); }
-    .row.warn { color: var(--warn); background:color-mix(in oklab, var(--warn) 10%, transparent); }
-    .row.error { color: var(--err); background:color-mix(in oklab, var(--err) 10%, transparent); }
-    .row .tag { font-weight:700; font-size:11px; opacity:0.7; padding-top:2px; }
-    .row pre { margin:0; white-space:pre-wrap; }
+    /* Карточки состояния линтера */
+    .lint-badge { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .lint-clean { background: rgba(16, 185, 129, 0.15); color: var(--ok); }
+    .lint-issues { background: rgba(245, 158, 11, 0.15); color: var(--warn); cursor: pointer; }
 
-    /* Mobile Tabs Navigation */
-    .mobile-tabs { display:none; background:var(--panel-2); border-top:var(--border); padding:10px; padding-bottom:env(safe-area-inset-bottom, 10px); gap:8px; }
-    .tab-btn { flex:1; justify-content:center; padding:12px; font-weight:600; background:var(--panel); border:var(--border); }
-    .tab-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    #editor { flex: 1; width: 100%; font-family: 'Fira Code', monospace; }
+    
+    /* Панель вывода и линтера */
+    .output-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; background: var(--panel-2); border-bottom: var(--border); font-size: 12px; font-weight: 600; color: var(--muted); }
+    
+    /* Окно отчетов линтера */
+    .lint-report { background: var(--panel); border-bottom: var(--border); max-height: 120px; overflow-y: auto; display: none; }
+    .lint-report.visible { display: block; }
+    .lint-item { padding: 6px 14px; font-size: 12px; border-left: 3px solid var(--warn); display: flex; gap: 8px; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .lint-item.err { border-left-color: var(--err); color: var(--err); }
+    .lint-item .pos { color: var(--muted); font-family: monospace; }
 
-    /* Mobile Responsive */
-    @media (max-width:1100px) {
-      .app { padding: 0; gap: 0; }
-      header { padding: 12px; background:var(--panel-2); border-bottom:var(--border); }
-      .hint { display:none; }
-      .layout { flex-direction: column; }
-      .col { display:none; border-radius: 0; border: none; flex: 1; }
-      .col.active { display:flex; }
-      .card { border-radius: 0; border: none; border-bottom: var(--border); }
-      .mobile-tabs { display:flex; }
+    /* Лог консоли */
+    .log { flex: 1; overflow-y: auto; padding: 8px; font-family: monospace; font-size: 13px; background: var(--bg); }
+    .row { display: flex; gap: 6px; padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; word-break: break-all; border-bottom: 1px solid rgba(128,128,128,0.05); }
+    .row.info { color: var(--accent); background: rgba(59, 130, 246, 0.05); }
+    .row.warn { color: var(--warn); background: rgba(245, 158, 11, 0.07); }
+    .row.error { color: var(--err); background: rgba(239, 68, 68, 0.07); }
+    .row .tag { font-weight: 700; font-size: 10px; text-transform: uppercase; margin-top: 2px; opacity: 0.8; }
+    .row pre { margin: 0; white-space: pre-wrap; font-family: inherit; }
+
+    /* Нижняя навигация для телефонов */
+    .nav-tabs { display: flex; background: var(--panel); border-top: var(--border); padding: 6px; padding-bottom: env(safe-area-inset-bottom, 6px); }
+    .nav-btn { flex: 1; background: transparent; border: none; padding: 10px; border-radius: var(--radius); color: var(--muted); font-weight: 600; font-size: 13px; flex-direction: column; gap: 2px; }
+    .nav-btn.active { background: var(--panel-2); color: var(--accent); }
+    .nav-btn .dot { width: 6px; height: 6px; background: var(--err); border-radius: 50%; display: none; }
+    .nav-btn.has-error .dot { display: block; }
+
+    /* Десктоп и Планшетная сетка */
+    @media (min-width: 900px) {
+      .app { padding: 12px; gap: 12px; }
+      header { border-radius: var(--radius); border: var(--border); box-shadow: var(--shadow); }
+      .layout { gap: 12px; }
+      .col { border-radius: var(--radius); border: var(--border); box-shadow: var(--shadow); overflow: hidden; }
+      .nav-tabs { display: none; }
+    }
+
+    /* Мобильное переключение через абсолютный сдвиг */
+    @media (max-width: 899px) {
+      .col { position: absolute; top:0; left:0; right:0; bottom:0; transform: translateX(100%); }
+      .col.active { transform: translateX(0); }
     }
   </style>
 </head>
 <body>
+
   <div class="app">
     <header>
-      <div class="title">
-        <b>Universal Console v3.1</b>
-        <span class="hint" id="status">Готов к работе</span>
+      <div class="brand">
+        <b>UCC v4.0 Mobile</b>
+        <span id="status">Анализатор активен</span>
       </div>
-      <div class="buttons">
-        <select id="override">
-          <option value="auto">Язык: Авто</option>
-          <option value="html">HTML/CSS/JS</option>
-          <option value="jsx">React (JSX)</option>
+      <div class="controls">
+        <select id="langOverride" style="padding: 6px 8px; font-size: 12px;">
+          <option value="auto">Автоязык</option>
+          <option value="html">HTML/JS</option>
+          <option value="jsx">React JSX</option>
           <option value="js">JavaScript</option>
           <option value="ts">TypeScript</option>
           <option value="py">Python</option>
-          <option value="lua">Lua</option>
         </select>
-        <button class="primary" id="runBtn">▶ Запуск (в новой вкладке)</button>
-        <button class="ghost" id="clearBtn">Очистить код</button>
-        <button class="ghost" id="themeBtn">🌓</button>
+        <button id="themeBtn" aria-label="Смена темы">🌓</button>
+        <button class="primary" id="runBtn">▶ Запуск</button>
       </div>
     </header>
 
     <div class="layout">
-      <div class="col editorWrap active" id="tab-editor">
-        <div class="card" style="border:none; border-radius:0;">
-          <div class="editor-toolbar">
-            <button class="ghost" id="btnCut" title="Вырезать выделенное">✂ Вырезать</button>
-            <button class="ghost" id="btnCopy" title="Копировать выделенное">📋 Копировать</button>
-            <button class="ghost" id="btnPaste" title="Вставить из буфера">📄 Вставить</button>
+      <!-- ВКЛАДКА РЕДАКТОРА -->
+      <div class="col active" id="tab-editor">
+        <div class="toolbar">
+          <div class="btn-group">
+            <button id="btnCut" title="Вырезать">✂</button>
+            <button id="btnCopy" title="Копировать">📋</button>
+            <button id="btnPaste" title="Вставить">📄</button>
           </div>
-          <div id="editor"></div>
+          <div id="lintStatus" class="lint-badge lint-clean">✨ Код чист</div>
         </div>
+        <div id="editor"></div>
       </div>
 
+      <!-- ВКЛАДКА ВЫВОДА И АНАЛИЗА -->
       <div class="col" id="tab-output">
-        <div class="card consoleCard" id="consoleCard">
-          <h3>
-            <span>📟 Консоль вывода</span>
-            <button id="clearConsole" class="ghost" style="padding:4px 8px; font-size:11px;">Очистить лог</button>
-          </h3>
+        <div class="output-container">
+          <div class="lint-report" id="lintReportBox"></div>
+          
+          <div class="panel-header">
+            <span>КОНСОЛЬ ВЫВОДА</span>
+            <button id="clearConsole" style="padding: 2px 8px; font-size: 11px;">Очистить</button>
+          </div>
           <div class="log" id="log"></div>
         </div>
       </div>
     </div>
 
-    <div class="mobile-tabs">
-      <button class="tab-btn active" data-target="tab-editor">Редактор</button>
-      <button class="tab-btn" data-target="tab-output" id="outputTabBtn">Вывод</button>
+    <!-- Мобильные Табы -->
+    <div class="nav-tabs">
+      <button class="nav-btn active" data-target="tab-editor">📝 Редактор</button>
+      <button class="nav-btn" data-target="tab-output" id="outputNavBtn">
+        📟 Консоль <span class="dot"></span>
+      </button>
     </div>
   </div>
 
+  <!-- Подключаем Ace Editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ace.js"></script>
   
   <script>
     const $ = s => document.querySelector(s);
     const logEl = $('#log');
+    let lintErrorsCount = 0;
 
-    // Настройка Ace Editor
+    // Инициализация Ace Editor
     const editor = ace.edit("editor");
     editor.setOptions({
       fontSize: "14px",
       showPrintMargin: false,
       wrap: true,
-      useWorker: false
+      useWorker: false,
+      highlightActiveLine: true
     });
     
-    // --- Буфер обмена (Cut/Copy/Paste) ---
+    // --- Управление темами оформления ---
+    function applyTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      editor.setTheme(isDark ? "ace/theme/tomorrow_night_eighties" : "ace/theme/chrome");
+    }
+    $('#themeBtn').onclick = () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('ucc4_theme', next);
+      applyTheme();
+    };
+    if(localStorage.getItem('ucc4_theme')) document.documentElement.setAttribute('data-theme', localStorage.getItem('ucc4_theme'));
+    applyTheme();
+
+    // --- Буфер обмена (Mobile-friendly) ---
     $('#btnCopy').onclick = () => {
-      const text = editor.getSelectedText();
-      if(text) navigator.clipboard.writeText(text);
+      const text = editor.getSelectedText() || editor.getValue();
+      navigator.clipboard.writeText(text);
       editor.focus();
     };
-    
     $('#btnCut').onclick = () => {
       const text = editor.getSelectedText();
       if(text) {
@@ -155,87 +198,145 @@
       }
       editor.focus();
     };
-    
     $('#btnPaste').onclick = async () => {
       try {
         const text = await navigator.clipboard.readText();
         editor.insert(text);
       } catch (err) {
-        addRow('error', 'Нет доступа к буферу обмена. Разрешите браузеру доступ.');
+        addRow('error', 'Разрешите доступ к буферу обмена в настройках браузера.');
       }
       editor.focus();
     };
 
-    // Темизация
-    function applyTheme() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      editor.setTheme(isDark ? "ace/theme/tomorrow_night_eighties" : "ace/theme/chrome");
-    }
-    
-    $('#themeBtn').onclick = () => {
-      const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('ucc3_theme', next);
-      applyTheme();
-    };
-    if(localStorage.getItem('ucc3_theme')) document.documentElement.setAttribute('data-theme', localStorage.getItem('ucc3_theme'));
-    applyTheme();
-
-    // Мобильные табы
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    // --- Мобильная навигация по вкладкам ---
+    document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.col').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(btn.dataset.target).classList.add('active');
+        editor.blur(); 
       });
     });
 
-    // Логика консоли
+    // --- Логирование в консоль ---
     function addRow(kind, text) {
       const row = document.createElement('div'); row.className = `row ${kind}`;
-      row.innerHTML = `<span class="tag">${kind.toUpperCase()}</span><pre>${text}</pre>`;
+      row.innerHTML = `<span class="tag">${kind}</span><pre>${text}</pre>`;
       logEl.appendChild(row);
       logEl.scrollTop = logEl.scrollHeight;
+      
+      if (kind === 'error') {
+        $('#outputNavBtn').classList.add('has-error');
+      }
     }
-    $('#clearConsole').onclick = () => logEl.innerHTML = '';
-
-    // Очистка кода
-    $('#clearBtn').onclick = () => {
-      if(!confirm('Внимание: это полностью удалит текущий код. Продолжить?')) return;
-      editor.setValue('', -1);
+    $('#clearConsole').onclick = () => {
       logEl.innerHTML = '';
-      localStorage.removeItem('ucc3_code');
+      $('#outputNavBtn').classList.remove('has-error');
     };
 
-    // Сохранение и загрузка
-    editor.session.on('change', () => {
-      localStorage.setItem('ucc3_code', editor.getValue());
-      detectAndApplyMode();
-    });
+    // --- СТАТИЧЕСКИЙ АНАЛИЗАТОР (ЛИНТЕР И ОПТИМИЗАТОР) ---
+    function runLinter(code, lang) {
+      const issues = [];
+      const lines = code.split('\n');
 
-    const DEFAULT_CODE = `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #222; color: white; }\n    h1 { text-shadow: 0 4px 10px rgba(0,0,0,0.5); }\n  </style>\n</head>\n<body>\n  <h1>Привет, Разработчик! 🚀</h1>\n  <script>\n    console.log('Эта страница открыта в отдельной вкладке!');\n    console.warn('Логи передаются обратно в родительскую консоль.');\n  <\/script>\n</body>\n</html>`;
-    editor.setValue(localStorage.getItem('ucc3_code') || DEFAULT_CODE, -1);
+      // 1. Проверка на критические зависания (Бесконечные циклы)
+      if (/\bwhile\s*\(\s*true\s*\)/.test(code) && !/\bbreak\b/.test(code)) {
+        issues.push({ level: 'error', msg: 'Обнаружен потенциальный бесконечный цикл while(true) без break!', line: 1 });
+      }
+      if (/\bfor\s*\(\s*;\s*;\s*\)/.test(code) && !/\bbreak\b/.test(code)) {
+        issues.push({ level: 'error', msg: 'Обнаружен бесконечный цикл for(;;) без оператора останова.', line: 1 });
+      }
 
-    // Определение языка
+      // Валидация JS/TS кода
+      if (['js', 'ts', 'jsx', 'html'].includes(lang)) {
+        lines.forEach((line, index) => {
+          const rowNum = index + 1;
+          const trimmed = line.trim();
+
+          // Поиск устаревших и небезопасных конструкций
+          if (/\bvar\b/.test(trimmed) && !/(\/\/|\*)/.test(trimmed)) {
+            issues.push({ level: 'warn', msg: 'Используйте const или let вместо устаревшего var.', line: rowNum });
+          }
+          // Поиск забытых debugger отладок
+          if (/\bdebugger\b/.test(trimmed) && !/(\/\/|\*)/.test(trimmed)) {
+            issues.push({ level: 'warn', msg: 'Забытый оператор отладки "debugger".', line: rowNum });
+          }
+          // Слишком глубокая вложенность (Плохой тон)
+          const depth = (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
+          if ((line.match(/^\s*/)[0].length / 2) > 5) {
+            issues.push({ level: 'warn', msg: 'Слишком глубокая вложенность кода. Рекомендуется рефакторинг.', line: rowNum });
+          }
+          // Пустые блоки кода
+          if (/\{\s*\}/.test(trimmed) && !/=\s*\{\s*\}/.test(trimmed)) {
+            issues.push({ level: 'warn', msg: 'Обнаружен пустой блок кода {}. Проверьте логику.', line: rowNum });
+          }
+        });
+      }
+
+      // Вывод результатов анализа в UI
+      const badge = $('#lintStatus');
+      const reportBox = $('#lintReportBox');
+      reportBox.innerHTML = '';
+      lintErrorsCount = issues.filter(i => i.level === 'error').length;
+
+      if (issues.length === 0) {
+        badge.className = 'lint-badge lint-clean';
+        badge.innerHTML = '✨ Код в порядке';
+        reportBox.classList.remove('visible');
+      } else {
+        badge.className = 'lint-badge lint-issues';
+        badge.innerHTML = `⚠️ Проблем: ${issues.length}`;
+        
+        issues.forEach(issue => {
+          const div = document.createElement('div');
+          div.className = `lint-item ${issue.level === 'error' ? 'err' : ''}`;
+          div.innerHTML = `<span class="pos">Строка ${issue.line}:</span> <span>${issue.msg}</span>`;
+          div.onclick = () => {
+            editor.gotoLine(issue.line);
+            editor.focus();
+            if(window.innerWidth < 900) $('.nav-btn[data-target="tab-editor"]').click();
+          };
+          reportBox.appendChild(div);
+        });
+      }
+    }
+
+    // Переключение отображения панели ошибок по нажатию на плашку
+    $('#lintStatus').onclick = () => {
+      $('#lintReportBox').classList.toggle('visible');
+    };
+
+    // --- Автоопределение Языка ---
     function detectLang(code) {
-      const ov = $('#override').value; if(ov !== 'auto') return ov;
+      const ov = $('#langOverride').value; if(ov !== 'auto') return ov;
       if(/import React|<[a-z]+>.*<\/[a-z]+>/i.test(code) && !/<html/i.test(code)) return 'jsx';
       if(/<\s*html\b/i.test(code) || /<style|<div|<span|<h1/i.test(code)) return 'html';
       if(/:\s*(number|string|boolean|any)\b|\binterface\b/.test(code)) return 'ts';
       if(/\bdef\s+\w+\(|\bimport\s+\w+|print\s*\(/.test(code) && !/[;{}]/.test(code)) return 'py';
-      if(/\bfunction\b|\blocal\b|\bend\b/.test(code) && !/=>|class/.test(code)) return 'lua';
       return 'js';
     }
 
     function detectAndApplyMode() {
-      const lang = detectLang(editor.getValue());
-      const modeMap = { html:'html', jsx:'javascript', js:'javascript', ts:'typescript', py:'python', lua:'lua' };
+      const code = editor.getValue();
+      const lang = detectLang(code);
+      const modeMap = { html:'html', jsx:'javascript', js:'javascript', ts:'typescript', py:'python' };
       editor.session.setMode(`ace/mode/${modeMap[lang] || 'javascript'}`);
+      runLinter(code, lang);
       return lang;
     }
 
-    // --- Инфраструктура запуска кода ---
+    editor.session.on('change', () => {
+      localStorage.setItem('ucc4_code', editor.getValue());
+      detectAndApplyMode();
+    });
+
+    // Стартовый шаблон
+    const DEFAULT_CODE = `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #111; color: white; }\n  </style>\n</head>\n<body>\n  <h1>UCC v4.0 Mobile Ready! 🚀</h1>\n  <script>\n    var oldVariable = "Линтер выдаст предупреждение на var";\n    console.log("Консоль работает исправно!");\n  <\/script>\n</body>\n</html>`;
+    editor.setValue(localStorage.getItem('ucc4_code') || DEFAULT_CODE, -1);
+    detectAndApplyMode();
+
+    // --- Запуск Исполнения Кода ---
     function loadScript(src) {
       return new Promise((res, rej) => {
         if(document.querySelector(`script[src="${src}"]`)) return res();
@@ -244,100 +345,56 @@
       });
     }
 
-    function generateHtmlDoc(jsCode, includeReact = false) {
-      const reactDeps = includeReact ? `
-        <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
-        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
-        <div id="root"></div>
-      ` : '';
-      
-      return `<!DOCTYPE html><html><head><meta charset="utf-8">
-        <title>UCC Project Preview</title>
-        <style>body{font-family:system-ui; color:#333; padding:10px; margin:0}</style>
-      </head><body>
-      ${reactDeps}
-      <script>
-        (function(){
-          // Маршрутизация логов обратно в окно, из которого был произведен запуск
-          function send(k, a){ 
-            if(window.opener) {
-              window.opener.postMessage({type:'console', level:k, args:[].slice.call(a)}, '*'); 
-            }
-          }
-          ['log','info','warn','error'].forEach(fn => { 
-            const o=console[fn]; 
-            console[fn]=function(){ send(fn, arguments); o&&o.apply(console, arguments); } 
-          });
-          window.onerror = (msg, url, line, col, err) => send('error', [\`\${msg} at line \${line}\`]);
-        })();
-      <\/script>
-      <script>${jsCode}<\/script>
-      </body></html>`;
-    }
-
-    let previewWindow = null;
-
     async function run() {
+      if (lintErrorsCount > 0) {
+        alert('Невозможно запустить: Код содержит критические синтаксические ошибки или угрозу бесконечного цикла!');
+        $('#lintReportBox').classList.add('visible');
+        return;
+      }
+
       const code = editor.getValue();
       const lang = detectAndApplyMode();
-      $('#log').innerHTML = ''; 
+      $('#clearConsole').click();
       
-      if(window.innerWidth <= 1100) $('#outputTabBtn').click();
+      // Авто-переключение на вкладку консоли на мобильных устройствах
+      if(window.innerWidth < 900) $('#outputNavBtn').click();
 
       try {
-        const isBrowserProject = ['html', 'jsx', 'js', 'ts'].includes(lang);
-        
-        if (isBrowserProject) {
-          addRow('info', 'Открытие проекта в новой вкладке...');
+        if (['html', 'jsx', 'js', 'ts'].includes(lang)) {
+          addRow('info', 'Генерация превью среды...');
           
-          if (previewWindow && !previewWindow.closed) {
-             // Можно закрывать старое окно перед открытием нового, раскомментируйте при необходимости:
-             // previewWindow.close(); 
+          let compiledCode = code;
+          if (lang === 'jsx') {
+            await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
+            compiledCode = Babel.transform(code, { presets: ['react', 'env'] }).code;
+          } else if (lang === 'ts') {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
+            compiledCode = window.ts.transpile(code, { target: 'ES2020' });
           }
-          
-          let contentToRender = '';
+
+          // Построение песочницы для перехвата консоли
+          let docHtml = '';
+          const captureScript = `<script>
+            (function(){
+              function send(k, a){ if(window.opener) window.opener.postMessage({type:'console', level:k, args:[].slice.call(a)}, '*'); }
+              ['log','info','warn','error'].forEach(fn => { const o=console[fn]; console[fn]=function(){ send(fn, arguments); o&&o.apply(console, arguments); } });
+              window.onerror = (msg, url, line) => send('error', [msg + " на строке " + line]);
+            })();
+          <\/script>`;
 
           if (lang === 'html') {
-             // Инжектируем только скрипт перехвата консоли, если это полноценный HTML документ
-             if (code.includes('<html')) {
-                 const scriptInject = `<script>
-                   (function(){
-                     function send(k, a){ if(window.opener) window.opener.postMessage({type:'console', level:k, args:[].slice.call(a)}, '*'); }
-                     ['log','info','warn','error'].forEach(fn => { const o=console[fn]; console[fn]=function(){ send(fn, arguments); o&&o.apply(console, arguments); } });
-                     window.onerror = (msg, url, line) => send('error', [\`\${msg} at line \${line}\`]);
-                   })();
-                 <\/script>`;
-                 contentToRender = code.replace('<head>', '<head>' + scriptInject);
-                 if(!contentToRender.includes(scriptInject)) contentToRender = scriptInject + code; // Fallback
-             } else {
-                 contentToRender = generateHtmlDoc('') + code;
-             }
-          } 
-          else if (lang === 'jsx') {
-            addRow('info', 'Компиляция React (Babel)...');
-            await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
-            const compiled = Babel.transform(code, { presets: ['react', 'env'] }).code;
-            contentToRender = generateHtmlDoc(compiled, true);
-          }
-          else if (lang === 'js') {
-            contentToRender = generateHtmlDoc(code);
-          }
-          else if (lang === 'ts') {
-            addRow('info', 'Транспиляция TS...');
-            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
-            const js = window.ts.transpile(code, { target: 'ES2020' });
-            contentToRender = generateHtmlDoc(js);
+            docHtml = code.includes('<head>') ? code.replace('<head>', '<head>' + captureScript) : captureScript + code;
+          } else {
+            docHtml = `<!DOCTYPE html><html><head>${captureScript}</head><body><div id="root"></div><script>${compiledCode}<\/script></body></html>`;
           }
 
-          previewWindow = window.open('', '_blank');
+          const previewWindow = window.open('', '_blank');
           previewWindow.document.open();
-          previewWindow.document.write(contentToRender);
+          previewWindow.document.write(docHtml);
           previewWindow.document.close();
-        }
-        
-        // Серверные/Скриптовые языки по-прежнему выводят только в локальную консоль
+        } 
         else if (lang === 'py') {
-          addRow('info', 'Инициализация Python (Pyodide)...');
+          addRow('info', 'Запуск Pyodide (Python)...');
           if(!window.pyodide) {
             await loadScript('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
             window.pyodide = await loadPyodide();
@@ -346,42 +403,21 @@
           }
           await window.pyodide.runPythonAsync(code);
         }
-        else if (lang === 'lua') {
-          addRow('info', 'Инициализация Lua (Fengari)...');
-          await loadScript('https://unpkg.com/fengari-web/dist/fengari-web.js');
-          const L = fengari.lauxlib.luaL_newstate();
-          fengari.lualib.luaL_openlibs(L);
-          fengari.lua.lua_pushjsfunction(L, () => {
-            const n = fengari.lua.lua_gettop(L); let parts=[];
-            for(let i=1; i<=n; i++) parts.push(fengari.to_jsstring(fengari.lua.lua_tolstring(L,i)));
-            addRow('log', parts.join(' ')); return 0;
-          });
-          fengari.lua.lua_setglobal(L, fengari.to_luastring('print'));
-          fengari.lauxlib.luaL_dostring(L, fengari.to_luastring(code));
-        }
       } catch (err) {
         addRow('error', String(err));
       }
     }
 
     $('#runBtn').onclick = run;
-    
-    // Слушаем сообщения из открытых окон превью
+    $('#langOverride').onchange = detectAndApplyMode;
+
+    // Слушатель событий от дочернего окна превью
     window.addEventListener('message', e => {
       if(e.data?.type === 'console') {
-        const text = e.data.args.map(x => typeof x === 'object' ? JSON.stringify(x, null, 2) : String(x)).join(' ');
+        const text = e.data.args.map(x => typeof x === 'object' ? JSON.stringify(x) : String(x)).join(' ');
         addRow(e.data.level, text);
       }
     });
-
-    // Горячие клавиши
-    editor.commands.addCommand({
-      name: 'run',
-      bindKey: {win: 'Ctrl-Enter',  mac: 'Command-Enter'},
-      exec: () => run()
-    });
-
-    detectAndApplyMode();
   </script>
 </body>
 </html>
