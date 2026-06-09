@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Универсальная мобильная консоль — Mobile PRO</title>
+  <title>Универсальная мобильная консоль — Mobile PRO Multi-File</title>
 
   <style>
     :root {
@@ -239,6 +239,7 @@
     }
 
     .screen-head,
+    .file-tabs,
     .editor-tools,
     .console-tools {
       display: flex;
@@ -248,6 +249,30 @@
       padding: 9px;
       border-bottom: 1px solid var(--line);
       background: linear-gradient(180deg, var(--panel-2), transparent);
+    }
+
+    .file-tabs {
+      background: var(--panel-3);
+      justify-content: flex-start;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .file-tabs::-webkit-scrollbar { display: none; }
+
+    .file-tab-btn {
+      min-height: 32px;
+      padding: 4px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+    }
+    .file-tab-btn.active {
+      background: var(--panel-2);
+      border-color: var(--line);
+      color: var(--text);
     }
 
     .screen-title {
@@ -524,17 +549,9 @@
       text-transform: uppercase;
     }
 
-    .log-row.error .log-tag {
-      color: #fca5a5;
-    }
-
-    .log-row.warn .log-tag {
-      color: #fbbf24;
-    }
-
-    .log-row.info .log-tag {
-      color: #7dd3fc;
-    }
+    .log-row.error .log-tag { color: #fca5a5; }
+    .log-row.warn .log-tag { color: #fbbf24; }
+    .log-row.info .log-tag { color: #7dd3fc; }
 
     .log-text {
       min-width: 0;
@@ -583,9 +600,7 @@
       box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.16);
     }
 
-    .tab-btn.has-error .badge-dot {
-      display: block;
-    }
+    .tab-btn.has-error .badge-dot { display: block; }
 
     .mobile-run {
       width: 54px;
@@ -606,10 +621,7 @@
       background: rgba(0, 0, 0, 0.45);
       backdrop-filter: blur(8px);
     }
-
-    .sheet-backdrop.visible {
-      display: block;
-    }
+    .sheet-backdrop.visible { display: block; }
 
     .problem-sheet {
       position: fixed;
@@ -625,11 +637,7 @@
       background: var(--panel);
       box-shadow: var(--shadow);
     }
-
-    .problem-sheet.visible {
-      display: flex;
-      flex-direction: column;
-    }
+    .problem-sheet.visible { display: flex; flex-direction: column; }
 
     .sheet-head {
       display: flex;
@@ -678,17 +686,8 @@
       border-radius: 18px;
       background: var(--panel-2);
     }
-
-    .plain-block b {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--text);
-    }
-
-    .plain-block p {
-      margin: 0;
-      color: var(--muted);
-    }
+    .plain-block b { display: block; margin-bottom: 4px; color: var(--text); }
+    .plain-block p { margin: 0; color: var(--muted); }
 
     .code-sample {
       margin: 0;
@@ -699,11 +698,7 @@
       color: #e2e8f0;
       font: 12px/1.45 var(--mono);
     }
-
-    [data-theme="light"] .code-sample {
-      background: #0f172a;
-      color: #e2e8f0;
-    }
+    [data-theme="light"] .code-sample { background: #0f172a; color: #e2e8f0; }
 
     .toast {
       position: fixed;
@@ -724,11 +719,7 @@
       transition: opacity 180ms ease, transform 180ms ease;
       text-align: center;
     }
-
-    .toast.visible {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
+    .toast.visible { opacity: 1; transform: translate(-50%, 0); }
 
     .hidden-input {
       position: fixed;
@@ -744,20 +735,9 @@
         padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
       }
 
-      .topbar {
-        grid-template-columns: 1fr auto;
-        border-radius: 24px;
-      }
-
-      .top-actions select,
-      .top-actions .run-btn {
-        display: none;
-      }
-
-      .layout {
-        position: relative;
-        display: block;
-      }
+      .topbar { grid-template-columns: 1fr auto; border-radius: 24px; }
+      .top-actions select, .top-actions .run-btn { display: none; }
+      .layout { position: relative; display: block; }
 
       .screen {
         position: absolute;
@@ -765,96 +745,30 @@
         display: none;
         border-radius: 24px;
       }
-
-      .screen.active {
-        display: flex;
-      }
-
-      .bottom-nav {
-        display: grid;
-      }
-
-      .screen-head,
-      .editor-tools,
-      .console-tools {
-        padding: 8px;
-      }
-
-      .screen-head {
-        flex-wrap: wrap;
-      }
-
-      .file-pill {
-        max-width: 52vw;
-      }
-
-      .editor-tools {
-        align-items: stretch;
-        flex-direction: column;
-      }
-
-      .editor-tools > .tool-scroll {
-        width: 100%;
-      }
-
-      .status-chip {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .console-body {
-        grid-template-rows: minmax(110px, 36%) 1fr;
-      }
-
-      .preview-box {
-        min-height: 110px;
-      }
-
-      .mini-btn {
-        min-height: 38px;
-      }
+      .screen.active { display: flex; }
+      .bottom-nav { display: grid; }
+      .screen-head, .file-tabs, .editor-tools, .console-tools { padding: 8px; }
+      .screen-head { flex-wrap: wrap; }
+      .file-pill { max-width: 52vw; }
+      .editor-tools { align-items: stretch; flex-direction: column; }
+      .editor-tools > .tool-scroll { width: 100%; }
+      .status-chip { width: 100%; justify-content: center; }
+      .console-body { grid-template-rows: minmax(110px, 36%) 1fr; }
+      .preview-box { min-height: 110px; }
+      .mini-btn { min-height: 38px; }
     }
 
     @media (max-width: 420px) {
-      .brand-mark {
-        width: 38px;
-        height: 38px;
-        border-radius: 14px;
-      }
-
-      .brand-title {
-        font-size: 14px;
-      }
-
-      .brand-subtitle {
-        font-size: 11px;
-      }
-
-      .topbar {
-        padding: 8px;
-      }
-
-      .icon-btn {
-        width: 38px;
-        min-width: 38px;
-        min-height: 38px;
-        border-radius: 14px;
-      }
-
-      .problem-card {
-        grid-template-columns: auto 1fr;
-      }
-
-      .problem-action {
-        grid-column: 1 / -1;
-      }
+      .brand-mark { width: 38px; height: 38px; border-radius: 14px; }
+      .brand-title { font-size: 14px; }
+      .brand-subtitle { font-size: 11px; }
+      .topbar { padding: 8px; }
+      .icon-btn { width: 38px; min-width: 38px; min-height: 38px; border-radius: 14px; }
+      .problem-card { grid-template-columns: auto 1fr; }
+      .problem-action { grid-column: 1 / -1; }
     }
 
-    @media (min-width: 981px) {
-      .screen {
-        display: flex;
-      }
-    }
+    @media (min-width: 981px) { .screen { display: flex; } }
   </style>
 </head>
 <body>
@@ -869,13 +783,8 @@
       </div>
 
       <div class="top-actions">
-        <select id="langOverride" aria-label="Выбрать язык кода">
+        <select id="langOverride" aria-label="Выбрать язык кода" style="display:none;">
           <option value="auto">Авто</option>
-          <option value="html">HTML/CSS/JS</option>
-          <option value="jsx">React JSX</option>
-          <option value="js">JavaScript</option>
-          <option value="ts">TypeScript</option>
-          <option value="py">Python</option>
         </select>
         <button class="icon-btn" id="themeBtn" type="button" title="Сменить тему" aria-label="Сменить тему">🌓</button>
         <button class="run-btn" id="runBtn" type="button">▶ Запуск</button>
@@ -885,11 +794,16 @@
     <main class="layout" id="layout">
       <section class="screen active" id="tab-editor" aria-label="Редактор кода">
         <div class="screen-head">
-          <div class="screen-title">📝 Редактор <span class="file-pill" id="fileNamePill">без файла</span></div>
+          <div class="screen-title">📝 Проект: <span class="file-pill" id="fileNamePill">index.html</span></div>
           <div class="tool-scroll">
             <button class="mini-btn" id="importBtn" type="button">📂 Импорт</button>
-            <button class="mini-btn ghost-btn" id="desktopLangBtn" type="button">Язык</button>
           </div>
+        </div>
+
+        <div class="file-tabs" id="fileTabs">
+          <button class="file-tab-btn active" data-file="index.html" type="button">index.html</button>
+          <button class="file-tab-btn" data-file="style.css" type="button">style.css</button>
+          <button class="file-tab-btn" data-file="app.js" type="button">app.js</button>
         </div>
 
         <div class="editor-tools">
@@ -904,7 +818,7 @@
 
         <div class="editor-wrap" id="editorWrap">
           <div id="editor"></div>
-          <div class="drop-hint">Перетащите файл сюда<br />и он откроется как код</div>
+          <div class="drop-hint">Перетащите файлы сюда (.html, .css, .js)</div>
         </div>
 
         <div class="problem-panel" id="problemPanel"></div>
@@ -915,6 +829,7 @@
           <div class="screen-title">📟 Консоль и превью</div>
           <div class="tool-scroll">
             <button class="mini-btn" id="togglePreview" type="button">👁 Превью</button>
+            <button class="mini-btn" id="externalPreview" type="button" style="background: var(--accent-soft); font-weight:bold;">↗ Вкладка</button>
             <button class="mini-btn" id="clearConsole" type="button">Очистить</button>
           </div>
         </div>
@@ -937,7 +852,7 @@
     </nav>
   </div>
 
-  <input class="hidden-input" id="fileInput" type="file" accept=".html,.htm,.css,.js,.jsx,.ts,.tsx,.py,.json,.txt,.md,.xml,.svg" />
+  <input class="hidden-input" id="fileInput" type="file" multiple accept=".html,.htm,.css,.js" />
 
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
   <aside class="problem-sheet" id="problemSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -961,10 +876,46 @@
 
     const STORAGE = {
       theme: 'ucc_mobile_pro_theme',
-      code: 'ucc_mobile_pro_code',
-      lang: 'ucc_mobile_pro_lang',
-      preview: 'ucc_mobile_pro_preview_visible'
+      preview: 'ucc_mobile_pro_preview_visible',
+      filePrefix: 'ucc_multi_file_'
     };
+
+    // Файловое состояние по умолчанию
+    const VFS = {
+      'index.html': localStorage.getItem(STORAGE.filePrefix + 'index.html') || `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Мой проект</title>
+</head>
+<body>
+  <div class="card">
+    <h1>Мультифайловый проект 📂</h1>
+    <p>Отредактируйте style.css и app.js, затем нажмите «Запуск».</p>
+  </div>
+</body>
+</html>`,
+      'style.css': localStorage.getItem(STORAGE.filePrefix + 'style.css') || `body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  font-family: system-ui, sans-serif;
+  background: #0f172a;
+  color: #fff;
+}
+.card {
+  text-align: center;
+  padding: 30px;
+  background: #1e293b;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}`,
+      'app.js': localStorage.getItem(STORAGE.filePrefix + 'app.js') || `console.log("Скрипт app.js успешно подключен!");
+// Можно писать интерактивную логику тут`
+    };
+
+    let currentFile = 'index.html';
 
     const logEl = $('#log');
     const previewFrame = $('#previewFrame');
@@ -980,7 +931,6 @@
     let lintErrorsCount = 0;
     let lintTimer = 0;
     let toastTimer = 0;
-    let lastImportedFileName = '';
 
     const editor = ace.edit('editor');
     editor.setOptions({
@@ -1007,28 +957,19 @@
     }
 
     function escapeHtml(value) {
-      return String(value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+      return String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
     }
 
     function readableBytes(bytes) {
       if (bytes < 1024) return bytes + ' Б';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
-      return (bytes / 1024 / 1024).toFixed(1) + ' МБ';
+      return (bytes / 1024).toFixed(1) + ' КБ';
     }
 
     function switchTab(targetId) {
       $$('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
       $$('.screen').forEach(screen => screen.classList.toggle('active', screen.id === targetId));
       if (targetId === 'tab-editor') {
-        setTimeout(() => {
-          editor.resize();
-          editor.focus();
-        }, 60);
+        setTimeout(() => { editor.resize(); editor.focus(); }, 60);
       }
     }
 
@@ -1052,27 +993,37 @@
       showToast(next === 'dark' ? 'Тёмная тема включена' : 'Светлая тема включена');
     });
 
-    const savedLang = localStorage.getItem(STORAGE.lang);
-    if (savedLang) $('#langOverride').value = savedLang;
+    // Управление табами VFS файлов
+    function switchFile(fileName) {
+      // Сохраняем текущее состояние в буфер
+      VFS[currentFile] = editor.getValue();
+      localStorage.setItem(STORAGE.filePrefix + currentFile, VFS[currentFile]);
 
-    $('#desktopLangBtn').addEventListener('click', () => {
-      const select = $('#langOverride');
-      select.focus();
-      if (typeof select.showPicker === 'function') select.showPicker();
-      showToast('Язык можно выбрать сверху справа');
+      currentFile = fileName;
+      fileNamePill.textContent = fileName;
+      
+      $$('.file-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.file === fileName));
+      
+      editor.setValue(VFS[fileName], -1);
+      
+      // Выставляем правильный режим подсветки
+      let mode = 'html';
+      if (fileName.endsWith('.css')) mode = 'css';
+      if (fileName.endsWith('.js')) mode = 'javascript';
+      editor.session.setMode('ace/mode/' + mode);
+      
+      triggerLinterDirectly();
+    }
+
+    $$('.file-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchFile(btn.dataset.file));
     });
 
     function addRow(kind, text) {
       const empty = logEl.querySelector('.empty-log');
       if (empty) empty.remove();
 
-      const names = {
-        log: 'лог',
-        info: 'инфо',
-        warn: 'внимание',
-        error: 'ошибка'
-      };
-
+      const names = { log: 'лог', info: 'инфо', warn: 'внимание', error: 'ошибка' };
       const row = document.createElement('div');
       row.className = 'log-row ' + (kind || 'log');
       row.innerHTML = '<span class="log-tag">' + (names[kind] || kind || 'лог') + '</span><pre class="log-text">' + escapeHtml(text) + '</pre>';
@@ -1083,7 +1034,7 @@
     }
 
     $('#clearConsole').addEventListener('click', () => {
-      logEl.innerHTML = '<div class="empty-log">Консоль очищена. Запустите код или импортируйте файл, чтобы увидеть новые сообщения.</div>';
+      logEl.innerHTML = '<div class="empty-log">Консоль очищена. Запустите проект.</div>';
       outputNavBtn.classList.remove('has-error');
     });
 
@@ -1101,23 +1052,18 @@
         await navigator.clipboard.writeText(text);
         showToast('Скопировано');
       } catch (error) {
-        addRow('error', 'Нет доступа к буферу обмена. Попробуйте выделить текст вручную.');
+        addRow('error', 'Нет доступа к буферу обмена.');
       }
     }
 
     $('#btnCopy').addEventListener('click', () => {
-      const text = editor.getSelectedText() || editor.getValue();
-      copyToClipboard(text);
+      copyToClipboard(editor.getSelectedText() || editor.getValue());
       editor.focus();
     });
 
     $('#btnCut').addEventListener('click', async () => {
       const text = editor.getSelectedText();
-      if (!text) {
-        showToast('Сначала выделите фрагмент');
-        editor.focus();
-        return;
-      }
+      if (!text) { showToast('Сначала выделите фрагмент'); editor.focus(); return; }
       await copyToClipboard(text);
       editor.session.replace(editor.selection.getRange(), '');
       editor.focus();
@@ -1128,118 +1074,24 @@
         const text = await navigator.clipboard.readText();
         editor.insert(text);
         showToast('Вставлено');
-      } catch (error) {
-        addRow('error', 'Нет доступа к буферу. На телефоне можно вставить долгим нажатием в редакторе.');
-      }
+      } catch (error) { addRow('error', 'Нет доступа к буферу.'); }
       editor.focus();
     });
 
+    // Сброс текущего файла
     $('#btnClearCode').addEventListener('click', () => {
       if (!editor.getValue().trim()) return;
-      if (confirm('Стереть весь код из редактора?')) {
+      if (confirm(`Стереть содержимое файла ${currentFile}?`)) {
         editor.setValue('', -1);
-        localStorage.removeItem(STORAGE.code);
-        fileNamePill.textContent = 'без файла';
-        lastImportedFileName = '';
-        $('#clearConsole').click();
-        showToast('Редактор очищен');
+        VFS[currentFile] = '';
+        localStorage.removeItem(STORAGE.filePrefix + currentFile);
+        showToast('Файл очищен');
       }
       editor.focus();
     });
 
-    const DEFAULT_CODE =
-`<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <style>
-    body {
-      min-height: 100vh;
-      margin: 0;
-      display: grid;
-      place-items: center;
-      font-family: system-ui, sans-serif;
-      background: #111827;
-      color: white;
-    }
-    .card {
-      max-width: 320px;
-      padding: 24px;
-      border-radius: 24px;
-      background: #1f2937;
-      text-align: center;
-    }
-  <\/style>
-</head>
-<body>
-  <main class="card">
-    <h1>Код готов к запуску 🚀</h1>
-    <p>Нажмите «Запуск», а сообщения из console.log появятся в консоли.</p>
-  </main>
-
-  <script>
-    var message = "Здесь анализатор покажет предупреждение про var";
-    console.log(message);
-  <\/script>
-</body>
-</html>`;
-
-    editor.setValue(localStorage.getItem(STORAGE.code) || DEFAULT_CODE, -1);
-
-    function extensionLang(fileName) {
-      const ext = (fileName.split('.').pop() || '').toLowerCase();
-      const map = {
-        html: 'html',
-        htm: 'html',
-        js: 'js',
-        mjs: 'js',
-        cjs: 'js',
-        jsx: 'jsx',
-        ts: 'ts',
-        tsx: 'ts',
-        py: 'py',
-        css: 'css',
-        json: 'js',
-        svg: 'html',
-        txt: 'auto',
-        md: 'auto'
-      };
-      return map[ext] || 'auto';
-    }
-
-    function detectLang(code) {
-      const override = $('#langOverride').value;
-      if (override !== 'auto') return override;
-      if (/<!doctype html|<\s*html\b|<style[\s>]|<script[\s>]/i.test(code)) return 'html';
-      if (/import\s+React|from\s+['"]react['"]|<[A-Z][\w.]*[\s/>]/.test(code)) return 'jsx';
-      if (/\binterface\s+\w+|:\s*(number|string|boolean|unknown|any)\b|type\s+\w+\s*=/.test(code)) return 'ts';
-      if (/^\s*(def|class)\s+\w+|\bprint\s*\(|^\s*import\s+\w+/m.test(code) && !/[{};]/.test(code)) return 'py';
-      return 'js';
-    }
-
-    function applyMode(lang) {
-      const modeMap = {
-        html: 'html',
-        jsx: 'javascript',
-        js: 'javascript',
-        ts: 'typescript',
-        py: 'python',
-        css: 'css'
-      };
-      editor.session.setMode('ace/mode/' + (modeMap[lang] || 'javascript'));
-    }
-
     function makeIssue({ level = 'warn', line = 1, title, message, simple, why, fix, example }) {
-      return {
-        level,
-        line: Math.max(1, line || 1),
-        title,
-        message: message || title,
-        simple: simple || message || title,
-        why: why || 'Такой фрагмент может запутать код или привести к неожиданному поведению.',
-        fix: fix || 'Проверьте эту строку и перепишите её более явно.',
-        example: example || ''
-      };
+      return { level, line: Math.max(1, line || 1), title, message: message || title, simple: simple || message || title, why: why || '', fix: fix || '', example: example || '' };
     }
 
     function runLinter(code, lang) {
@@ -1248,120 +1100,15 @@
 
       const whileTrueLine = lines.findIndex(line => /\bwhile\s*\(\s*true\s*\)/.test(line)) + 1;
       if (whileTrueLine && !/\bbreak\b/.test(code)) {
-        issues.push(makeIssue({
-          level: 'error',
-          line: whileTrueLine,
-          title: 'Бесконечный цикл while(true)',
-          simple: 'Код может зависнуть, потому что цикл повторяется бесконечно и в нём нет выхода.',
-          why: 'while(true) работает постоянно. Если внутри нет break, return или другого понятного выхода, страница может перестать отвечать.',
-          fix: 'Добавьте условие остановки или break внутри цикла.',
-          example: 'let count = 0;\nwhile (count < 10) {\n  count++;\n}'
-        }));
+        issues.push(makeIssue({ level: 'error', line: whileTrueLine, title: 'Бесконечный цикл while(true)', simple: 'Код может зависнуть.' }));
       }
 
-      const forEverLine = lines.findIndex(line => /\bfor\s*\(\s*;\s*;\s*\)/.test(line)) + 1;
-      if (forEverLine && !/\bbreak\b/.test(code)) {
-        issues.push(makeIssue({
-          level: 'error',
-          line: forEverLine,
-          title: 'Бесконечный цикл for(;;)',
-          simple: 'Цикл написан без начала, условия и шага. Он будет крутиться бесконечно.',
-          why: 'for(;;) — это специальная форма вечного цикла. Без break или return приложение может зависнуть.',
-          fix: 'Задайте понятное условие цикла или добавьте безопасную точку выхода.',
-          example: 'for (let i = 0; i < 10; i++) {\n  console.log(i);\n}'
-        }));
-      }
-
-      if (['js', 'ts', 'jsx', 'html'].includes(lang)) {
+      if (['javascript', 'html'].includes(lang)) {
         lines.forEach((line, index) => {
           const rowNum = index + 1;
           const trimmed = line.trim();
-
           if (/\bvar\b/.test(trimmed) && !/^\s*(\/\/|\*)/.test(trimmed)) {
-            issues.push(makeIssue({
-              line: rowNum,
-              title: 'Старое объявление var',
-              simple: 'Здесь переменная объявлена через var. Сейчас обычно используют const или let.',
-              why: 'var имеет область видимости функции, а не блока. Из-за этого переменная может быть доступна там, где вы её не ждёте.',
-              fix: 'Используйте const, если значение не меняется, или let, если значение нужно изменить.',
-              example: 'const name = "Анна";\nlet score = 0;'
-            }));
-          }
-
-          if (/\bdebugger\b/.test(trimmed) && !/^\s*(\/\/|\*)/.test(trimmed)) {
-            issues.push(makeIssue({
-              line: rowNum,
-              title: 'Остался debugger',
-              simple: 'В коде осталась команда для отладки. У пользователя она может остановить выполнение страницы.',
-              why: 'debugger нужен только разработчику. В готовом приложении он мешает запуску и выглядит как зависание.',
-              fix: 'Удалите строку debugger или закомментируйте её на время.',
-              example: '// debugger;'
-            }));
-          }
-
-          if (/\{\s*\}/.test(trimmed) && !/=\s*\{\s*\}/.test(trimmed) && !/import\s*\{/.test(trimmed)) {
-            issues.push(makeIssue({
-              line: rowNum,
-              title: 'Пустой блок кода',
-              simple: 'Фигурные скобки есть, но внутри ничего не выполняется.',
-              why: 'Пустой блок часто означает, что логика случайно не дописана или была удалена.',
-              fix: 'Добавьте нужное действие внутрь блока или удалите пустой блок.',
-              example: 'if (isReady) {\n  startApp();\n}'
-            }));
-          }
-
-          const nesting = Math.floor((line.match(/^\s*/)[0].replace(/\t/g, '  ').length) / 2);
-          if (nesting > 5 && trimmed) {
-            issues.push(makeIssue({
-              line: rowNum,
-              title: 'Слишком глубокая вложенность',
-              simple: 'Код слишком сильно вложен внутрь условий или циклов. Его станет трудно читать и исправлять.',
-              why: 'Когда блоков слишком много, легко ошибиться с логикой и сложно понять, какая часть за что отвечает.',
-              fix: 'Вынесите часть логики в отдельную функцию или сделайте ранний выход через return.',
-              example: 'function canOpen(user) {\n  if (!user) return false;\n  if (!user.active) return false;\n  return true;\n}'
-            }));
-          }
-
-          if (/console\.log\(/.test(trimmed) && /пароль|password|token|secret|ключ/i.test(trimmed)) {
-            issues.push(makeIssue({
-              level: 'error',
-              line: rowNum,
-              title: 'Секретные данные выводятся в консоль',
-              simple: 'В консоль может попасть пароль, токен или ключ. Это небезопасно.',
-              why: 'Консоль могут увидеть другие люди, расширения браузера или инструменты отладки.',
-              fix: 'Не выводите секреты в console.log. Показывайте только безопасные сообщения.',
-              example: 'console.log("Пользователь авторизован");'
-            }));
-          }
-        });
-
-        const openScript = (code.match(/<script\b/gi) || []).length;
-        const closeScript = (code.match(/<\/script>/gi) || []).length;
-        if (lang === 'html' && openScript !== closeScript) {
-          issues.push(makeIssue({
-            level: 'error',
-            line: 1,
-            title: 'Не закрыт тег script',
-            simple: 'В HTML есть открытый <script>, но нет закрывающего <\/script>.',
-            why: 'Браузер может считать весь остальной код частью скрипта, из-за чего страница сломается.',
-            fix: 'Проверьте каждый <script> и добавьте закрывающий тег.',
-            example: '<script>\n  console.log("ok");\n<\\/script>'
-          }));
-        }
-      }
-
-      if (lang === 'py') {
-        lines.forEach((line, index) => {
-          if (/\bwhile\s+True\s*:/.test(line) && !/\bbreak\b/.test(code)) {
-            issues.push(makeIssue({
-              level: 'error',
-              line: index + 1,
-              title: 'Бесконечный цикл while True',
-              simple: 'Python-код может выполняться бесконечно, потому что у цикла нет выхода.',
-              why: 'while True повторяется постоянно. В браузере это может заморозить Python-движок.',
-              fix: 'Добавьте условие остановки или break.',
-              example: 'count = 0\nwhile count < 10:\n    count += 1'
-            }));
+            issues.push(makeIssue({ line: rowNum, title: 'Старое объявление var', simple: 'Используйте let или const.' }));
           }
         });
       }
@@ -1370,191 +1117,86 @@
       lintErrorsCount = issues.filter(issue => issue.level === 'error').length;
       renderIssues();
       renderAceAnnotations(issues);
-      return issues;
     }
 
     function renderAceAnnotations(issues) {
       editor.session.setAnnotations(issues.map(issue => ({
-        row: Math.max(0, issue.line - 1),
-        column: 0,
-        text: issue.title + ': ' + issue.simple,
-        type: issue.level === 'error' ? 'error' : 'warning'
+        row: Math.max(0, issue.line - 1), column: 0, text: issue.title, type: issue.level === 'error' ? 'error' : 'warning'
       })));
     }
 
     function renderIssues() {
       problemPanel.innerHTML = '';
-
       if (!activeIssues.length) {
-        lintStatus.className = 'status-chip clean';
-        lintStatus.textContent = '✨ Код чист';
-        problemPanel.classList.remove('visible');
-        $('#statusText').textContent = 'Анализатор включён';
-        return;
+        lintStatus.className = 'status-chip clean'; lintStatus.textContent = '✨ Код чист';
+        problemPanel.classList.remove('visible'); return;
       }
-
       const hasError = activeIssues.some(issue => issue.level === 'error');
       lintStatus.className = 'status-chip ' + (hasError ? 'error' : 'issue');
-      lintStatus.textContent = (hasError ? '⛔ ' : '⚠️ ') + 'Проблема · ' + activeIssues.length;
-      $('#statusText').textContent = hasError ? 'Есть критическая проблема' : 'Есть предупреждения';
+      lintStatus.textContent = '⚠️ Проблема · ' + activeIssues.length;
 
       activeIssues.forEach((issue, index) => {
         const card = document.createElement('div');
         card.className = 'problem-card ' + (issue.level === 'error' ? 'error' : 'warn');
-        card.innerHTML =
-          '<div class="problem-mark">' + (issue.level === 'error' ? '!' : '?') + '</div>' +
-          '<div class="problem-main">' +
-            '<div class="problem-line">Строка ' + issue.line + '</div>' +
-            '<div class="problem-title">' + escapeHtml(issue.title) + '</div>' +
-          '</div>' +
-          '<button class="problem-action" type="button" data-issue="' + index + '">Проблема</button>';
-        card.addEventListener('click', event => {
-          if (event.target.closest('button')) return;
-          editor.gotoLine(issue.line, 0, true);
-          switchTab('tab-editor');
-        });
+        card.innerHTML = `<div class="problem-mark">!</div><div class="problem-main"><div class="problem-line">Строка ${issue.line}</div><div class="problem-title">${escapeHtml(issue.title)}</div></div>`;
         problemPanel.appendChild(card);
       });
-
-      problemPanel.querySelectorAll('[data-issue]').forEach(btn => {
-        btn.addEventListener('click', event => {
-          const index = Number(event.currentTarget.dataset.issue);
-          openProblemSheet(activeIssues[index]);
-        });
-      });
     }
 
-    lintStatus.addEventListener('click', () => {
-      if (!activeIssues.length) {
-        showToast('Проблем не найдено');
-        return;
-      }
-      problemPanel.classList.toggle('visible');
-      if (problemPanel.classList.contains('visible')) showToast('Нажмите «Проблема», чтобы увидеть объяснение');
-    });
-
-    function openProblemSheet(issue) {
-      if (!issue) return;
-      $('#sheetKicker').textContent = (issue.level === 'error' ? 'Критическая проблема' : 'Предупреждение') + ' · строка ' + issue.line;
-      $('#sheetTitle').textContent = issue.title;
-      $('#sheetContent').innerHTML =
-        '<div class="plain-block"><b>Простыми словами</b><p>' + escapeHtml(issue.simple) + '</p></div>' +
-        '<div class="plain-block"><b>Почему это плохо</b><p>' + escapeHtml(issue.why) + '</p></div>' +
-        '<div class="plain-block"><b>Как исправить</b><p>' + escapeHtml(issue.fix) + '</p></div>' +
-        (issue.example ? '<pre class="code-sample">' + escapeHtml(issue.example) + '</pre>' : '') +
-        '<button class="run-btn" id="gotoProblemLine" type="button" style="width:100%; margin-top:12px;">Перейти к строке ' + issue.line + '</button>';
-
-      $('#sheetBackdrop').classList.add('visible');
-      $('#problemSheet').classList.add('visible');
-
-      $('#gotoProblemLine').addEventListener('click', () => {
-        closeProblemSheet();
-        switchTab('tab-editor');
-        setTimeout(() => {
-          editor.gotoLine(issue.line, 0, true);
-          editor.focus();
-        }, 80);
-      });
-    }
-
-    function closeProblemSheet() {
-      $('#sheetBackdrop').classList.remove('visible');
-      $('#problemSheet').classList.remove('visible');
-    }
-
-    $('#sheetClose').addEventListener('click', closeProblemSheet);
-    $('#sheetBackdrop').addEventListener('click', closeProblemSheet);
-    window.addEventListener('keydown', event => {
-      if (event.key === 'Escape') closeProblemSheet();
-    });
-
-    function detectAndApplyMode() {
-      const code = editor.getValue();
-      const lang = detectLang(code);
-      applyMode(lang);
-      runLinter(code, lang);
-      return lang;
+    function triggerLinterDirectly() {
+      let lang = 'html';
+      if (currentFile.endsWith('.css')) lang = 'css';
+      if (currentFile.endsWith('.js')) lang = 'javascript';
+      runLinter(editor.getValue(), lang);
     }
 
     editor.session.on('change', () => {
-      localStorage.setItem(STORAGE.code, editor.getValue());
+      VFS[currentFile] = editor.getValue();
+      localStorage.setItem(STORAGE.filePrefix + currentFile, VFS[currentFile]);
       clearTimeout(lintTimer);
-      lintTimer = setTimeout(detectAndApplyMode, 180);
+      lintTimer = setTimeout(triggerLinterDirectly, 250);
     });
 
-    $('#langOverride').addEventListener('change', () => {
-      localStorage.setItem(STORAGE.lang, $('#langOverride').value);
-      detectAndApplyMode();
-      showToast('Режим языка обновлён');
-    });
+    // Обработка импорта (нескольких файлов разом)
+    async function importFiles(filesList) {
+      if (!filesList.length) return;
+      let targetFile = 'index.html';
 
-    async function importFile(file) {
-      if (!file) return;
-
-      const maxSize = 5 * 1024 * 1024;
-      if (file.size > maxSize) {
-        addRow('error', 'Файл слишком большой: ' + readableBytes(file.size) + '. Лучше импортировать файл до 5 МБ.');
-        switchTab('tab-output');
-        return;
-      }
-
-      try {
-        const text = await file.text();
-        if (editor.getValue().trim() && !confirm('Заменить текущий код содержимым файла «' + file.name + '»?')) return;
-
-        editor.setValue(text, -1);
-        editor.clearSelection();
-        lastImportedFileName = file.name;
-        fileNamePill.textContent = file.name;
-        localStorage.setItem(STORAGE.code, text);
-
-        const langFromExt = extensionLang(file.name);
-        if (langFromExt !== 'auto') {
-          $('#langOverride').value = langFromExt;
-          localStorage.setItem(STORAGE.lang, langFromExt);
+      for (let file of filesList) {
+        if (VFS.hasOwnProperty(file.name)) {
+          try {
+            const text = await file.text();
+            VFS[file.name] = text;
+            localStorage.setItem(STORAGE.filePrefix + file.name, text);
+            addRow('info', `Файл «${file.name}» импортирован (${readableBytes(file.size)}).`);
+            targetFile = file.name; 
+          } catch(e) {
+            addRow('error', `Ошибка чтения файла ${file.name}`);
+          }
+        } else {
+          addRow('warn', `Файл «${file.name}» пропущен. Разрешены: index.html, style.css, app.js`);
         }
-
-        const lang = detectAndApplyMode();
-        addRow('info', 'Файл «' + file.name + '» импортирован как код. Размер: ' + readableBytes(file.size) + '. Режим: ' + lang + '.');
-        showToast('Файл импортирован');
-        switchTab('tab-editor');
-      } catch (error) {
-        addRow('error', 'Не удалось прочитать файл: ' + String(error));
-        switchTab('tab-output');
-      } finally {
-        fileInput.value = '';
       }
+      showToast('Импорт завершен');
+      switchFile(targetFile);
+      switchTab('tab-editor');
     }
 
     $('#importBtn').addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', event => importFile(event.target.files[0]));
+    fileInput.addEventListener('change', event => importFiles(event.target.files));
 
     ;['dragenter', 'dragover'].forEach(name => {
-      editorWrap.addEventListener(name, event => {
-        event.preventDefault();
-        editorWrap.classList.add('dragging');
-      });
+      editorWrap.addEventListener(name, event => { event.preventDefault(); editorWrap.classList.add('dragging'); });
     });
-
     ;['dragleave', 'drop'].forEach(name => {
       editorWrap.addEventListener(name, event => {
         event.preventDefault();
-        if (name === 'drop') importFile(event.dataTransfer.files[0]);
+        if (name === 'drop') importFiles(event.dataTransfer.files);
         editorWrap.classList.remove('dragging');
       });
     });
 
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        if (document.querySelector('script[src="' + src + '"]')) return resolve();
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = () => reject(new Error('Не удалось загрузить библиотеку: ' + src));
-        document.head.appendChild(script);
-      });
-    }
-
+    // Скрипт захвата логов для iframe
     function buildConsoleCaptureScript() {
       return `<script>
         (function () {
@@ -1562,19 +1204,13 @@
             try {
               if (typeof value === 'string') return value;
               return JSON.stringify(value, null, 2);
-            } catch (error) {
-              return String(value);
-            }
+            } catch (error) { return String(value); }
           }
-
           function send(level, args) {
-            parent.postMessage({
-              type: 'mobile-console',
-              level: level,
-              args: Array.prototype.slice.call(args).map(safe)
-            }, '*');
+            const payload = { type: 'mobile-console', level: level, args: Array.prototype.slice.call(args).map(safe) };
+            if (window.opener) { window.opener.postMessage(payload, '*'); }
+            parent.postMessage(payload, '*');
           }
-
           ['log', 'info', 'warn', 'error'].forEach(function (level) {
             var original = console[level];
             console[level] = function () {
@@ -1582,97 +1218,89 @@
               if (original) original.apply(console, arguments);
             };
           });
-
           window.onerror = function (message, source, line, column) {
-            send('error', [String(message) + ' — строка ' + line + (column ? ', колонка ' + column : '')]);
-          };
-
-          window.onunhandledrejection = function (event) {
-            send('error', ['Promise error: ' + (event.reason && event.reason.message ? event.reason.message : event.reason)]);
+            send('error', [String(message) + ' — строка ' + line]);
           };
         })();
       <\/script>`;
     }
 
-    function createHtmlDocument(code, lang, compiledCode) {
-      const capture = buildConsoleCaptureScript();
+    // Сборщик проекта (Bundle) из VFS
+    function buildProjectBundle() {
+      // Синхронизируем текущий открытый редактор
+      VFS[currentFile] = editor.getValue();
 
-      if (lang === 'html') {
-        if (/<head[^>]*>/i.test(code)) return code.replace(/<head([^>]*)>/i, '<head$1>' + capture);
-        if (/<html[^>]*>/i.test(code)) return code.replace(/<html([^>]*)>/i, '<html$1><head>' + capture + '</head>');
-        return '<!DOCTYPE html><html><head>' + capture + '</head><body>' + code + '</body></html>';
+      let html = VFS['index.html'];
+      const css = VFS['style.css'];
+      const js = VFS['app.js'];
+
+      const captureScript = buildConsoleCaptureScript();
+
+      // Инжектируем перехватчик логов
+      if (/<head[^>]*>/i.test(html)) {
+        html = html.replace(/<head([^>]*)>/i, '<head$1>' + captureScript);
+      } else {
+        html = captureScript + html;
       }
 
-      return '<!DOCTYPE html><html lang="ru"><head>' +
-        '<meta charset="UTF-8" />' +
-        '<meta name="viewport" content="width=device-width, initial-scale=1" />' +
-        capture +
-        '</head><body><div id="root"></div><script>' + compiledCode + '<\/script></body></html>';
+      // Инжектируем стили, если они написаны и нет явного импорта style.css (или просто добавляем в head)
+      if (css.trim()) {
+        const styleTag = `<style data-bundle="true">\\n${css}\\n</style>`;
+        if (/<\\/head>/i.test(html)) {
+          html = html.replace(/<\\/head>/i, styleTag + '\\n</head>');
+        } else {
+          html += styleTag;
+        }
+      }
+
+      // Инжектируем скрипты
+      if (js.trim()) {
+        const scriptTag = `<script data-bundle="true">\\n${js}\\n<\/script>`;
+        if (/<\\/body>/i.test(html)) {
+          html = html.replace(/<\\/body>/i, scriptTag + '\\n</body>');
+        } else {
+          html += scriptTag;
+        }
+      }
+
+      return html;
     }
 
-    async function run() {
-      const code = editor.getValue();
-      const lang = detectAndApplyMode();
-
+    function run() {
       $('#clearConsole').click();
-
-      if (!code.trim()) {
-        addRow('warn', 'Редактор пустой. Импортируйте файл или вставьте код.');
-        switchTab('tab-output');
-        return;
-      }
-
-      if (lintErrorsCount > 0) {
-        addRow('error', 'Запуск остановлен: сначала откройте «Проблема» и исправьте критические ошибки.');
-        problemPanel.classList.add('visible');
-        switchTab('tab-editor');
-        return;
-      }
+      switchTab('tab-output');
 
       try {
-        switchTab('tab-output');
-
-        if (['html', 'jsx', 'js', 'ts'].includes(lang)) {
-          let compiledCode = code;
-
-          if (lang === 'jsx') {
-            addRow('info', 'Компилирую React JSX через Babel...');
-            await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
-            compiledCode = Babel.transform(code, { presets: ['react', 'env'] }).code;
-          }
-
-          if (lang === 'ts') {
-            addRow('info', 'Компилирую TypeScript в JavaScript...');
-            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
-            compiledCode = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
-          }
-
-          previewBox.style.display = '';
-          const docHtml = createHtmlDocument(code, lang, compiledCode);
-          previewFrame.srcdoc = docHtml;
-          addRow('info', 'Код запущен во встроенном превью. Сообщения console.log будут здесь.');
-        } else if (lang === 'py') {
-          addRow('info', 'Запускаю Python через Pyodide. Первый запуск может занять немного времени.');
-          if (!window.pyodide) {
-            await loadScript('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
-            window.pyodide = await loadPyodide();
-            window.pyodide.setStdout({ batched: value => addRow('log', value) });
-            window.pyodide.setStderr({ batched: value => addRow('error', value) });
-          }
-          await window.pyodide.runPythonAsync(code);
-        } else if (lang === 'css') {
-          previewBox.style.display = '';
-          previewFrame.srcdoc = '<!DOCTYPE html><html><head><style>' + code + '</style></head><body><h1>CSS импортирован</h1><p>Стиль применён к этой тестовой странице.</p></body></html>';
-          addRow('info', 'CSS показан на тестовой странице в превью.');
-        }
+        const bundle = buildProjectBundle();
+        previewBox.style.display = '';
+        previewFrame.srcdoc = bundle;
+        addRow('info', 'Проект собран: стили из style.css и скрипты из app.js объединены в index.html');
       } catch (error) {
-        addRow('error', String(error && error.stack ? error.stack : error));
+        addRow('error', String(error));
       }
     }
+
+    // Открытие превью в отдельной вкладке
+    $('#externalPreview').addEventListener('click', () => {
+      const bundle = buildProjectBundle();
+      
+      // Создаем Blob c HTML-контентом, чтобы корректно открывался любой объем данных
+      const blob = new Blob([bundle], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const newWindow = window.open(blobUrl, '_blank');
+      if (newWindow) {
+        addRow('info', 'Превью проекта открыто на новой странице.');
+        showToast('Открыто в новой вкладке');
+      } else {
+        addRow('error', 'Браузер заблокировал всплывающее окно. Разрешите всплывающие окна для приложения.');
+      }
+    });
 
     $('#runBtn').addEventListener('click', run);
     $('#mobileRunBtn').addEventListener('click', run);
 
+    // Слушатель событий логирования как из iframe, так и из дочерней вкладки
     window.addEventListener('message', event => {
       if (event.data && event.data.type === 'mobile-console') {
         addRow(event.data.level || 'log', (event.data.args || []).join(' '));
@@ -1684,7 +1312,8 @@
       editor.resize();
     });
 
-    detectAndApplyMode();
+    // Стартовая инициализация
+    switchFile('index.html');
   </script>
 </body>
 </html>
