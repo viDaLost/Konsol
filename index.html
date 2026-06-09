@@ -277,6 +277,8 @@
       letter-spacing: 0;
     }
 
+
+
     .project-strip {
       flex: 0 0 auto;
       display: grid;
@@ -306,9 +308,13 @@
       display: flex;
       gap: 7px;
       overflow-x: auto;
-      padding-bottom: 4px;
-      scrollbar-width: thin;
+      padding-bottom: 1px;
+      scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
+    }
+
+    .project-files::-webkit-scrollbar {
+      display: none;
     }
 
     .project-file-btn {
@@ -432,12 +438,12 @@
       pointer-events: none;
       position: absolute;
       inset: 14px;
-      z-index: 20;
+      z-index: 2;
       display: none;
       place-items: center;
       border: 2px dashed rgba(56, 189, 248, 0.45);
       border-radius: 22px;
-      background: rgba(7, 10, 18, 0.85);
+      background: rgba(7, 10, 18, 0.72);
       color: #e0f2fe;
       font-weight: 850;
       text-align: center;
@@ -635,10 +641,7 @@
       background: transparent;
       color: var(--muted);
       font-size: 13px;
-      display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
       gap: 1px;
     }
 
@@ -1081,6 +1084,104 @@
     let suppressEditorChange = false;
     let lastPreviewHtml = '';
 
+    function createTextareaEditorFallback() {
+      const mount = document.getElementById('editor');
+      const textarea = document.createElement('textarea');
+      textarea.setAttribute('aria-label', 'Редактор кода');
+      textarea.spellcheck = false;
+      textarea.style.cssText = [
+        'width:100%',
+        'height:100%',
+        'border:0',
+        'outline:0',
+        'resize:none',
+        'padding:14px',
+        'background:#0f172a',
+        'color:#e2e8f0',
+        'font:14px/1.5 var(--mono)',
+        'tab-size:2'
+      ].join(';');
+      mount.innerHTML = '';
+      mount.appendChild(textarea);
+
+      const changeHandlers = [];
+      textarea.addEventListener('input', () => changeHandlers.forEach(handler => handler()));
+      textarea.addEventListener('keydown', event => {
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          textarea.setRangeText('  ', start, end, 'end');
+          changeHandlers.forEach(handler => handler());
+        }
+      });
+
+      return {
+        renderer: {
+          setPadding() {},
+          setScrollMargin() {}
+        },
+        session: {
+          setMode() {},
+          setAnnotations() {},
+          on(eventName, handler) {
+            if (eventName === 'change') changeHandlers.push(handler);
+          },
+          replace(_range, value) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            textarea.setRangeText(value, start, end, 'end');
+            changeHandlers.forEach(handler => handler());
+          }
+        },
+        selection: {
+          getRange() {
+            return null;
+          }
+        },
+        setOptions() {},
+        setTheme() {},
+        setFontSize(size) {
+          textarea.style.fontSize = typeof size === 'number' ? size + 'px' : size;
+        },
+        resize() {},
+        focus() {
+          textarea.focus();
+        },
+        getValue() {
+          return textarea.value;
+        },
+        setValue(value) {
+          textarea.value = value || '';
+          changeHandlers.forEach(handler => handler());
+        },
+        clearSelection() {
+          textarea.selectionStart = textarea.selectionEnd = 0;
+        },
+        getSelectedText() {
+          return textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+        },
+        insert(value) {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          textarea.setRangeText(value, start, end, 'end');
+          changeHandlers.forEach(handler => handler());
+        },
+        gotoLine(line) {
+          const lines = textarea.value.split('\n');
+          const safeLine = Math.max(1, Math.min(line || 1, lines.length));
+          const position = lines.slice(0, safeLine - 1).join('\n').length + (safeLine > 1 ? 1 : 0);
+          textarea.focus();
+          textarea.setSelectionRange(position, position);
+        }
+      };
+    }
+
+    if (!window.ace) {
+      window.ace = { edit: createTextareaEditorFallback };
+      window.addEventListener('load', () => addRow('warn', 'Ace Editor не загрузился из CDN, поэтому включён резервный встроенный редактор. Кнопки и запуск работают.'));
+    }
+
     const editor = ace.edit('editor');
     editor.setOptions({
       fontSize: window.innerWidth < 480 ? '13.5px' : '14px',
@@ -1091,7 +1192,7 @@
       scrollPastEnd: 0.22,
       tabSize: 2,
       useSoftTabs: true,
-      enableBasicAutocompletion: false,
+      enableBasicAutocompletion: true,
       enableLiveAutocompletion: false
     });
     editor.renderer.setPadding(12);
@@ -1319,7 +1420,7 @@
         localStorage.setItem(STORAGE.project, JSON.stringify(projectFiles));
         if (activeFileName) localStorage.setItem(STORAGE.activeFile, activeFileName);
       } catch (error) {
-        console.warn('Не удалось сохранить проект в памяти браузера: ' + String(error));
+        addRow('warn', 'Не удалось сохранить проект в памяти браузера: ' + String(error));
       }
     }
 
@@ -1396,6 +1497,7 @@
       if (restored && typeof restored === 'object' && Object.keys(restored).length) {
         projectFiles = restored;
         activeFileName = localStorage.getItem(STORAGE.activeFile) || chooseDefaultFile(projectFiles);
+        if (!Object.prototype.hasOwnProperty.call(projectFiles, activeFileName)) activeFileName = chooseDefaultFile(projectFiles);
       } else {
         projectFiles = { 'index.html': localStorage.getItem(STORAGE.code) || DEFAULT_CODE };
         activeFileName = 'index.html';
@@ -1469,45 +1571,39 @@
 
     function runLinter(code, lang) {
       const issues = [];
-      if (!code) {
-        activeIssues = [];
-        lintErrorsCount = 0;
-        renderIssues();
-        editor.session.clearAnnotations();
-        return issues;
-      }
-
       const lines = code.split('\n');
 
-      lines.forEach((line, index) => {
-        const rowNum = index + 1;
-        const trimmed = line.trim();
+      const whileTrueLine = lines.findIndex(line => /\bwhile\s*\(\s*true\s*\)/.test(line)) + 1;
+      if (whileTrueLine && !/\bbreak\b/.test(code)) {
+        issues.push(makeIssue({
+          level: 'error',
+          line: whileTrueLine,
+          title: 'Бесконечный цикл while(true)',
+          simple: 'Код может зависнуть, потому что цикл повторяется бесконечно и в нём нет выхода.',
+          why: 'while(true) работает постоянно. Если внутри нет break, return или другого понятного выхода, страница может перестать отвечать.',
+          fix: 'Добавьте условие остановки или break внутри цикла.',
+          example: 'let count = 0;\nwhile (count < 10) {\n  count++;\n}'
+        }));
+      }
 
-        if (/\bwhile\s*\(\s*true\s*\)/.test(line) && !/\bbreak\b/.test(code)) {
-          issues.push(makeIssue({
-            level: 'error',
-            line: rowNum,
-            title: 'Бесконечный цикл while(true)',
-            simple: 'Код может зависнуть, потому что цикл повторяется бесконечно и в нём нет выхода.',
-            why: 'while(true) работает постоянно. Если внутри нет break, return или другого понятного выхода, страница может перестать отвечать.',
-            fix: 'Добавьте условие остановки или break внутри цикла.',
-            example: 'let count = 0;\nwhile (count < 10) {\n  count++;\n}'
-          }));
-        }
+      const forEverLine = lines.findIndex(line => /\bfor\s*\(\s*;\s*;\s*\)/.test(line)) + 1;
+      if (forEverLine && !/\bbreak\b/.test(code)) {
+        issues.push(makeIssue({
+          level: 'error',
+          line: forEverLine,
+          title: 'Бесконечный цикл for(;;)',
+          simple: 'Цикл написан без начала, условия и шага. Он будет крутиться бесконечно.',
+          why: 'for(;;) — это специальная форма вечного цикла. Без break или return приложение может зависнуть.',
+          fix: 'Задайте понятное условие цикла или добавьте безопасную точку выхода.',
+          example: 'for (let i = 0; i < 10; i++) {\n  console.log(i);\n}'
+        }));
+      }
 
-        if (/\bfor\s*\(\s*;\s*;\s*\)/.test(line) && !/\bbreak\b/.test(code)) {
-          issues.push(makeIssue({
-            level: 'error',
-            line: rowNum,
-            title: 'Бесконечный цикл for(;;)',
-            simple: 'Цикл написан без начала, условия и шага. Он будет крутиться бесконечно.',
-            why: 'for(官方) — это специальная форма вечного цикла. Без break или return приложение может зависнуть.',
-            fix: 'Задайте понятное условие цикла или добавьте безопасную точку выхода.',
-            example: 'for (let i = 0; i < 10; i++) {\n  console.log(i);\n}'
-          }));
-        }
+      if (['js', 'ts', 'jsx', 'html'].includes(lang)) {
+        lines.forEach((line, index) => {
+          const rowNum = index + 1;
+          const trimmed = line.trim();
 
-        if (['js', 'ts', 'jsx', 'html'].includes(lang)) {
           if (/\bvar\b/.test(trimmed) && !/^\s*(\/\/|\*)/.test(trimmed)) {
             issues.push(makeIssue({
               line: rowNum,
@@ -1541,8 +1637,7 @@
             }));
           }
 
-          const matchSpaces = line.match(/^\s*/);
-          const nesting = matchSpaces ? Math.floor((matchSpaces[0].replace(/\t/g, '  ').length) / 2) : 0;
+          const nesting = Math.floor((line.match(/^\s*/)[0].replace(/\t/g, '  ').length) / 2);
           if (nesting > 5 && trimmed) {
             issues.push(makeIssue({
               line: rowNum,
@@ -1565,27 +1660,11 @@
               example: 'console.log("Пользователь авторизован");'
             }));
           }
-        }
+        });
 
-        if (lang === 'py') {
-          if (/\bwhile\s+True\s*:/.test(line) && !/\bbreak\b/.test(code)) {
-            issues.push(makeIssue({
-              level: 'error',
-              line: rowNum,
-              title: 'Бесконечный цикл while True',
-              simple: 'Python-код может выполняться бесконечно, потому что у цикла нет выхода.',
-              why: 'while True повторяется постоянно. В браузере это может заморозить Python-движок.',
-              fix: 'Добавьте условие остановки или break.',
-              example: 'count = 0\nwhile count < 10:\n    count += 1'
-            }));
-          }
-        }
-      });
-
-      if (lang === 'html') {
         const openScript = (code.match(/<script\b/gi) || []).length;
         const closeScript = (code.match(/<\/script>/gi) || []).length;
-        if (openScript !== closeScript) {
+        if (lang === 'html' && openScript !== closeScript) {
           issues.push(makeIssue({
             level: 'error',
             line: 1,
@@ -1596,6 +1675,22 @@
             example: '<script>\n  console.log("ok");\n<\\/script>'
           }));
         }
+      }
+
+      if (lang === 'py') {
+        lines.forEach((line, index) => {
+          if (/\bwhile\s+True\s*:/.test(line) && !/\bbreak\b/.test(code)) {
+            issues.push(makeIssue({
+              level: 'error',
+              line: index + 1,
+              title: 'Бесконечный цикл while True',
+              simple: 'Python-код может выполняться бесконечно, потому что у цикла нет выхода.',
+              why: 'while True повторяется постоянно. В браузере это может заморозить Python-движок.',
+              fix: 'Добавьте условие остановки или break.',
+              example: 'count = 0\nwhile count < 10:\n    count += 1'
+            }));
+          }
+        });
       }
 
       activeIssues = issues;
@@ -1650,7 +1745,6 @@
 
       problemPanel.querySelectorAll('[data-issue]').forEach(btn => {
         btn.addEventListener('click', event => {
-          event.stopPropagation();
           const index = Number(event.currentTarget.dataset.issue);
           openProblemSheet(activeIssues[index]);
         });
@@ -1745,7 +1839,7 @@
 
         for (const file of files) {
           const text = await file.text();
-          const name = projectFiles[file.name] ? file.name : uniqueProjectName(file.name);
+          const name = Object.prototype.hasOwnProperty.call(projectFiles, file.name) ? file.name : uniqueProjectName(file.name);
           projectFiles[name] = text;
           importedNames.push(name);
         }
@@ -1782,29 +1876,19 @@
     $('#importBtn').addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', event => importFiles(event.target.files));
 
-    editorWrap.addEventListener('dragenter', event => {
-      event.preventDefault();
-      if (event.dataTransfer.types.includes('Files')) {
+    ;['dragenter', 'dragover'].forEach(name => {
+      editorWrap.addEventListener(name, event => {
+        event.preventDefault();
         editorWrap.classList.add('dragging');
-      }
+      });
     });
 
-    editorWrap.addEventListener('dragover', event => {
-      event.preventDefault();
-    });
-
-    editorWrap.addEventListener('dragleave', event => {
-      if (event.relatedTarget === null || !editorWrap.contains(event.relatedTarget)) {
+    ;['dragleave', 'drop'].forEach(name => {
+      editorWrap.addEventListener(name, event => {
+        event.preventDefault();
+        if (name === 'drop') importFiles(event.dataTransfer.files);
         editorWrap.classList.remove('dragging');
-      }
-    });
-
-    editorWrap.addEventListener('drop', event => {
-      event.preventDefault();
-      editorWrap.classList.remove('dragging');
-      if (event.dataTransfer.files.length > 0) {
-        importFiles(event.dataTransfer.files);
-      }
+      });
     });
 
     function loadScript(src) {
@@ -1914,7 +1998,7 @@
       const notLinked = [];
       cssEntries.forEach(([name, css]) => {
         const namePattern = escapeRegExp(baseName(name));
-        const linkRegex = new RegExp('<link\\b(?=[^>]*rel=["\\'][^"\\']*stylesheet[^"\\']*["\\'])(?=[^>]*href=["\\'][^"\\']*' + namePattern + '[^"\\']*["\\'])[^>]*>', 'i');
+        const linkRegex = new RegExp(`<link\\b(?=[^>]*rel=["'][^"']*stylesheet[^"']*["'])(?=[^>]*href=["'][^"']*${namePattern}[^"']*["'])[^>]*>`, 'i');
         const styleTag = '<style data-project-file="' + escapeHtml(name) + '">\n' + safeStyleContent(css) + '\n</style>';
         if (linkRegex.test(html)) html = html.replace(linkRegex, styleTag);
         else notLinked.push(styleTag);
@@ -1927,7 +2011,7 @@
       const notLinked = [];
       jsEntries.forEach(([name, js]) => {
         const namePattern = escapeRegExp(baseName(name));
-        const scriptRegex = new RegExp('<script\\b(?=[^>]*src=["\\'][^"\\']*' + namePattern + '[^"\\']*["\\'])[^>]*>\\s*<\\/script>', 'i');
+        const scriptRegex = new RegExp(`<script\\b(?=[^>]*src=["'][^"']*${namePattern}[^"']*["'])[^>]*>\\s*<\\/script>`, 'i');
         const scriptTag = '<script data-project-file="' + escapeHtml(name) + '">\n' + safeScriptContent(js) + '\n<\/script>';
         if (scriptRegex.test(html)) html = html.replace(scriptRegex, scriptTag);
         else notLinked.push(scriptTag);
@@ -1970,7 +2054,9 @@
       if (lang === 'ts') {
         addRow('info', 'Компилирую TypeScript в JavaScript...');
         await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
-        compiledCode = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
+        compiledCode = window.ts.transpileModule
+          ? window.ts.transpileModule(code, { compilerOptions: { target: window.ts.ScriptTarget.ES2020 } }).outputText
+          : window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
       }
 
       if (lang === 'css') {
