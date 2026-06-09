@@ -277,8 +277,6 @@
       letter-spacing: 0;
     }
 
-
-
     .project-strip {
       flex: 0 0 auto;
       display: grid;
@@ -308,13 +306,9 @@
       display: flex;
       gap: 7px;
       overflow-x: auto;
-      padding-bottom: 1px;
-      scrollbar-width: none;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
       -webkit-overflow-scrolling: touch;
-    }
-
-    .project-files::-webkit-scrollbar {
-      display: none;
     }
 
     .project-file-btn {
@@ -438,12 +432,12 @@
       pointer-events: none;
       position: absolute;
       inset: 14px;
-      z-index: 2;
+      z-index: 20;
       display: none;
       place-items: center;
       border: 2px dashed rgba(56, 189, 248, 0.45);
       border-radius: 22px;
-      background: rgba(7, 10, 18, 0.72);
+      background: rgba(7, 10, 18, 0.85);
       color: #e0f2fe;
       font-weight: 850;
       text-align: center;
@@ -641,7 +635,10 @@
       background: transparent;
       color: var(--muted);
       font-size: 13px;
+      display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
       gap: 1px;
     }
 
@@ -1094,7 +1091,7 @@
       scrollPastEnd: 0.22,
       tabSize: 2,
       useSoftTabs: true,
-      enableBasicAutocompletion: true,
+      enableBasicAutocompletion: false,
       enableLiveAutocompletion: false
     });
     editor.renderer.setPadding(12);
@@ -1322,7 +1319,7 @@
         localStorage.setItem(STORAGE.project, JSON.stringify(projectFiles));
         if (activeFileName) localStorage.setItem(STORAGE.activeFile, activeFileName);
       } catch (error) {
-        addRow('warn', 'Не удалось сохранить проект в памяти браузера: ' + String(error));
+        console.warn('Не удалось сохранить проект в памяти браузера: ' + String(error));
       }
     }
 
@@ -1472,39 +1469,45 @@
 
     function runLinter(code, lang) {
       const issues = [];
+      if (!code) {
+        activeIssues = [];
+        lintErrorsCount = 0;
+        renderIssues();
+        editor.session.clearAnnotations();
+        return issues;
+      }
+
       const lines = code.split('\n');
 
-      const whileTrueLine = lines.findIndex(line => /\bwhile\s*\(\s*true\s*\)/.test(line)) + 1;
-      if (whileTrueLine && !/\bbreak\b/.test(code)) {
-        issues.push(makeIssue({
-          level: 'error',
-          line: whileTrueLine,
-          title: 'Бесконечный цикл while(true)',
-          simple: 'Код может зависнуть, потому что цикл повторяется бесконечно и в нём нет выхода.',
-          why: 'while(true) работает постоянно. Если внутри нет break, return или другого понятного выхода, страница может перестать отвечать.',
-          fix: 'Добавьте условие остановки или break внутри цикла.',
-          example: 'let count = 0;\nwhile (count < 10) {\n  count++;\n}'
-        }));
-      }
+      lines.forEach((line, index) => {
+        const rowNum = index + 1;
+        const trimmed = line.trim();
 
-      const forEverLine = lines.findIndex(line => /\bfor\s*\(\s*;\s*;\s*\)/.test(line)) + 1;
-      if (forEverLine && !/\bbreak\b/.test(code)) {
-        issues.push(makeIssue({
-          level: 'error',
-          line: forEverLine,
-          title: 'Бесконечный цикл for(;;)',
-          simple: 'Цикл написан без начала, условия и шага. Он будет крутиться бесконечно.',
-          why: 'for(;;) — это специальная форма вечного цикла. Без break или return приложение может зависнуть.',
-          fix: 'Задайте понятное условие цикла или добавьте безопасную точку выхода.',
-          example: 'for (let i = 0; i < 10; i++) {\n  console.log(i);\n}'
-        }));
-      }
+        if (/\bwhile\s*\(\s*true\s*\)/.test(line) && !/\bbreak\b/.test(code)) {
+          issues.push(makeIssue({
+            level: 'error',
+            line: rowNum,
+            title: 'Бесконечный цикл while(true)',
+            simple: 'Код может зависнуть, потому что цикл повторяется бесконечно и в нём нет выхода.',
+            why: 'while(true) работает постоянно. Если внутри нет break, return или другого понятного выхода, страница может перестать отвечать.',
+            fix: 'Добавьте условие остановки или break внутри цикла.',
+            example: 'let count = 0;\nwhile (count < 10) {\n  count++;\n}'
+          }));
+        }
 
-      if (['js', 'ts', 'jsx', 'html'].includes(lang)) {
-        lines.forEach((line, index) => {
-          const rowNum = index + 1;
-          const trimmed = line.trim();
+        if (/\bfor\s*\(\s*;\s*;\s*\)/.test(line) && !/\bbreak\b/.test(code)) {
+          issues.push(makeIssue({
+            level: 'error',
+            line: rowNum,
+            title: 'Бесконечный цикл for(;;)',
+            simple: 'Цикл написан без начала, условия и шага. Он будет крутиться бесконечно.',
+            why: 'for(官方) — это специальная форма вечного цикла. Без break или return приложение может зависнуть.',
+            fix: 'Задайте понятное условие цикла или добавьте безопасную точку выхода.',
+            example: 'for (let i = 0; i < 10; i++) {\n  console.log(i);\n}'
+          }));
+        }
 
+        if (['js', 'ts', 'jsx', 'html'].includes(lang)) {
           if (/\bvar\b/.test(trimmed) && !/^\s*(\/\/|\*)/.test(trimmed)) {
             issues.push(makeIssue({
               line: rowNum,
@@ -1538,7 +1541,8 @@
             }));
           }
 
-          const nesting = Math.floor((line.match(/^\s*/)[0].replace(/\t/g, '  ').length) / 2);
+          const matchSpaces = line.match(/^\s*/);
+          const nesting = matchSpaces ? Math.floor((matchSpaces[0].replace(/\t/g, '  ').length) / 2) : 0;
           if (nesting > 5 && trimmed) {
             issues.push(makeIssue({
               line: rowNum,
@@ -1561,11 +1565,27 @@
               example: 'console.log("Пользователь авторизован");'
             }));
           }
-        });
+        }
 
+        if (lang === 'py') {
+          if (/\bwhile\s+True\s*:/.test(line) && !/\bbreak\b/.test(code)) {
+            issues.push(makeIssue({
+              level: 'error',
+              line: rowNum,
+              title: 'Бесконечный цикл while True',
+              simple: 'Python-код может выполняться бесконечно, потому что у цикла нет выхода.',
+              why: 'while True повторяется постоянно. В браузере это может заморозить Python-движок.',
+              fix: 'Добавьте условие остановки или break.',
+              example: 'count = 0\nwhile count < 10:\n    count += 1'
+            }));
+          }
+        }
+      });
+
+      if (lang === 'html') {
         const openScript = (code.match(/<script\b/gi) || []).length;
         const closeScript = (code.match(/<\/script>/gi) || []).length;
-        if (lang === 'html' && openScript !== closeScript) {
+        if (openScript !== closeScript) {
           issues.push(makeIssue({
             level: 'error',
             line: 1,
@@ -1576,22 +1596,6 @@
             example: '<script>\n  console.log("ok");\n<\\/script>'
           }));
         }
-      }
-
-      if (lang === 'py') {
-        lines.forEach((line, index) => {
-          if (/\bwhile\s+True\s*:/.test(line) && !/\bbreak\b/.test(code)) {
-            issues.push(makeIssue({
-              level: 'error',
-              line: index + 1,
-              title: 'Бесконечный цикл while True',
-              simple: 'Python-код может выполняться бесконечно, потому что у цикла нет выхода.',
-              why: 'while True повторяется постоянно. В браузере это может заморозить Python-движок.',
-              fix: 'Добавьте условие остановки или break.',
-              example: 'count = 0\nwhile count < 10:\n    count += 1'
-            }));
-          }
-        });
       }
 
       activeIssues = issues;
@@ -1646,6 +1650,7 @@
 
       problemPanel.querySelectorAll('[data-issue]').forEach(btn => {
         btn.addEventListener('click', event => {
+          event.stopPropagation();
           const index = Number(event.currentTarget.dataset.issue);
           openProblemSheet(activeIssues[index]);
         });
@@ -1777,19 +1782,29 @@
     $('#importBtn').addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', event => importFiles(event.target.files));
 
-    ;['dragenter', 'dragover'].forEach(name => {
-      editorWrap.addEventListener(name, event => {
-        event.preventDefault();
+    editorWrap.addEventListener('dragenter', event => {
+      event.preventDefault();
+      if (event.dataTransfer.types.includes('Files')) {
         editorWrap.classList.add('dragging');
-      });
+      }
     });
 
-    ;['dragleave', 'drop'].forEach(name => {
-      editorWrap.addEventListener(name, event => {
-        event.preventDefault();
-        if (name === 'drop') importFiles(event.dataTransfer.files);
+    editorWrap.addEventListener('dragover', event => {
+      event.preventDefault();
+    });
+
+    editorWrap.addEventListener('dragleave', event => {
+      if (event.relatedTarget === null || !editorWrap.contains(event.relatedTarget)) {
         editorWrap.classList.remove('dragging');
-      });
+      }
+    });
+
+    editorWrap.addEventListener('drop', event => {
+      event.preventDefault();
+      editorWrap.classList.remove('dragging');
+      if (event.dataTransfer.files.length > 0) {
+        importFiles(event.dataTransfer.files);
+      }
     });
 
     function loadScript(src) {
