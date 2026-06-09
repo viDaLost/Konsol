@@ -3,428 +3,1688 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Универсальная Мобильная Консоль — v4.1 PRO</title>
-  
+  <title>Универсальная мобильная консоль — Mobile PRO</title>
+
   <style>
     :root {
-      --bg: #090b10; --panel: #111420; --panel-2: #161b2d; --text: #f1f5f9; --muted: #64748b;
-      --accent: #3b82f6; --ok: #10b981; --warn: #f59e0b; --err: #ef4444; --shadow: 0 12px 30px rgba(0,0,0,.4);
-      --radius: 12px; --border: 1px solid rgba(255,255,255,.06);
+      color-scheme: dark;
+      --bg: #070a12;
+      --bg-soft: #0d1220;
+      --panel: rgba(17, 24, 39, 0.92);
+      --panel-2: rgba(30, 41, 59, 0.78);
+      --panel-3: #101827;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --muted-2: #64748b;
+      --line: rgba(148, 163, 184, 0.14);
+      --accent: #7c3aed;
+      --accent-2: #38bdf8;
+      --accent-soft: rgba(124, 58, 237, 0.18);
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --err: #ef4444;
+      --radius-sm: 12px;
+      --radius: 18px;
+      --radius-lg: 28px;
+      --shadow: 0 22px 80px rgba(0, 0, 0, 0.42);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+
     [data-theme="light"] {
-      --bg: #f8fafc; --panel: #ffffff; --panel-2: #f1f5f9; --text: #0f172a; --muted: #64748b; 
-      --accent: #2563eb; --shadow: 0 10px 25px rgba(15,23,42,.05); --border: 1px solid rgba(0,0,0,.06);
-    }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; margin: 0; overflow: hidden; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
-    
-    .app { height: 100%; display: flex; flex-direction: column; }
-    
-    /* Компактный адаптивный хедер */
-    header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--panel); border-bottom: var(--border); gap: 8px; }
-    .brand { display: flex; flex-direction: column; }
-    .brand b { font-size: 14px; letter-spacing: -0.3px; }
-    .brand span { font-size: 11px; color: var(--ok); font-weight: 500; }
-    
-    .controls { display: flex; align-items: center; gap: 6px; }
-    button, select { 
-      border: var(--border); background: var(--panel-2); color: var(--text); padding: 8px 10px; 
-      border-radius: var(--radius); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s;
-    }
-    button:active { transform: scale(0.95); opacity: 0.8; }
-    .primary { background: var(--accent); color: #fff; border: none; font-weight: 600; padding: 8px 14px; }
-    .danger { background: rgba(239, 68, 68, 0.15); color: var(--err); border: 1px solid rgba(239, 68, 68, 0.2); }
-    
-    /* Сетка макета */
-    .layout { flex: 1; display: flex; overflow: hidden; position: relative; }
-    .col { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--bg); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    
-    /* Панель инструментов над редактором */
-    .toolbar { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--panel-2); border-bottom: var(--border); }
-    .btn-group { display: flex; gap: 4px; }
-    .toolbar button { padding: 5px 8px; font-size: 12px; border-radius: 6px; }
-    
-    /* Статус-карточки линтера */
-    .lint-badge { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
-    .lint-clean { background: rgba(16, 185, 129, 0.15); color: var(--ok); }
-    .lint-issues { background: rgba(245, 158, 11, 0.15); color: var(--warn); cursor: pointer; }
-
-    #editor { flex: 1; width: 100%; font-family: 'Fira Code', monospace; }
-    
-    /* Консоль вывода */
-    .output-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-    .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; background: var(--panel-2); border-bottom: var(--border); font-size: 12px; font-weight: 600; color: var(--muted); }
-    
-    /* Всплывающий блок подробных отчетов анализатора */
-    .lint-report { background: var(--panel); border-bottom: var(--border); max-height: 120px; overflow-y: auto; display: none; }
-    .lint-report.visible { display: block; }
-    .lint-item { padding: 6px 14px; font-size: 12px; border-left: 3px solid var(--warn); display: flex; gap: 8px; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .lint-item.err { border-left-color: var(--err); color: var(--err); }
-    .lint-item .pos { color: var(--muted); font-family: monospace; }
-
-    /* Окно логов */
-    .log { flex: 1; overflow-y: auto; padding: 8px; font-family: monospace; font-size: 13px; background: var(--bg); }
-    .row { display: flex; gap: 6px; padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; word-break: break-all; border-bottom: 1px solid rgba(128,128,128,0.05); }
-    .row.info { color: var(--accent); background: rgba(59, 130, 246, 0.05); }
-    .row.warn { color: var(--warn); background: rgba(245, 158, 11, 0.07); }
-    .row.error { color: var(--err); background: rgba(239, 68, 68, 0.07); }
-    .row .tag { font-weight: 700; font-size: 10px; text-transform: uppercase; margin-top: 2px; opacity: 0.8; }
-    .row pre { margin: 0; white-space: pre-wrap; font-family: inherit; }
-
-    /* Нижнее мобильное меню */
-    .nav-tabs { display: flex; background: var(--panel); border-top: var(--border); padding: 6px; padding-bottom: env(safe-area-inset-bottom, 6px); }
-    .nav-btn { flex: 1; background: transparent; border: none; padding: 10px; border-radius: var(--radius); color: var(--muted); font-weight: 600; font-size: 13px; flex-direction: column; gap: 2px; }
-    .nav-btn.active { background: var(--panel-2); color: var(--accent); }
-    .nav-btn .dot { width: 6px; height: 6px; background: var(--err); border-radius: 50%; display: none; position: absolute; margin-left: 55px; margin-top: -15px; }
-    .nav-btn.has-error .dot { display: block; }
-
-    /* Настройки сеток для планшетов и десктопов */
-    @media (min-width: 900px) {
-      .app { padding: 12px; gap: 12px; }
-      header { border-radius: var(--radius); border: var(--border); box-shadow: var(--shadow); }
-      .layout { gap: 12px; }
-      .col { border-radius: var(--radius); border: var(--border); box-shadow: var(--shadow); overflow: hidden; }
-      .nav-tabs { display: none; }
+      color-scheme: light;
+      --bg: #f3f6fb;
+      --bg-soft: #eaf0f8;
+      --panel: rgba(255, 255, 255, 0.92);
+      --panel-2: rgba(241, 245, 249, 0.9);
+      --panel-3: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --muted-2: #94a3b8;
+      --line: rgba(15, 23, 42, 0.10);
+      --accent: #2563eb;
+      --accent-2: #0891b2;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --shadow: 0 22px 70px rgba(15, 23, 42, 0.10);
     }
 
-    /* Мобильный сдвиг экранов */
-    @media (max-width: 899px) {
-      .col { position: absolute; top:0; left:0; right:0; bottom:0; transform: translateX(100%); }
-      .col.active { transform: translateX(0); }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(124, 58, 237, 0.28), transparent 32rem),
+        radial-gradient(circle at 82% 12%, rgba(56, 189, 248, 0.16), transparent 26rem),
+        linear-gradient(145deg, var(--bg), var(--bg-soft));
+      color: var(--text);
+      font: 14px/1.5 var(--sans);
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    button,
+    select {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 12px;
+      font-weight: 750;
+      letter-spacing: -0.01em;
+      transition: transform 160ms ease, opacity 160ms ease, background 160ms ease, border 160ms ease;
+    }
+
+    button:active {
+      transform: scale(0.96);
+      opacity: 0.86;
+    }
+
+    button:focus-visible,
+    select:focus-visible {
+      outline: 3px solid rgba(56, 189, 248, 0.35);
+      outline-offset: 2px;
+    }
+
+    select {
+      max-width: 145px;
+      padding: 0 34px 0 12px;
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, currentColor 50%),
+        linear-gradient(135deg, currentColor 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) 18px,
+        calc(100% - 13px) 18px;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    .app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+      padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 30% 20%, #ffffff 0 8%, transparent 9%),
+        linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 20px;
+      box-shadow: 0 12px 30px rgba(124, 58, 237, 0.25);
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-title {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(14px, 4vw, 17px);
+      font-weight: 850;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-subtitle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .icon-btn {
+      width: 42px;
+      min-width: 42px;
+      padding: 0;
+      border-radius: 15px;
+      font-size: 18px;
+    }
+
+    .run-btn {
+      min-width: 98px;
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      box-shadow: 0 14px 32px rgba(37, 99, 235, 0.24);
+    }
+
+    .layout {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .screen {
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .screen-head,
+    .editor-tools,
+    .console-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--panel-2), transparent);
+    }
+
+    .screen-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .file-pill {
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .tool-scroll {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tool-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .mini-btn {
+      min-height: 34px;
+      border-radius: 12px;
+      padding: 7px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .ghost-btn {
+      background: transparent;
+    }
+
+    .danger-btn {
+      border-color: rgba(239, 68, 68, 0.26);
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+    }
+
+    .status-chip {
+      min-height: 34px;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .status-chip.clean {
+      border-color: rgba(34, 197, 94, 0.22);
+      background: rgba(34, 197, 94, 0.12);
+      color: #86efac;
+    }
+
+    [data-theme="light"] .status-chip.clean {
+      color: #15803d;
+    }
+
+    .status-chip.issue {
+      border-color: rgba(245, 158, 11, 0.25);
+      background: rgba(245, 158, 11, 0.14);
+      color: #fbbf24;
+    }
+
+    .status-chip.error {
+      border-color: rgba(239, 68, 68, 0.25);
+      background: rgba(239, 68, 68, 0.13);
+      color: #fca5a5;
+    }
+
+    .editor-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #editor {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      font-family: var(--mono);
+    }
+
+    .drop-hint {
+      pointer-events: none;
+      position: absolute;
+      inset: 14px;
+      z-index: 2;
+      display: none;
+      place-items: center;
+      border: 2px dashed rgba(56, 189, 248, 0.45);
+      border-radius: 22px;
+      background: rgba(7, 10, 18, 0.72);
+      color: #e0f2fe;
+      font-weight: 850;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .editor-wrap.dragging .drop-hint {
+      display: grid;
+    }
+
+    .problem-panel {
+      flex: 0 0 auto;
+      max-height: 34%;
+      display: none;
+      overflow: auto;
+      border-top: 1px solid var(--line);
+      background: var(--panel-3);
+    }
+
+    .problem-panel.visible {
+      display: block;
+    }
+
+    .problem-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 9px;
+      align-items: start;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .problem-mark {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: rgba(245, 158, 11, 0.14);
+      color: #fbbf24;
+      font-size: 13px;
+    }
+
+    .problem-card.error .problem-mark {
+      background: rgba(239, 68, 68, 0.13);
+      color: #fca5a5;
+    }
+
+    .problem-main {
+      min-width: 0;
+    }
+
+    .problem-line {
+      color: var(--muted);
+      font: 12px var(--mono);
+    }
+
+    .problem-title {
+      margin-top: 2px;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .problem-action {
+      min-height: 30px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: var(--accent-soft);
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .console-body {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-rows: minmax(160px, 42%) 1fr;
+      gap: 0;
+    }
+
+    .preview-box {
+      min-height: 0;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-3);
+      overflow: hidden;
+    }
+
+    .preview-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+
+    .log {
+      min-height: 0;
+      overflow: auto;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
+        var(--bg);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .empty-log {
+      display: grid;
+      place-items: center;
+      height: 100%;
+      color: var(--muted-2);
+      text-align: center;
+      padding: 26px;
+      font-family: var(--sans);
+    }
+
+    .log-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.035);
+      word-break: break-word;
+    }
+
+    [data-theme="light"] .log-row {
+      background: rgba(15, 23, 42, 0.035);
+    }
+
+    .log-row.info {
+      border-color: rgba(56, 189, 248, 0.20);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .log-row.warn {
+      border-color: rgba(245, 158, 11, 0.22);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .log-row.error {
+      border-color: rgba(239, 68, 68, 0.24);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .log-tag {
+      align-self: start;
+      border-radius: 999px;
+      padding: 3px 7px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font: 10px var(--sans);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .log-row.error .log-tag {
+      color: #fca5a5;
+    }
+
+    .log-row.warn .log-tag {
+      color: #fbbf24;
+    }
+
+    .log-row.info .log-tag {
+      color: #7dd3fc;
+    }
+
+    .log-text {
+      min-width: 0;
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+
+    .bottom-nav {
+      display: none;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .tab-btn {
+      position: relative;
+      min-height: 48px;
+      border-radius: 18px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .tab-btn.active {
+      background: var(--panel-2);
+      color: var(--text);
+    }
+
+    .tab-btn .badge-dot {
+      position: absolute;
+      top: 9px;
+      right: 20%;
+      width: 8px;
+      height: 8px;
+      display: none;
+      border-radius: 50%;
+      background: var(--err);
+      box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.16);
+    }
+
+    .tab-btn.has-error .badge-dot {
+      display: block;
+    }
+
+    .mobile-run {
+      width: 54px;
+      min-width: 54px;
+      min-height: 48px;
+      border-radius: 18px;
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 20px;
+    }
+
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+    }
+
+    .sheet-backdrop.visible {
+      display: block;
+    }
+
+    .problem-sheet {
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 50;
+      display: none;
+      max-height: min(650px, 82vh);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .problem-sheet.visible {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sheet-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 16px 10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--panel-2), transparent);
+    }
+
+    .sheet-kicker {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .sheet-title {
+      margin-top: 3px;
+      font-size: 18px;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .sheet-close {
+      width: 40px;
+      min-width: 40px;
+      border-radius: 15px;
+      padding: 0;
+      font-size: 18px;
+    }
+
+    .sheet-content {
+      overflow: auto;
+      padding: 14px 16px 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .plain-block {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-2);
+    }
+
+    .plain-block b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .plain-block p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .code-sample {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 16px;
+      background: #020617;
+      color: #e2e8f0;
+      font: 12px/1.45 var(--mono);
+    }
+
+    [data-theme="light"] .code-sample {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(90px + env(safe-area-inset-bottom));
+      z-index: 80;
+      max-width: min(92vw, 420px);
+      transform: translate(-50%, 14px);
+      opacity: 0;
+      pointer-events: none;
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      font-weight: 800;
+      transition: opacity 180ms ease, transform 180ms ease;
+      text-align: center;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .hidden-input {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        gap: 8px;
+        padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+      }
+
+      .topbar {
+        grid-template-columns: 1fr auto;
+        border-radius: 24px;
+      }
+
+      .top-actions select,
+      .top-actions .run-btn {
+        display: none;
+      }
+
+      .layout {
+        position: relative;
+        display: block;
+      }
+
+      .screen {
+        position: absolute;
+        inset: 0;
+        display: none;
+        border-radius: 24px;
+      }
+
+      .screen.active {
+        display: flex;
+      }
+
+      .bottom-nav {
+        display: grid;
+      }
+
+      .screen-head,
+      .editor-tools,
+      .console-tools {
+        padding: 8px;
+      }
+
+      .screen-head {
+        flex-wrap: wrap;
+      }
+
+      .file-pill {
+        max-width: 52vw;
+      }
+
+      .editor-tools {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .editor-tools > .tool-scroll {
+        width: 100%;
+      }
+
+      .status-chip {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .console-body {
+        grid-template-rows: minmax(110px, 36%) 1fr;
+      }
+
+      .preview-box {
+        min-height: 110px;
+      }
+
+      .mini-btn {
+        min-height: 38px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+      }
+
+      .brand-title {
+        font-size: 14px;
+      }
+
+      .brand-subtitle {
+        font-size: 11px;
+      }
+
+      .topbar {
+        padding: 8px;
+      }
+
+      .icon-btn {
+        width: 38px;
+        min-width: 38px;
+        min-height: 38px;
+        border-radius: 14px;
+      }
+
+      .problem-card {
+        grid-template-columns: auto 1fr;
+      }
+
+      .problem-action {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (min-width: 981px) {
+      .screen {
+        display: flex;
+      }
     }
   </style>
 </head>
 <body>
-
   <div class="app">
-    <header>
+    <header class="topbar">
       <div class="brand">
-        <b>UCC v4.1 PRO</b>
-        <span id="status">Анализатор активен</span>
+        <div class="brand-mark" aria-hidden="true">⌘</div>
+        <div class="brand-text">
+          <span class="brand-title">Мобильная консоль кода</span>
+          <span class="brand-subtitle"><i class="pulse" aria-hidden="true"></i><span id="statusText">Анализатор включён</span></span>
+        </div>
       </div>
-      <div class="controls">
-        <select id="langOverride" style="padding: 6px 8px; font-size: 12px;">
-          <option value="auto">Язык: Авто</option>
+
+      <div class="top-actions">
+        <select id="langOverride" aria-label="Выбрать язык кода">
+          <option value="auto">Авто</option>
           <option value="html">HTML/CSS/JS</option>
           <option value="jsx">React JSX</option>
           <option value="js">JavaScript</option>
           <option value="ts">TypeScript</option>
           <option value="py">Python</option>
         </select>
-        <button id="themeBtn" title="Сменить тему">🌓</button>
-        <button class="primary" id="runBtn">▶ Запуск</button>
+        <button class="icon-btn" id="themeBtn" type="button" title="Сменить тему" aria-label="Сменить тему">🌓</button>
+        <button class="run-btn" id="runBtn" type="button">▶ Запуск</button>
       </div>
     </header>
 
-    <div class="layout">
-      <!-- ВКЛАДКА РЕДАКТОРА -->
-      <div class="col active" id="tab-editor">
-        <div class="toolbar">
-          <div class="btn-group">
-            <button id="btnCut" title="Вырезать выделенное">Вырезать ✂</button>
-            <button id="btnCopy" title="Копировать всё/выделенное">Копировать 📋</button>
-            <button id="btnPaste" title="Вставить из буфера">Вставить 📄</button>
-            <button class="danger" id="btnClearCode" title="Полностью стереть код">Сброс 🗑</button>
+    <main class="layout" id="layout">
+      <section class="screen active" id="tab-editor" aria-label="Редактор кода">
+        <div class="screen-head">
+          <div class="screen-title">📝 Редактор <span class="file-pill" id="fileNamePill">без файла</span></div>
+          <div class="tool-scroll">
+            <button class="mini-btn" id="importBtn" type="button">📂 Импорт</button>
+            <button class="mini-btn ghost-btn" id="desktopLangBtn" type="button">Язык</button>
           </div>
-          <div id="lintStatus" class="lint-badge lint-clean">✨ Код чист</div>
         </div>
-        <div id="editor"></div>
-      </div>
 
-      <!-- ВКЛАДКА КОНСОЛИ -->
-      <div class="col" id="tab-output">
-        <div class="output-container">
-          <div class="lint-report" id="lintReportBox"></div>
-          
-          <div class="panel-header">
-            <span>📟 КОНСОЛЬ ВЫВОДА</span>
-            <button id="clearConsole" style="padding: 2px 8px; font-size: 11px;">Очистить лог</button>
+        <div class="editor-tools">
+          <div class="tool-scroll">
+            <button class="mini-btn" id="btnCopy" type="button">📋 Копировать</button>
+            <button class="mini-btn" id="btnCut" type="button">✂ Вырезать</button>
+            <button class="mini-btn" id="btnPaste" type="button">📄 Вставить</button>
+            <button class="mini-btn danger-btn" id="btnClearCode" type="button">🗑 Сброс</button>
           </div>
-          <div class="log" id="log"></div>
+          <button class="status-chip clean" id="lintStatus" type="button">✨ Код чист</button>
         </div>
-      </div>
-    </div>
 
-    <!-- Навигация для мобильных -->
-    <div class="nav-tabs">
-      <button class="nav-btn active" data-target="tab-editor">📝 Редактор</button>
-      <button class="nav-btn" data-target="tab-output" id="outputNavBtn">
-        📟 Консоль <span class="dot"></span>
-      </button>
-    </div>
+        <div class="editor-wrap" id="editorWrap">
+          <div id="editor"></div>
+          <div class="drop-hint">Перетащите файл сюда<br />и он откроется как код</div>
+        </div>
+
+        <div class="problem-panel" id="problemPanel"></div>
+      </section>
+
+      <section class="screen" id="tab-output" aria-label="Консоль вывода">
+        <div class="screen-head">
+          <div class="screen-title">📟 Консоль и превью</div>
+          <div class="tool-scroll">
+            <button class="mini-btn" id="togglePreview" type="button">👁 Превью</button>
+            <button class="mini-btn" id="clearConsole" type="button">Очистить</button>
+          </div>
+        </div>
+
+        <div class="console-body">
+          <div class="preview-box" id="previewBox">
+            <iframe class="preview-frame" id="previewFrame" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe>
+          </div>
+          <div class="log" id="log">
+            <div class="empty-log">Здесь появятся сообщения из console.log, ошибки запуска и результат импорта файлов.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Нижняя навигация">
+      <button class="tab-btn active" data-target="tab-editor" type="button">📝<span>Код</span></button>
+      <button class="tab-btn" data-target="tab-output" id="outputNavBtn" type="button">📟<span>Консоль</span><i class="badge-dot"></i></button>
+      <button class="mobile-run" id="mobileRunBtn" type="button" aria-label="Запустить код">▶</button>
+    </nav>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ace.js"></script>
-  
-  <script>
-    const $ = s => document.querySelector(s);
-    const logEl = $('#log');
-    let lintErrorsCount = 0;
+  <input class="hidden-input" id="fileInput" type="file" accept=".html,.htm,.css,.js,.jsx,.ts,.tsx,.py,.json,.txt,.md,.xml,.svg" />
 
-    // Настройка Ace Editor
-    const editor = ace.edit("editor");
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <aside class="problem-sheet" id="problemSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-kicker" id="sheetKicker">Проблема</div>
+        <div class="sheet-title" id="sheetTitle">Что не так в коде</div>
+      </div>
+      <button class="sheet-close" id="sheetClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="sheet-content" id="sheetContent"></div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ace.js"></script>
+
+  <script>
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+
+    const STORAGE = {
+      theme: 'ucc_mobile_pro_theme',
+      code: 'ucc_mobile_pro_code',
+      lang: 'ucc_mobile_pro_lang',
+      preview: 'ucc_mobile_pro_preview_visible'
+    };
+
+    const logEl = $('#log');
+    const previewFrame = $('#previewFrame');
+    const previewBox = $('#previewBox');
+    const problemPanel = $('#problemPanel');
+    const lintStatus = $('#lintStatus');
+    const outputNavBtn = $('#outputNavBtn');
+    const fileInput = $('#fileInput');
+    const fileNamePill = $('#fileNamePill');
+    const editorWrap = $('#editorWrap');
+
+    let activeIssues = [];
+    let lintErrorsCount = 0;
+    let lintTimer = 0;
+    let toastTimer = 0;
+    let lastImportedFileName = '';
+
+    const editor = ace.edit('editor');
     editor.setOptions({
-      fontSize: "14px",
+      fontSize: window.innerWidth < 480 ? '13.5px' : '14px',
       showPrintMargin: false,
       wrap: true,
       useWorker: false,
-      highlightActiveLine: true
+      highlightActiveLine: true,
+      scrollPastEnd: 0.22,
+      tabSize: 2,
+      useSoftTabs: true,
+      enableBasicAutocompletion: true,
+      enableLiveAutocompletion: false
     });
-    
-    // Переключение Тем оформления
+    editor.renderer.setPadding(12);
+    editor.renderer.setScrollMargin(10, 10, 10, 10);
+
+    function showToast(text) {
+      const toast = $('#toast');
+      toast.textContent = text;
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('visible'), 2100);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function readableBytes(bytes) {
+      if (bytes < 1024) return bytes + ' Б';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
+      return (bytes / 1024 / 1024).toFixed(1) + ' МБ';
+    }
+
+    function switchTab(targetId) {
+      $$('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
+      $$('.screen').forEach(screen => screen.classList.toggle('active', screen.id === targetId));
+      if (targetId === 'tab-editor') {
+        setTimeout(() => {
+          editor.resize();
+          editor.focus();
+        }, 60);
+      }
+    }
+
+    $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.target)));
+
     function applyTheme() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      editor.setTheme(isDark ? "ace/theme/tomorrow_night_eighties" : "ace/theme/chrome");
+      editor.setTheme(isDark ? 'ace/theme/tomorrow_night_eighties' : 'ace/theme/chrome');
     }
-    $('#themeBtn').onclick = () => {
-      const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('ucc4_theme', next);
-      applyTheme();
-    };
-    if(localStorage.getItem('ucc4_theme')) document.documentElement.setAttribute('data-theme', localStorage.getItem('ucc4_theme'));
+
+    const savedTheme = localStorage.getItem(STORAGE.theme);
+    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
     applyTheme();
 
-    // Буфер обмена (Cut, Copy, Paste)
-    $('#btnCopy').onclick = () => {
-      const text = editor.getSelectedText() || editor.getValue();
-      navigator.clipboard.writeText(text);
-      editor.focus();
-    };
-    $('#btnCut').onclick = () => {
-      const text = editor.getSelectedText();
-      if(text) {
-        navigator.clipboard.writeText(text);
-        editor.session.replace(editor.selection.getRange(), '');
+    $('#themeBtn').addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem(STORAGE.theme, next);
+      applyTheme();
+      showToast(next === 'dark' ? 'Тёмная тема включена' : 'Светлая тема включена');
+    });
+
+    const savedLang = localStorage.getItem(STORAGE.lang);
+    if (savedLang) $('#langOverride').value = savedLang;
+
+    $('#desktopLangBtn').addEventListener('click', () => {
+      const select = $('#langOverride');
+      select.focus();
+      if (typeof select.showPicker === 'function') select.showPicker();
+      showToast('Язык можно выбрать сверху справа');
+    });
+
+    function addRow(kind, text) {
+      const empty = logEl.querySelector('.empty-log');
+      if (empty) empty.remove();
+
+      const names = {
+        log: 'лог',
+        info: 'инфо',
+        warn: 'внимание',
+        error: 'ошибка'
+      };
+
+      const row = document.createElement('div');
+      row.className = 'log-row ' + (kind || 'log');
+      row.innerHTML = '<span class="log-tag">' + (names[kind] || kind || 'лог') + '</span><pre class="log-text">' + escapeHtml(text) + '</pre>';
+      logEl.appendChild(row);
+      logEl.scrollTop = logEl.scrollHeight;
+
+      if (kind === 'error') outputNavBtn.classList.add('has-error');
+    }
+
+    $('#clearConsole').addEventListener('click', () => {
+      logEl.innerHTML = '<div class="empty-log">Консоль очищена. Запустите код или импортируйте файл, чтобы увидеть новые сообщения.</div>';
+      outputNavBtn.classList.remove('has-error');
+    });
+
+    $('#togglePreview').addEventListener('click', () => {
+      const hidden = previewBox.style.display === 'none';
+      previewBox.style.display = hidden ? '' : 'none';
+      localStorage.setItem(STORAGE.preview, hidden ? '1' : '0');
+      showToast(hidden ? 'Превью включено' : 'Превью скрыто');
+    });
+
+    if (localStorage.getItem(STORAGE.preview) === '0') previewBox.style.display = 'none';
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Скопировано');
+      } catch (error) {
+        addRow('error', 'Нет доступа к буферу обмена. Попробуйте выделить текст вручную.');
       }
+    }
+
+    $('#btnCopy').addEventListener('click', () => {
+      const text = editor.getSelectedText() || editor.getValue();
+      copyToClipboard(text);
       editor.focus();
-    };
-    $('#btnPaste').onclick = async () => {
+    });
+
+    $('#btnCut').addEventListener('click', async () => {
+      const text = editor.getSelectedText();
+      if (!text) {
+        showToast('Сначала выделите фрагмент');
+        editor.focus();
+        return;
+      }
+      await copyToClipboard(text);
+      editor.session.replace(editor.selection.getRange(), '');
+      editor.focus();
+    });
+
+    $('#btnPaste').addEventListener('click', async () => {
       try {
         const text = await navigator.clipboard.readText();
         editor.insert(text);
-      } catch (err) {
-        addRow('ошибка', 'Нет доступа к буферу. Разрешите доступ в настройках.');
+        showToast('Вставлено');
+      } catch (error) {
+        addRow('error', 'Нет доступа к буферу. На телефоне можно вставить долгим нажатием в редакторе.');
       }
       editor.focus();
-    };
-
-    // Очистить весь код (Кнопка Сброса)
-    $('#btnClearCode').onclick = () => {
-      if(confirm('Вы уверены, что хотите полностью стереть текущий код? Восстановить его будет нельзя.')) {
-        editor.setValue('', -1);
-        localStorage.removeItem('ucc4_code');
-        $('#clearConsole').click();
-      }
-      editor.focus();
-    };
-
-    // Мобильная навигация
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.col').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.target).classList.add('active');
-        editor.blur(); 
-      });
     });
 
-    // Добавление строки лога в консоль
-    function addRow(kind, text) {
-      const mapKind = { 'log': 'лог', 'info': 'инфо', 'warn': 'предупреждение', 'error': 'ошибка' };
-      const displayKind = mapKind[kind] || kind;
-      
-      const row = document.createElement('div'); row.className = `row ${kind}`;
-      row.innerHTML = `<span class="tag">${displayKind}</span><pre>${text}</pre>`;
-      logEl.appendChild(row);
-      logEl.scrollTop = logEl.scrollHeight;
-      
-      if (kind === 'error') {
-        $('#outputNavBtn').classList.add('has-error');
+    $('#btnClearCode').addEventListener('click', () => {
+      if (!editor.getValue().trim()) return;
+      if (confirm('Стереть весь код из редактора?')) {
+        editor.setValue('', -1);
+        localStorage.removeItem(STORAGE.code);
+        fileNamePill.textContent = 'без файла';
+        lastImportedFileName = '';
+        $('#clearConsole').click();
+        showToast('Редактор очищен');
       }
-    }
-    $('#clearConsole').onclick = () => {
-      logEl.innerHTML = '';
-      $('#outputNavBtn').classList.remove('has-error');
-    };
+      editor.focus();
+    });
 
-    // --- СТАТИЧЕСКИЙ АНАЛИЗАТОР И ПРОВЕРКА ЛОГИКИ ---
+    const DEFAULT_CODE =
+`<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      font-family: system-ui, sans-serif;
+      background: #111827;
+      color: white;
+    }
+    .card {
+      max-width: 320px;
+      padding: 24px;
+      border-radius: 24px;
+      background: #1f2937;
+      text-align: center;
+    }
+  <\/style>
+</head>
+<body>
+  <main class="card">
+    <h1>Код готов к запуску 🚀</h1>
+    <p>Нажмите «Запуск», а сообщения из console.log появятся в консоли.</p>
+  </main>
+
+  <script>
+    var message = "Здесь анализатор покажет предупреждение про var";
+    console.log(message);
+  <\/script>
+</body>
+</html>`;
+
+    editor.setValue(localStorage.getItem(STORAGE.code) || DEFAULT_CODE, -1);
+
+    function extensionLang(fileName) {
+      const ext = (fileName.split('.').pop() || '').toLowerCase();
+      const map = {
+        html: 'html',
+        htm: 'html',
+        js: 'js',
+        mjs: 'js',
+        cjs: 'js',
+        jsx: 'jsx',
+        ts: 'ts',
+        tsx: 'ts',
+        py: 'py',
+        css: 'css',
+        json: 'js',
+        svg: 'html',
+        txt: 'auto',
+        md: 'auto'
+      };
+      return map[ext] || 'auto';
+    }
+
+    function detectLang(code) {
+      const override = $('#langOverride').value;
+      if (override !== 'auto') return override;
+      if (/<!doctype html|<\s*html\b|<style[\s>]|<script[\s>]/i.test(code)) return 'html';
+      if (/import\s+React|from\s+['"]react['"]|<[A-Z][\w.]*[\s/>]/.test(code)) return 'jsx';
+      if (/\binterface\s+\w+|:\s*(number|string|boolean|unknown|any)\b|type\s+\w+\s*=/.test(code)) return 'ts';
+      if (/^\s*(def|class)\s+\w+|\bprint\s*\(|^\s*import\s+\w+/m.test(code) && !/[{};]/.test(code)) return 'py';
+      return 'js';
+    }
+
+    function applyMode(lang) {
+      const modeMap = {
+        html: 'html',
+        jsx: 'javascript',
+        js: 'javascript',
+        ts: 'typescript',
+        py: 'python',
+        css: 'css'
+      };
+      editor.session.setMode('ace/mode/' + (modeMap[lang] || 'javascript'));
+    }
+
+    function makeIssue({ level = 'warn', line = 1, title, message, simple, why, fix, example }) {
+      return {
+        level,
+        line: Math.max(1, line || 1),
+        title,
+        message: message || title,
+        simple: simple || message || title,
+        why: why || 'Такой фрагмент может запутать код или привести к неожиданному поведению.',
+        fix: fix || 'Проверьте эту строку и перепишите её более явно.',
+        example: example || ''
+      };
+    }
+
     function runLinter(code, lang) {
       const issues = [];
       const lines = code.split('\n');
 
-      // Ловушки на бесконечные циклы
-      if (/\bwhile\s*\(\s*true\s*\)/.test(code) && !/\bbreak\b/.test(code)) {
-        issues.push({ level: 'error', msg: 'Потенциальный бесконечный цикл while(true) без оператора break!', line: 1 });
-      }
-      if (/\bfor\s*\(\s*;\s*;\s*\)/.test(code) && !/\bbreak\b/.test(code)) {
-        issues.push({ level: 'error', msg: 'Обнаружен бесконечный цикл for(;;) без точки выхода.', line: 1 });
+      const whileTrueLine = lines.findIndex(line => /\bwhile\s*\(\s*true\s*\)/.test(line)) + 1;
+      if (whileTrueLine && !/\bbreak\b/.test(code)) {
+        issues.push(makeIssue({
+          level: 'error',
+          line: whileTrueLine,
+          title: 'Бесконечный цикл while(true)',
+          simple: 'Код может зависнуть, потому что цикл повторяется бесконечно и в нём нет выхода.',
+          why: 'while(true) работает постоянно. Если внутри нет break, return или другого понятного выхода, страница может перестать отвечать.',
+          fix: 'Добавьте условие остановки или break внутри цикла.',
+          example: 'let count = 0;\nwhile (count < 10) {\n  count++;\n}'
+        }));
       }
 
-      // Базовые метрики чистоты кода для JS/TS стека
+      const forEverLine = lines.findIndex(line => /\bfor\s*\(\s*;\s*;\s*\)/.test(line)) + 1;
+      if (forEverLine && !/\bbreak\b/.test(code)) {
+        issues.push(makeIssue({
+          level: 'error',
+          line: forEverLine,
+          title: 'Бесконечный цикл for(;;)',
+          simple: 'Цикл написан без начала, условия и шага. Он будет крутиться бесконечно.',
+          why: 'for(;;) — это специальная форма вечного цикла. Без break или return приложение может зависнуть.',
+          fix: 'Задайте понятное условие цикла или добавьте безопасную точку выхода.',
+          example: 'for (let i = 0; i < 10; i++) {\n  console.log(i);\n}'
+        }));
+      }
+
       if (['js', 'ts', 'jsx', 'html'].includes(lang)) {
         lines.forEach((line, index) => {
           const rowNum = index + 1;
           const trimmed = line.trim();
 
-          if (/\bvar\b/.test(trimmed) && !/(\/\/|\*)/.test(trimmed)) {
-            issues.push({ level: 'warn', msg: 'Используйте современные const или let вместо var.', line: rowNum });
+          if (/\bvar\b/.test(trimmed) && !/^\s*(\/\/|\*)/.test(trimmed)) {
+            issues.push(makeIssue({
+              line: rowNum,
+              title: 'Старое объявление var',
+              simple: 'Здесь переменная объявлена через var. Сейчас обычно используют const или let.',
+              why: 'var имеет область видимости функции, а не блока. Из-за этого переменная может быть доступна там, где вы её не ждёте.',
+              fix: 'Используйте const, если значение не меняется, или let, если значение нужно изменить.',
+              example: 'const name = "Анна";\nlet score = 0;'
+            }));
           }
-          if (/\bdebugger\b/.test(trimmed) && !/(\/\/|\*)/.test(trimmed)) {
-            issues.push({ level: 'warn', msg: 'В коде остался отладочный оператор "debugger".', line: rowNum });
+
+          if (/\bdebugger\b/.test(trimmed) && !/^\s*(\/\/|\*)/.test(trimmed)) {
+            issues.push(makeIssue({
+              line: rowNum,
+              title: 'Остался debugger',
+              simple: 'В коде осталась команда для отладки. У пользователя она может остановить выполнение страницы.',
+              why: 'debugger нужен только разработчику. В готовом приложении он мешает запуску и выглядит как зависание.',
+              fix: 'Удалите строку debugger или закомментируйте её на время.',
+              example: '// debugger;'
+            }));
           }
-          if (/\{\s*\}/.test(trimmed) && !/=\s*\{\s*\}/.test(trimmed)) {
-            issues.push({ level: 'warn', msg: 'Пустой блок выполнения {}. Возможна потеря логики.', line: rowNum });
+
+          if (/\{\s*\}/.test(trimmed) && !/=\s*\{\s*\}/.test(trimmed) && !/import\s*\{/.test(trimmed)) {
+            issues.push(makeIssue({
+              line: rowNum,
+              title: 'Пустой блок кода',
+              simple: 'Фигурные скобки есть, но внутри ничего не выполняется.',
+              why: 'Пустой блок часто означает, что логика случайно не дописана или была удалена.',
+              fix: 'Добавьте нужное действие внутрь блока или удалите пустой блок.',
+              example: 'if (isReady) {\n  startApp();\n}'
+            }));
           }
-          if ((line.match(/^\s*/)[0].length / 2) > 5) {
-            issues.push({ level: 'warn', msg: 'Слишком глубокая вложенность конструкций. Код тяжело читать.', line: rowNum });
+
+          const nesting = Math.floor((line.match(/^\s*/)[0].replace(/\t/g, '  ').length) / 2);
+          if (nesting > 5 && trimmed) {
+            issues.push(makeIssue({
+              line: rowNum,
+              title: 'Слишком глубокая вложенность',
+              simple: 'Код слишком сильно вложен внутрь условий или циклов. Его станет трудно читать и исправлять.',
+              why: 'Когда блоков слишком много, легко ошибиться с логикой и сложно понять, какая часть за что отвечает.',
+              fix: 'Вынесите часть логики в отдельную функцию или сделайте ранний выход через return.',
+              example: 'function canOpen(user) {\n  if (!user) return false;\n  if (!user.active) return false;\n  return true;\n}'
+            }));
+          }
+
+          if (/console\.log\(/.test(trimmed) && /пароль|password|token|secret|ключ/i.test(trimmed)) {
+            issues.push(makeIssue({
+              level: 'error',
+              line: rowNum,
+              title: 'Секретные данные выводятся в консоль',
+              simple: 'В консоль может попасть пароль, токен или ключ. Это небезопасно.',
+              why: 'Консоль могут увидеть другие люди, расширения браузера или инструменты отладки.',
+              fix: 'Не выводите секреты в console.log. Показывайте только безопасные сообщения.',
+              example: 'console.log("Пользователь авторизован");'
+            }));
+          }
+        });
+
+        const openScript = (code.match(/<script\b/gi) || []).length;
+        const closeScript = (code.match(/<\/script>/gi) || []).length;
+        if (lang === 'html' && openScript !== closeScript) {
+          issues.push(makeIssue({
+            level: 'error',
+            line: 1,
+            title: 'Не закрыт тег script',
+            simple: 'В HTML есть открытый <script>, но нет закрывающего <\/script>.',
+            why: 'Браузер может считать весь остальной код частью скрипта, из-за чего страница сломается.',
+            fix: 'Проверьте каждый <script> и добавьте закрывающий тег.',
+            example: '<script>\n  console.log("ok");\n<\\/script>'
+          }));
+        }
+      }
+
+      if (lang === 'py') {
+        lines.forEach((line, index) => {
+          if (/\bwhile\s+True\s*:/.test(line) && !/\bbreak\b/.test(code)) {
+            issues.push(makeIssue({
+              level: 'error',
+              line: index + 1,
+              title: 'Бесконечный цикл while True',
+              simple: 'Python-код может выполняться бесконечно, потому что у цикла нет выхода.',
+              why: 'while True повторяется постоянно. В браузере это может заморозить Python-движок.',
+              fix: 'Добавьте условие остановки или break.',
+              example: 'count = 0\nwhile count < 10:\n    count += 1'
+            }));
           }
         });
       }
 
-      // Обновление интерфейса анализатора
-      const badge = $('#lintStatus');
-      const reportBox = $('#lintReportBox');
-      reportBox.innerHTML = '';
-      lintErrorsCount = issues.filter(i => i.level === 'error').length;
+      activeIssues = issues;
+      lintErrorsCount = issues.filter(issue => issue.level === 'error').length;
+      renderIssues();
+      renderAceAnnotations(issues);
+      return issues;
+    }
 
-      if (issues.length === 0) {
-        badge.className = 'lint-badge lint-clean';
-        badge.innerHTML = '✨ Код чист';
-        reportBox.classList.remove('visible');
-      } else {
-        badge.className = 'lint-badge lint-issues';
-        badge.innerHTML = `⚠️ Проблемы: ${issues.length}`;
-        
-        issues.forEach(issue => {
-          const div = document.createElement('div');
-          div.className = `lint-item ${issue.level === 'error' ? 'err' : ''}`;
-          div.innerHTML = `<span class="pos">Строка ${issue.line}:</span> <span>${issue.msg}</span>`;
-          div.onclick = () => {
-            editor.gotoLine(issue.line);
-            editor.focus();
-            if(window.innerWidth < 900) $('.nav-btn[data-target="tab-editor"]').click();
-          };
-          reportBox.appendChild(div);
-        });
+    function renderAceAnnotations(issues) {
+      editor.session.setAnnotations(issues.map(issue => ({
+        row: Math.max(0, issue.line - 1),
+        column: 0,
+        text: issue.title + ': ' + issue.simple,
+        type: issue.level === 'error' ? 'error' : 'warning'
+      })));
+    }
+
+    function renderIssues() {
+      problemPanel.innerHTML = '';
+
+      if (!activeIssues.length) {
+        lintStatus.className = 'status-chip clean';
+        lintStatus.textContent = '✨ Код чист';
+        problemPanel.classList.remove('visible');
+        $('#statusText').textContent = 'Анализатор включён';
+        return;
       }
+
+      const hasError = activeIssues.some(issue => issue.level === 'error');
+      lintStatus.className = 'status-chip ' + (hasError ? 'error' : 'issue');
+      lintStatus.textContent = (hasError ? '⛔ ' : '⚠️ ') + 'Проблема · ' + activeIssues.length;
+      $('#statusText').textContent = hasError ? 'Есть критическая проблема' : 'Есть предупреждения';
+
+      activeIssues.forEach((issue, index) => {
+        const card = document.createElement('div');
+        card.className = 'problem-card ' + (issue.level === 'error' ? 'error' : 'warn');
+        card.innerHTML =
+          '<div class="problem-mark">' + (issue.level === 'error' ? '!' : '?') + '</div>' +
+          '<div class="problem-main">' +
+            '<div class="problem-line">Строка ' + issue.line + '</div>' +
+            '<div class="problem-title">' + escapeHtml(issue.title) + '</div>' +
+          '</div>' +
+          '<button class="problem-action" type="button" data-issue="' + index + '">Проблема</button>';
+        card.addEventListener('click', event => {
+          if (event.target.closest('button')) return;
+          editor.gotoLine(issue.line, 0, true);
+          switchTab('tab-editor');
+        });
+        problemPanel.appendChild(card);
+      });
+
+      problemPanel.querySelectorAll('[data-issue]').forEach(btn => {
+        btn.addEventListener('click', event => {
+          const index = Number(event.currentTarget.dataset.issue);
+          openProblemSheet(activeIssues[index]);
+        });
+      });
     }
 
-    $('#lintStatus').onclick = () => $('#lintReportBox').classList.toggle('visible');
+    lintStatus.addEventListener('click', () => {
+      if (!activeIssues.length) {
+        showToast('Проблем не найдено');
+        return;
+      }
+      problemPanel.classList.toggle('visible');
+      if (problemPanel.classList.contains('visible')) showToast('Нажмите «Проблема», чтобы увидеть объяснение');
+    });
 
-    // Автоопределение синтаксиса
-    function detectLang(code) {
-      const ov = $('#langOverride').value; if(ov !== 'auto') return ov;
-      if(/import React|<[a-z]+>.*<\/[a-z]+>/i.test(code) && !/<html/i.test(code)) return 'jsx';
-      if(/<\s*html\b/i.test(code) || /<style|<div|<span|<h1/i.test(code)) return 'html';
-      if(/:\s*(number|string|boolean|any)\b|\binterface\b/.test(code)) return 'ts';
-      if(/\bdef\s+\w+\(|\bimport\s+\w+|print\s*\(/.test(code) && !/[;{}]/.test(code)) return 'py';
-      return 'js';
+    function openProblemSheet(issue) {
+      if (!issue) return;
+      $('#sheetKicker').textContent = (issue.level === 'error' ? 'Критическая проблема' : 'Предупреждение') + ' · строка ' + issue.line;
+      $('#sheetTitle').textContent = issue.title;
+      $('#sheetContent').innerHTML =
+        '<div class="plain-block"><b>Простыми словами</b><p>' + escapeHtml(issue.simple) + '</p></div>' +
+        '<div class="plain-block"><b>Почему это плохо</b><p>' + escapeHtml(issue.why) + '</p></div>' +
+        '<div class="plain-block"><b>Как исправить</b><p>' + escapeHtml(issue.fix) + '</p></div>' +
+        (issue.example ? '<pre class="code-sample">' + escapeHtml(issue.example) + '</pre>' : '') +
+        '<button class="run-btn" id="gotoProblemLine" type="button" style="width:100%; margin-top:12px;">Перейти к строке ' + issue.line + '</button>';
+
+      $('#sheetBackdrop').classList.add('visible');
+      $('#problemSheet').classList.add('visible');
+
+      $('#gotoProblemLine').addEventListener('click', () => {
+        closeProblemSheet();
+        switchTab('tab-editor');
+        setTimeout(() => {
+          editor.gotoLine(issue.line, 0, true);
+          editor.focus();
+        }, 80);
+      });
     }
+
+    function closeProblemSheet() {
+      $('#sheetBackdrop').classList.remove('visible');
+      $('#problemSheet').classList.remove('visible');
+    }
+
+    $('#sheetClose').addEventListener('click', closeProblemSheet);
+    $('#sheetBackdrop').addEventListener('click', closeProblemSheet);
+    window.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeProblemSheet();
+    });
 
     function detectAndApplyMode() {
       const code = editor.getValue();
       const lang = detectLang(code);
-      const modeMap = { html:'html', jsx:'javascript', js:'javascript', ts:'typescript', py:'python' };
-      editor.session.setMode(`ace/mode/${modeMap[lang] || 'javascript'}`);
+      applyMode(lang);
       runLinter(code, lang);
       return lang;
     }
 
     editor.session.on('change', () => {
-      localStorage.setItem('ucc4_code', editor.getValue());
-      detectAndApplyMode();
+      localStorage.setItem(STORAGE.code, editor.getValue());
+      clearTimeout(lintTimer);
+      lintTimer = setTimeout(detectAndApplyMode, 180);
     });
 
-    // Стартовый демонстрационный код
-    const DEFAULT_CODE = `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #111; color: white; }\n  </style>\n</head>\n<body>\n  <h1>UCC v4.1 Мобильная Вкладка! 🚀</h1>\n  <script>\n    var приветствие = "Автоанализатор проверит этот код!";\n    console.log("Лог успешно пишется в консоль.");\n  <\/script>\n</body>\n</html>`;
-    editor.setValue(localStorage.getItem('ucc4_code') || DEFAULT_CODE, -1);
-    detectAndApplyMode();
+    $('#langOverride').addEventListener('change', () => {
+      localStorage.setItem(STORAGE.lang, $('#langOverride').value);
+      detectAndApplyMode();
+      showToast('Режим языка обновлён');
+    });
 
-    // Динамический импорт зависимостей (Babel / TypeScript)
-    function loadScript(src) {
-      return new Promise((res, rej) => {
-        if(document.querySelector(`script[src="${src}"]`)) return res();
-        const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-      });
-    }
+    async function importFile(file) {
+      if (!file) return;
 
-    // Исполнение проектов
-    async function run() {
-      if (lintErrorsCount > 0) {
-        alert('Запуск заблокирован: Анализатор обнаружил критические ошибки логики или синтаксиса!');
-        $('#lintReportBox').classList.add('visible');
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        addRow('error', 'Файл слишком большой: ' + readableBytes(file.size) + '. Лучше импортировать файл до 5 МБ.');
+        switchTab('tab-output');
         return;
       }
 
-      const code = editor.getValue();
-      const lang = detectAndApplyMode();
-      $('#clearConsole').click();
-      
-      if(window.innerWidth < 900) $('#outputNavBtn').click();
-
       try {
-        if (['html', 'jsx', 'js', 'ts'].includes(lang)) {
-          addRow('info', 'Генерация превью-страницы...');
-          
-          let compiledCode = code;
-          if (lang === 'jsx') {
-            await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
-            compiledCode = Babel.transform(code, { presets: ['react', 'env'] }).code;
-          } else if (lang === 'ts') {
-            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
-            compiledCode = window.ts.transpile(code, { target: 'ES2020' });
-          }
+        const text = await file.text();
+        if (editor.getValue().trim() && !confirm('Заменить текущий код содержимым файла «' + file.name + '»?')) return;
 
-          // Построение окружения изоляции с обратной маршрутизацией сообщений консоли
-          let docHtml = '';
-          const captureScript = `<script>
-            (function(){
-              function send(k, a){ if(window.opener) window.opener.postMessage({type:'console', level:k, args:[].slice.call(a)}, '*'); }
-              ['log','info','warn','error'].forEach(fn => { const o=console[fn]; console[fn]=function(){ send(fn, arguments); o&&o.apply(console, arguments); } });
-              window.onerror = (msg, url, line) => send('error', [msg + " (Строка: " + line + ")"]);
-            })();
-          <\/script>`;
+        editor.setValue(text, -1);
+        editor.clearSelection();
+        lastImportedFileName = file.name;
+        fileNamePill.textContent = file.name;
+        localStorage.setItem(STORAGE.code, text);
 
-          if (lang === 'html') {
-            docHtml = code.includes('<head>') ? code.replace('<head>', '<head>' + captureScript) : captureScript + code;
-          } else {
-            docHtml = `<!DOCTYPE html><html><head>${captureScript}</head><body><div id="root"></div><script>${compiledCode}<\/script></body></html>`;
-          }
-
-          // Возвращённый классический метод вывода проекта в новой независимой вкладке браузера
-          const previewWindow = window.open('', '_blank');
-          previewWindow.document.open();
-          previewWindow.document.write(docHtml);
-          previewWindow.document.close();
-        } 
-        else if (lang === 'py') {
-          addRow('info', 'Инициализация Python (Pyodide)...');
-          if(!window.pyodide) {
-            await loadScript('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
-            window.pyodide = await loadPyodide();
-            window.pyodide.setStdout({ batched: s => addRow('log', s) });
-            window.pyodide.setStderr({ batched: s => addRow('error', s) });
-          }
-          await window.pyodide.runPythonAsync(code);
+        const langFromExt = extensionLang(file.name);
+        if (langFromExt !== 'auto') {
+          $('#langOverride').value = langFromExt;
+          localStorage.setItem(STORAGE.lang, langFromExt);
         }
-      } catch (err) {
-        addRow('error', String(err));
+
+        const lang = detectAndApplyMode();
+        addRow('info', 'Файл «' + file.name + '» импортирован как код. Размер: ' + readableBytes(file.size) + '. Режим: ' + lang + '.');
+        showToast('Файл импортирован');
+        switchTab('tab-editor');
+      } catch (error) {
+        addRow('error', 'Не удалось прочитать файл: ' + String(error));
+        switchTab('tab-output');
+      } finally {
+        fileInput.value = '';
       }
     }
 
-    $('#runBtn').onclick = run;
-    $('#langOverride').onchange = detectAndApplyMode;
+    $('#importBtn').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', event => importFile(event.target.files[0]));
 
-    // Перехват логов из открытой вкладки превью
-    window.addEventListener('message', e => {
-      if(e.data?.type === 'console') {
-        const text = e.data.args.map(x => typeof x === 'object' ? JSON.stringify(x, null, 2) : String(x)).join(' ');
-        addRow(e.data.level, text);
+    ;['dragenter', 'dragover'].forEach(name => {
+      editorWrap.addEventListener(name, event => {
+        event.preventDefault();
+        editorWrap.classList.add('dragging');
+      });
+    });
+
+    ;['dragleave', 'drop'].forEach(name => {
+      editorWrap.addEventListener(name, event => {
+        event.preventDefault();
+        if (name === 'drop') importFile(event.dataTransfer.files[0]);
+        editorWrap.classList.remove('dragging');
+      });
+    });
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector('script[src="' + src + '"]')) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Не удалось загрузить библиотеку: ' + src));
+        document.head.appendChild(script);
+      });
+    }
+
+    function buildConsoleCaptureScript() {
+      return `<script>
+        (function () {
+          function safe(value) {
+            try {
+              if (typeof value === 'string') return value;
+              return JSON.stringify(value, null, 2);
+            } catch (error) {
+              return String(value);
+            }
+          }
+
+          function send(level, args) {
+            parent.postMessage({
+              type: 'mobile-console',
+              level: level,
+              args: Array.prototype.slice.call(args).map(safe)
+            }, '*');
+          }
+
+          ['log', 'info', 'warn', 'error'].forEach(function (level) {
+            var original = console[level];
+            console[level] = function () {
+              send(level, arguments);
+              if (original) original.apply(console, arguments);
+            };
+          });
+
+          window.onerror = function (message, source, line, column) {
+            send('error', [String(message) + ' — строка ' + line + (column ? ', колонка ' + column : '')]);
+          };
+
+          window.onunhandledrejection = function (event) {
+            send('error', ['Promise error: ' + (event.reason && event.reason.message ? event.reason.message : event.reason)]);
+          };
+        })();
+      <\/script>`;
+    }
+
+    function createHtmlDocument(code, lang, compiledCode) {
+      const capture = buildConsoleCaptureScript();
+
+      if (lang === 'html') {
+        if (/<head[^>]*>/i.test(code)) return code.replace(/<head([^>]*)>/i, '<head$1>' + capture);
+        if (/<html[^>]*>/i.test(code)) return code.replace(/<html([^>]*)>/i, '<html$1><head>' + capture + '</head>');
+        return '<!DOCTYPE html><html><head>' + capture + '</head><body>' + code + '</body></html>';
+      }
+
+      return '<!DOCTYPE html><html lang="ru"><head>' +
+        '<meta charset="UTF-8" />' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1" />' +
+        capture +
+        '</head><body><div id="root"></div><script>' + compiledCode + '<\/script></body></html>';
+    }
+
+    async function run() {
+      const code = editor.getValue();
+      const lang = detectAndApplyMode();
+
+      $('#clearConsole').click();
+
+      if (!code.trim()) {
+        addRow('warn', 'Редактор пустой. Импортируйте файл или вставьте код.');
+        switchTab('tab-output');
+        return;
+      }
+
+      if (lintErrorsCount > 0) {
+        addRow('error', 'Запуск остановлен: сначала откройте «Проблема» и исправьте критические ошибки.');
+        problemPanel.classList.add('visible');
+        switchTab('tab-editor');
+        return;
+      }
+
+      try {
+        switchTab('tab-output');
+
+        if (['html', 'jsx', 'js', 'ts'].includes(lang)) {
+          let compiledCode = code;
+
+          if (lang === 'jsx') {
+            addRow('info', 'Компилирую React JSX через Babel...');
+            await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
+            compiledCode = Babel.transform(code, { presets: ['react', 'env'] }).code;
+          }
+
+          if (lang === 'ts') {
+            addRow('info', 'Компилирую TypeScript в JavaScript...');
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
+            compiledCode = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
+          }
+
+          previewBox.style.display = '';
+          const docHtml = createHtmlDocument(code, lang, compiledCode);
+          previewFrame.srcdoc = docHtml;
+          addRow('info', 'Код запущен во встроенном превью. Сообщения console.log будут здесь.');
+        } else if (lang === 'py') {
+          addRow('info', 'Запускаю Python через Pyodide. Первый запуск может занять немного времени.');
+          if (!window.pyodide) {
+            await loadScript('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
+            window.pyodide = await loadPyodide();
+            window.pyodide.setStdout({ batched: value => addRow('log', value) });
+            window.pyodide.setStderr({ batched: value => addRow('error', value) });
+          }
+          await window.pyodide.runPythonAsync(code);
+        } else if (lang === 'css') {
+          previewBox.style.display = '';
+          previewFrame.srcdoc = '<!DOCTYPE html><html><head><style>' + code + '</style></head><body><h1>CSS импортирован</h1><p>Стиль применён к этой тестовой странице.</p></body></html>';
+          addRow('info', 'CSS показан на тестовой странице в превью.');
+        }
+      } catch (error) {
+        addRow('error', String(error && error.stack ? error.stack : error));
+      }
+    }
+
+    $('#runBtn').addEventListener('click', run);
+    $('#mobileRunBtn').addEventListener('click', run);
+
+    window.addEventListener('message', event => {
+      if (event.data && event.data.type === 'mobile-console') {
+        addRow(event.data.level || 'log', (event.data.args || []).join(' '));
       }
     });
+
+    window.addEventListener('resize', () => {
+      editor.setFontSize(window.innerWidth < 480 ? 13.5 : 14);
+      editor.resize();
+    });
+
+    detectAndApplyMode();
   </script>
 </body>
 </html>
