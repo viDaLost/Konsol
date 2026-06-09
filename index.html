@@ -1084,104 +1084,6 @@
     let suppressEditorChange = false;
     let lastPreviewHtml = '';
 
-    function createTextareaEditorFallback() {
-      const mount = document.getElementById('editor');
-      const textarea = document.createElement('textarea');
-      textarea.setAttribute('aria-label', 'Редактор кода');
-      textarea.spellcheck = false;
-      textarea.style.cssText = [
-        'width:100%',
-        'height:100%',
-        'border:0',
-        'outline:0',
-        'resize:none',
-        'padding:14px',
-        'background:#0f172a',
-        'color:#e2e8f0',
-        'font:14px/1.5 var(--mono)',
-        'tab-size:2'
-      ].join(';');
-      mount.innerHTML = '';
-      mount.appendChild(textarea);
-
-      const changeHandlers = [];
-      textarea.addEventListener('input', () => changeHandlers.forEach(handler => handler()));
-      textarea.addEventListener('keydown', event => {
-        if (event.key === 'Tab') {
-          event.preventDefault();
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          textarea.setRangeText('  ', start, end, 'end');
-          changeHandlers.forEach(handler => handler());
-        }
-      });
-
-      return {
-        renderer: {
-          setPadding() {},
-          setScrollMargin() {}
-        },
-        session: {
-          setMode() {},
-          setAnnotations() {},
-          on(eventName, handler) {
-            if (eventName === 'change') changeHandlers.push(handler);
-          },
-          replace(_range, value) {
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            textarea.setRangeText(value, start, end, 'end');
-            changeHandlers.forEach(handler => handler());
-          }
-        },
-        selection: {
-          getRange() {
-            return null;
-          }
-        },
-        setOptions() {},
-        setTheme() {},
-        setFontSize(size) {
-          textarea.style.fontSize = typeof size === 'number' ? size + 'px' : size;
-        },
-        resize() {},
-        focus() {
-          textarea.focus();
-        },
-        getValue() {
-          return textarea.value;
-        },
-        setValue(value) {
-          textarea.value = value || '';
-          changeHandlers.forEach(handler => handler());
-        },
-        clearSelection() {
-          textarea.selectionStart = textarea.selectionEnd = 0;
-        },
-        getSelectedText() {
-          return textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-        },
-        insert(value) {
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          textarea.setRangeText(value, start, end, 'end');
-          changeHandlers.forEach(handler => handler());
-        },
-        gotoLine(line) {
-          const lines = textarea.value.split('\n');
-          const safeLine = Math.max(1, Math.min(line || 1, lines.length));
-          const position = lines.slice(0, safeLine - 1).join('\n').length + (safeLine > 1 ? 1 : 0);
-          textarea.focus();
-          textarea.setSelectionRange(position, position);
-        }
-      };
-    }
-
-    if (!window.ace) {
-      window.ace = { edit: createTextareaEditorFallback };
-      window.addEventListener('load', () => addRow('warn', 'Ace Editor не загрузился из CDN, поэтому включён резервный встроенный редактор. Кнопки и запуск работают.'));
-    }
-
     const editor = ace.edit('editor');
     editor.setOptions({
       fontSize: window.innerWidth < 480 ? '13.5px' : '14px',
@@ -1497,7 +1399,6 @@
       if (restored && typeof restored === 'object' && Object.keys(restored).length) {
         projectFiles = restored;
         activeFileName = localStorage.getItem(STORAGE.activeFile) || chooseDefaultFile(projectFiles);
-        if (!Object.prototype.hasOwnProperty.call(projectFiles, activeFileName)) activeFileName = chooseDefaultFile(projectFiles);
       } else {
         projectFiles = { 'index.html': localStorage.getItem(STORAGE.code) || DEFAULT_CODE };
         activeFileName = 'index.html';
@@ -1839,7 +1740,7 @@
 
         for (const file of files) {
           const text = await file.text();
-          const name = Object.prototype.hasOwnProperty.call(projectFiles, file.name) ? file.name : uniqueProjectName(file.name);
+          const name = projectFiles[file.name] ? file.name : uniqueProjectName(file.name);
           projectFiles[name] = text;
           importedNames.push(name);
         }
@@ -1998,7 +1899,7 @@
       const notLinked = [];
       cssEntries.forEach(([name, css]) => {
         const namePattern = escapeRegExp(baseName(name));
-        const linkRegex = new RegExp(`<link\\b(?=[^>]*rel=["'][^"']*stylesheet[^"']*["'])(?=[^>]*href=["'][^"']*${namePattern}[^"']*["'])[^>]*>`, 'i');
+        const linkRegex = new RegExp("<link\\b(?=[^>]*rel=[\"'][^\"']*stylesheet[^\"']*[\"'])(?=[^>]*href=[\"'][^\"']*" + namePattern + "[^\"']*[\"'])[^>]*>", 'i');
         const styleTag = '<style data-project-file="' + escapeHtml(name) + '">\n' + safeStyleContent(css) + '\n</style>';
         if (linkRegex.test(html)) html = html.replace(linkRegex, styleTag);
         else notLinked.push(styleTag);
@@ -2011,7 +1912,7 @@
       const notLinked = [];
       jsEntries.forEach(([name, js]) => {
         const namePattern = escapeRegExp(baseName(name));
-        const scriptRegex = new RegExp(`<script\\b(?=[^>]*src=["'][^"']*${namePattern}[^"']*["'])[^>]*>\\s*<\\/script>`, 'i');
+        const scriptRegex = new RegExp("<script\\b(?=[^>]*src=[\"'][^\"']*" + namePattern + "[^\"']*[\"'])[^>]*>\\s*<\\/script>", 'i');
         const scriptTag = '<script data-project-file="' + escapeHtml(name) + '">\n' + safeScriptContent(js) + '\n<\/script>';
         if (scriptRegex.test(html)) html = html.replace(scriptRegex, scriptTag);
         else notLinked.push(scriptTag);
@@ -2054,9 +1955,7 @@
       if (lang === 'ts') {
         addRow('info', 'Компилирую TypeScript в JavaScript...');
         await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
-        compiledCode = window.ts.transpileModule
-          ? window.ts.transpileModule(code, { compilerOptions: { target: window.ts.ScriptTarget.ES2020 } }).outputText
-          : window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
+        compiledCode = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
       }
 
       if (lang === 'css') {
