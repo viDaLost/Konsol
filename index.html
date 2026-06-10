@@ -277,6 +277,64 @@
       letter-spacing: 0;
     }
 
+    .file-tabs {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 9px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .file-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .file-tabs.visible {
+      display: flex;
+    }
+
+    .file-tab {
+      min-height: 34px;
+      max-width: 190px;
+      flex: 0 0 auto;
+      justify-content: flex-start;
+      border-radius: 999px;
+      padding: 7px 11px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .file-tab.active {
+      border-color: rgba(56, 189, 248, 0.30);
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+
+    .file-tab-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-tab-ext {
+      opacity: 0.72;
+      font-size: 11px;
+    }
+
+    .project-hint {
+      flex: 0 0 auto;
+      margin-left: 2px;
+      color: var(--muted-2);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
     .tool-scroll {
       display: flex;
       align-items: center;
@@ -780,6 +838,16 @@
         padding: 8px;
       }
 
+
+      .file-tabs {
+        padding: 7px 8px;
+      }
+
+      .file-tab {
+        max-width: 62vw;
+        min-height: 36px;
+      }
+
       .screen-head {
         flex-wrap: wrap;
       }
@@ -902,9 +970,11 @@
           <button class="status-chip clean" id="lintStatus" type="button">✨ Код чист</button>
         </div>
 
+        <div class="file-tabs" id="fileTabs" aria-label="Файлы проекта"></div>
+
         <div class="editor-wrap" id="editorWrap">
           <div id="editor"></div>
-          <div class="drop-hint">Перетащите файл сюда<br />и он откроется как код</div>
+          <div class="drop-hint">Перетащите один или несколько файлов<br />и приложение соберёт их в проект</div>
         </div>
 
         <div class="problem-panel" id="problemPanel"></div>
@@ -915,6 +985,7 @@
           <div class="screen-title">📟 Консоль и превью</div>
           <div class="tool-scroll">
             <button class="mini-btn" id="togglePreview" type="button">👁 Превью</button>
+            <button class="mini-btn" id="openPreviewPage" type="button">↗ Отдельно</button>
             <button class="mini-btn" id="clearConsole" type="button">Очистить</button>
           </div>
         </div>
@@ -937,7 +1008,7 @@
     </nav>
   </div>
 
-  <input class="hidden-input" id="fileInput" type="file" accept=".html,.htm,.css,.js,.jsx,.ts,.tsx,.py,.json,.txt,.md,.xml,.svg" />
+  <input class="hidden-input" id="fileInput" type="file" multiple accept=".html,.htm,.css,.js,.mjs,.cjs,.jsx,.ts,.tsx,.py,.json,.txt,.md,.xml,.svg" />
 
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
   <aside class="problem-sheet" id="problemSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -963,7 +1034,8 @@
       theme: 'ucc_mobile_pro_theme',
       code: 'ucc_mobile_pro_code',
       lang: 'ucc_mobile_pro_lang',
-      preview: 'ucc_mobile_pro_preview_visible'
+      preview: 'ucc_mobile_pro_preview_visible',
+      project: 'ucc_mobile_pro_project_files'
     };
 
     const logEl = $('#log');
@@ -975,12 +1047,18 @@
     const fileInput = $('#fileInput');
     const fileNamePill = $('#fileNamePill');
     const editorWrap = $('#editorWrap');
+    const fileTabs = $('#fileTabs');
 
     let activeIssues = [];
     let lintErrorsCount = 0;
     let lintTimer = 0;
     let toastTimer = 0;
     let lastImportedFileName = '';
+    let projectFiles = new Map();
+    let activeFileName = '';
+    let isSwitchingFile = false;
+    let activePreviewUrl = '';
+    let externalPreviewUrl = '';
 
     const editor = ace.edit('editor');
     editor.setOptions({
@@ -1139,6 +1217,7 @@
       if (confirm('Стереть весь код из редактора?')) {
         editor.setValue('', -1);
         localStorage.removeItem(STORAGE.code);
+        clearProjectState();
         fileNamePill.textContent = 'без файла';
         lastImportedFileName = '';
         $('#clearConsole').click();
@@ -1184,7 +1263,170 @@
 </body>
 </html>`;
 
-    editor.setValue(localStorage.getItem(STORAGE.code) || DEFAULT_CODE, -1);
+    function getFileExt(fileName) {
+      return (fileName.split('.').pop() || '').toLowerCase();
+    }
+
+    function fileIcon(fileName) {
+      const ext = getFileExt(fileName);
+      if (['html', 'htm'].includes(ext)) return '🌐';
+      if (ext === 'css') return '🎨';
+      if (['js', 'mjs', 'cjs'].includes(ext)) return '⚙️';
+      if (['ts', 'tsx'].includes(ext)) return '🔷';
+      if (ext === 'jsx') return '⚛️';
+      if (ext === 'py') return '🐍';
+      return '📄';
+    }
+
+    function uniqueFileName(name, existingMap) {
+      const normalized = name || 'file.txt';
+      if (!existingMap.has(normalized)) return normalized;
+
+      const dot = normalized.lastIndexOf('.');
+      const base = dot > 0 ? normalized.slice(0, dot) : normalized;
+      const ext = dot > 0 ? normalized.slice(dot) : '';
+      let index = 2;
+      let candidate = base + '-' + index + ext;
+
+      while (existingMap.has(candidate)) {
+        index++;
+        candidate = base + '-' + index + ext;
+      }
+
+      return candidate;
+    }
+
+    function projectFileList() {
+      return Array.from(projectFiles.values());
+    }
+
+    function hasProjectFiles() {
+      return projectFiles.size > 0;
+    }
+
+    function saveProject() {
+      if (!hasProjectFiles()) {
+        localStorage.removeItem(STORAGE.project);
+        return;
+      }
+
+      const payload = {
+        activeFileName,
+        files: projectFileList().map(file => ({
+          name: file.name,
+          content: file.content,
+          size: file.size || new Blob([file.content || '']).size,
+          lastModified: file.lastModified || Date.now()
+        }))
+      };
+
+      localStorage.setItem(STORAGE.project, JSON.stringify(payload));
+    }
+
+    function loadProject() {
+      try {
+        const raw = localStorage.getItem(STORAGE.project);
+        if (!raw) return false;
+
+        const payload = JSON.parse(raw);
+        if (!payload || !Array.isArray(payload.files) || !payload.files.length) return false;
+
+        projectFiles = new Map();
+        payload.files.forEach(file => {
+          if (!file || !file.name) return;
+          projectFiles.set(file.name, {
+            name: file.name,
+            content: String(file.content || ''),
+            size: Number(file.size || 0),
+            lastModified: Number(file.lastModified || Date.now())
+          });
+        });
+
+        if (!projectFiles.size) return false;
+        activeFileName = projectFiles.has(payload.activeFileName) ? payload.activeFileName : projectFileList()[0].name;
+        return true;
+      } catch (error) {
+        localStorage.removeItem(STORAGE.project);
+        return false;
+      }
+    }
+
+    function saveActiveEditorFile() {
+      if (!activeFileName || !projectFiles.has(activeFileName)) return;
+
+      const file = projectFiles.get(activeFileName);
+      file.content = editor.getValue();
+      file.size = new Blob([file.content]).size;
+      projectFiles.set(activeFileName, file);
+      saveProject();
+    }
+
+    function clearProjectState() {
+      projectFiles.clear();
+      activeFileName = '';
+      lastImportedFileName = '';
+      localStorage.removeItem(STORAGE.project);
+      renderFileTabs();
+    }
+
+    function renderFileTabs() {
+      fileTabs.innerHTML = '';
+
+      if (!projectFiles.size) {
+        fileTabs.classList.remove('visible');
+        fileNamePill.textContent = lastImportedFileName || 'без файла';
+        return;
+      }
+
+      fileTabs.classList.add('visible');
+      projectFileList().forEach(file => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'file-tab' + (file.name === activeFileName ? ' active' : '');
+        button.title = file.name;
+        button.innerHTML = '<span aria-hidden="true">' + fileIcon(file.name) + '</span><span class="file-tab-name">' + escapeHtml(file.name) + '</span><span class="file-tab-ext">' + escapeHtml(readableBytes(file.size || new Blob([file.content || '']).size)) + '</span>';
+        button.addEventListener('click', () => setActiveFile(file.name));
+        fileTabs.appendChild(button);
+      });
+
+      const hint = document.createElement('span');
+      hint.className = 'project-hint';
+      hint.textContent = projectFiles.size > 1 ? 'Сборка проекта' : 'Один файл';
+      fileTabs.appendChild(hint);
+
+      fileNamePill.textContent = activeFileName || 'без файла';
+    }
+
+    function setActiveFile(fileName, options = {}) {
+      if (!projectFiles.has(fileName)) return;
+      if (!options.skipSave) saveActiveEditorFile();
+
+      const file = projectFiles.get(fileName);
+      activeFileName = file.name;
+      lastImportedFileName = file.name;
+      isSwitchingFile = true;
+      editor.setValue(file.content || '', -1);
+      editor.clearSelection();
+      isSwitchingFile = false;
+
+      const langFromExt = extensionLang(file.name);
+      if (langFromExt !== 'auto') {
+        $('#langOverride').value = langFromExt;
+        localStorage.setItem(STORAGE.lang, langFromExt);
+      }
+
+      renderFileTabs();
+      detectAndApplyMode();
+      saveProject();
+      setTimeout(() => editor.resize(), 40);
+    }
+
+    if (loadProject()) {
+      setActiveFile(activeFileName, { skipSave: true });
+    } else {
+      editor.setValue(localStorage.getItem(STORAGE.code) || DEFAULT_CODE, -1);
+      renderFileTabs();
+    }
 
     function extensionLang(fileName) {
       const ext = (fileName.split('.').pop() || '').toLowerCase();
@@ -1477,7 +1719,19 @@
     }
 
     editor.session.on('change', () => {
-      localStorage.setItem(STORAGE.code, editor.getValue());
+      if (!isSwitchingFile) {
+        if (activeFileName && projectFiles.has(activeFileName)) {
+          const file = projectFiles.get(activeFileName);
+          file.content = editor.getValue();
+          file.size = new Blob([file.content]).size;
+          projectFiles.set(activeFileName, file);
+          saveProject();
+          renderFileTabs();
+        } else {
+          localStorage.setItem(STORAGE.code, editor.getValue());
+        }
+      }
+
       clearTimeout(lintTimer);
       lintTimer = setTimeout(detectAndApplyMode, 180);
     });
@@ -1488,38 +1742,66 @@
       showToast('Режим языка обновлён');
     });
 
-    async function importFile(file) {
-      if (!file) return;
-
+    async function readProjectFile(file, existingMap) {
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
-        addRow('error', 'Файл слишком большой: ' + readableBytes(file.size) + '. Лучше импортировать файл до 5 МБ.');
-        switchTab('tab-output');
+        throw new Error('Файл «' + file.name + '» слишком большой: ' + readableBytes(file.size) + '. Лучше импортировать файлы до 5 МБ.');
+      }
+
+      const text = await file.text();
+      const safeName = uniqueFileName(file.name, existingMap);
+      return {
+        name: safeName,
+        content: text,
+        size: file.size,
+        lastModified: file.lastModified || Date.now()
+      };
+    }
+
+    async function importFiles(fileList) {
+      const files = Array.from(fileList || []).filter(Boolean);
+      if (!files.length) return;
+
+      const hasCurrentCode = editor.getValue().trim() || projectFiles.size;
+      const confirmText = files.length === 1
+        ? 'Заменить текущий код файлом «' + files[0].name + '»?'
+        : 'Заменить текущий проект этими файлами?\n\n' + files.map(file => '• ' + file.name).join('\n');
+
+      if (hasCurrentCode && !confirm(confirmText)) {
+        fileInput.value = '';
         return;
       }
 
       try {
-        const text = await file.text();
-        if (editor.getValue().trim() && !confirm('Заменить текущий код содержимым файла «' + file.name + '»?')) return;
-
-        editor.setValue(text, -1);
-        editor.clearSelection();
-        lastImportedFileName = file.name;
-        fileNamePill.textContent = file.name;
-        localStorage.setItem(STORAGE.code, text);
-
-        const langFromExt = extensionLang(file.name);
-        if (langFromExt !== 'auto') {
-          $('#langOverride').value = langFromExt;
-          localStorage.setItem(STORAGE.lang, langFromExt);
+        const nextFiles = new Map();
+        for (const file of files) {
+          const projectFile = await readProjectFile(file, nextFiles);
+          nextFiles.set(projectFile.name, projectFile);
         }
 
-        const lang = detectAndApplyMode();
-        addRow('info', 'Файл «' + file.name + '» импортирован как код. Размер: ' + readableBytes(file.size) + '. Режим: ' + lang + '.');
-        showToast('Файл импортирован');
+        projectFiles = nextFiles;
+        const htmlEntry = projectFileList().find(file => /(^|\/|\\)index\.html?$/i.test(file.name)) || projectFileList().find(file => /\.html?$/i.test(file.name));
+        const firstRunnable = htmlEntry || projectFileList().find(file => /\.(js|jsx|ts|tsx|css)$/i.test(file.name)) || projectFileList()[0];
+
+        activeFileName = firstRunnable.name;
+        lastImportedFileName = firstRunnable.name;
+        localStorage.removeItem(STORAGE.code);
+        setActiveFile(activeFileName, { skipSave: true });
+
+        const names = projectFileList().map(file => file.name).join(', ');
+        const totalSize = projectFileList().reduce((sum, file) => sum + (file.size || 0), 0);
+        addRow('info', 'Импортировано файлов: ' + projectFiles.size + '. Общий размер: ' + readableBytes(totalSize) + '. Файлы: ' + names + '.');
+
+        if (projectFiles.size > 1) {
+          addRow('info', 'Теперь при запуске приложение собирает проект: HTML берётся из index.html, CSS вставляется в <head>, JS вставляется перед </body>.');
+          showToast('Проект импортирован');
+        } else {
+          showToast('Файл импортирован');
+        }
+
         switchTab('tab-editor');
       } catch (error) {
-        addRow('error', 'Не удалось прочитать файл: ' + String(error));
+        addRow('error', 'Не удалось импортировать файлы: ' + String(error && error.message ? error.message : error));
         switchTab('tab-output');
       } finally {
         fileInput.value = '';
@@ -1527,7 +1809,7 @@
     }
 
     $('#importBtn').addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', event => importFile(event.target.files[0]));
+    fileInput.addEventListener('change', event => importFiles(event.target.files));
 
     ;['dragenter', 'dragover'].forEach(name => {
       editorWrap.addEventListener(name, event => {
@@ -1539,7 +1821,7 @@
     ;['dragleave', 'drop'].forEach(name => {
       editorWrap.addEventListener(name, event => {
         event.preventDefault();
-        if (name === 'drop') importFile(event.dataTransfer.files[0]);
+        if (name === 'drop') importFiles(event.dataTransfer.files);
         editorWrap.classList.remove('dragging');
       });
     });
@@ -1567,12 +1849,22 @@
             }
           }
 
+          function post(payload) {
+            try {
+              if (window.parent && window.parent !== window) window.parent.postMessage(payload, '*');
+            } catch (error) {}
+
+            try {
+              if (window.opener && !window.opener.closed) window.opener.postMessage(payload, '*');
+            } catch (error) {}
+          }
+
           function send(level, args) {
-            parent.postMessage({
+            post({
               type: 'mobile-console',
               level: level,
               args: Array.prototype.slice.call(args).map(safe)
-            }, '*');
+            });
           }
 
           ['log', 'info', 'warn', 'error'].forEach(function (level) {
@@ -1610,14 +1902,240 @@
         '</head><body><div id="root"></div><script>' + compiledCode + '<\/script></body></html>';
     }
 
+
+    function normalizeFileRef(value) {
+      let ref = String(value || '').trim().replace(/\\/g, '/');
+      ref = ref.split('#')[0].split('?')[0];
+      try { ref = decodeURIComponent(ref); } catch (error) {}
+      ref = ref.replace(/^\.\//, '').replace(/^\//, '');
+      return ref;
+    }
+
+    function findProjectFile(ref) {
+      const normalized = normalizeFileRef(ref);
+      if (!normalized) return null;
+      if (projectFiles.has(normalized)) return projectFiles.get(normalized);
+
+      const noDot = normalized.replace(/^\.\//, '');
+      if (projectFiles.has(noDot)) return projectFiles.get(noDot);
+
+      const baseName = noDot.split('/').pop();
+      return projectFileList().find(file => file.name === baseName || file.name.endsWith('/' + baseName)) || null;
+    }
+
+    function isStyleFile(name) {
+      return /\.css$/i.test(name);
+    }
+
+    function isScriptFile(name) {
+      return /\.(js|mjs|cjs|jsx|ts|tsx)$/i.test(name);
+    }
+
+    function escapeAttribute(value) {
+      return String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    }
+
+    function safeStyleContent(value) {
+      return String(value || '').replace(/<\/style/gi, '<\\/style');
+    }
+
+    function safeScriptContent(value) {
+      return String(value || '').replace(/<\/script/gi, '<\\/script');
+    }
+
+    function insertIntoHead(html, content) {
+      if (!content) return html;
+      if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, content + '\n</head>');
+      if (/<body([^>]*)>/i.test(html)) return html.replace(/<body([^>]*)>/i, '<head>' + content + '\n</head><body$1>');
+      return '<head>' + content + '\n</head>' + html;
+    }
+
+    function insertBeforeBodyEnd(html, content) {
+      if (!content) return html;
+      if (/<\/body>/i.test(html)) return html.replace(/<\/body>/i, content + '\n</body>');
+      return html + '\n' + content;
+    }
+
+    async function transpileProjectScript(file) {
+      const ext = getFileExt(file.name);
+      let code = file.content || '';
+
+      if (ext === 'jsx') {
+        addRow('info', 'Компилирую JSX-файл «' + file.name + '» через Babel...');
+        await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
+        code = Babel.transform(code, { presets: ['react', 'env'] }).code;
+      }
+
+      if (['ts', 'tsx'].includes(ext)) {
+        addRow('info', 'Компилирую TypeScript-файл «' + file.name + '» в JavaScript...');
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
+        if (window.ts.transpileModule) {
+          code = window.ts.transpileModule(code, {
+            compilerOptions: {
+              target: window.ts.ScriptTarget.ES2020,
+              jsx: window.ts.JsxEmit ? window.ts.JsxEmit.React : undefined
+            }
+          }).outputText;
+        } else {
+          code = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
+        }
+      }
+
+      return safeScriptContent(code);
+    }
+
+    async function buildProjectDocument() {
+      saveActiveEditorFile();
+
+      const files = projectFileList();
+      const htmlFile = files.find(file => /(^|\/|\\)index\.html?$/i.test(file.name)) || files.find(file => /\.html?$/i.test(file.name));
+      const cssFiles = files.filter(file => isStyleFile(file.name));
+      const scriptFiles = files.filter(file => isScriptFile(file.name));
+      const usedCss = new Set();
+      const usedScripts = new Set();
+      let html = htmlFile ? htmlFile.content : '';
+
+      if (htmlFile) {
+        html = html.replace(/<link\b([^>]*?)\bhref\s*=\s*(['"])([^'"]+)\2([^>]*)>/gi, (match, before, quote, href) => {
+          const file = findProjectFile(href);
+          if (!file || !isStyleFile(file.name)) return match;
+          usedCss.add(file.name);
+          return '<style data-project-file="' + escapeAttribute(file.name) + '">\n' + safeStyleContent(file.content) + '\n</style>';
+        });
+
+        html = html.replace(/<script\b([^>]*?)\bsrc\s*=\s*(['"])([^'"]+)\2([^>]*)>\s*<\/script>/gi, (match, before, quote, src, after) => {
+          const file = findProjectFile(src);
+          if (!file || !isScriptFile(file.name)) return match;
+          usedScripts.add(file.name);
+          const attrs = (before + ' ' + after).replace(/\s+src\s*=\s*(['"])[^'"]+\1/i, '').trim();
+          return '<script ' + (attrs ? attrs + ' ' : '') + 'data-project-file="' + escapeAttribute(file.name) + '">\n' + safeScriptContent(file.content) + '\n<\/script>';
+        });
+      } else {
+        html = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Project Preview</title></head><body><div id="root"></div></body></html>';
+      }
+
+      const missingStyles = cssFiles
+        .filter(file => !usedCss.has(file.name))
+        .map(file => '<style data-project-file="' + escapeAttribute(file.name) + '">\n' + safeStyleContent(file.content) + '\n</style>')
+        .join('\n');
+      html = insertIntoHead(html, missingStyles);
+
+      const missingScripts = [];
+      for (const file of scriptFiles) {
+        if (usedScripts.has(file.name)) continue;
+        const scriptCode = await transpileProjectScript(file);
+        missingScripts.push('<script data-project-file="' + escapeAttribute(file.name) + '">\n' + scriptCode + '\n<\/script>');
+      }
+      html = insertBeforeBodyEnd(html, missingScripts.join('\n'));
+
+      return createHtmlDocument(html, 'html', '');
+    }
+
+    async function buildPreviewDocument(code, lang) {
+      if (hasProjectFiles()) {
+        addRow('info', 'Собираю проект из ' + projectFiles.size + ' файлов...');
+        return {
+          html: await buildProjectDocument(),
+          label: 'Проект собран и запущен. Console.log из встроенного и отдельного превью будет появляться здесь.'
+        };
+      }
+
+      if (['html', 'jsx', 'js', 'ts'].includes(lang)) {
+        let compiledCode = code;
+
+        if (lang === 'jsx') {
+          addRow('info', 'Компилирую React JSX через Babel...');
+          await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
+          compiledCode = Babel.transform(code, { presets: ['react', 'env'] }).code;
+        }
+
+        if (lang === 'ts') {
+          addRow('info', 'Компилирую TypeScript в JavaScript...');
+          await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
+          compiledCode = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
+        }
+
+        return {
+          html: createHtmlDocument(code, lang, compiledCode),
+          label: 'Код запущен во встроенном превью. Сообщения console.log будут здесь.'
+        };
+      }
+
+      if (lang === 'css') {
+        return {
+          html: createHtmlDocument('<!DOCTYPE html><html><head><style>' + safeStyleContent(code) + '</style></head><body><h1>CSS импортирован</h1><p>Стиль применён к этой тестовой странице.</p></body></html>', 'html', ''),
+          label: 'CSS показан на тестовой странице в превью.'
+        };
+      }
+
+      return null;
+    }
+
+    function writeExternalPlaceholder(targetWindow, title, text) {
+      try {
+        targetWindow.document.open();
+        targetWindow.document.write('<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escapeHtml(title) + '</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0}.box{max-width:420px;padding:24px;text-align:center}h1{font-size:24px;margin:0 0 10px}p{color:#94a3b8}</style></head><body><main class="box"><h1>' + escapeHtml(title) + '</h1><p>' + escapeHtml(text) + '</p></main></body></html>');
+        targetWindow.document.close();
+      } catch (error) {}
+    }
+
+    async function openPreviewInNewPage() {
+      const targetWindow = window.open('about:blank', '_blank');
+      if (!targetWindow) {
+        addRow('error', 'Браузер заблокировал новую вкладку. На телефоне разрешите всплывающие окна или нажмите кнопку ещё раз.');
+        switchTab('tab-output');
+        return;
+      }
+
+      writeExternalPlaceholder(targetWindow, 'Собираю превью…', 'Окно открылось сразу, чтобы мобильный браузер не заблокировал запуск.');
+
+      const code = editor.getValue();
+      const lang = detectAndApplyMode();
+      const empty = !code.trim() && !hasProjectFiles();
+
+      if (empty) {
+        writeExternalPlaceholder(targetWindow, 'Превью пустое', 'Импортируйте файлы или вставьте код, затем запустите просмотр ещё раз.');
+        addRow('warn', 'Новая вкладка открыта, но кода для превью пока нет.');
+        switchTab('tab-output');
+        return;
+      }
+
+      if (lintErrorsCount > 0) {
+        writeExternalPlaceholder(targetWindow, 'Есть критическая проблема', 'Сначала откройте «Проблема» и исправьте ошибку в коде.');
+        addRow('error', 'Отдельное превью не запущено: в коде есть критическая проблема.');
+        problemPanel.classList.add('visible');
+        switchTab('tab-editor');
+        return;
+      }
+
+      try {
+        const preview = await buildPreviewDocument(code, lang);
+        if (!preview) {
+          writeExternalPlaceholder(targetWindow, 'Нет HTML-превью', 'Для Python используйте встроенную консоль запуска.');
+          addRow('warn', 'Отдельное окно доступно для HTML/CSS/JS-проектов. Python запускается во встроенной консоли.');
+          return;
+        }
+
+        if (externalPreviewUrl) URL.revokeObjectURL(externalPreviewUrl);
+        externalPreviewUrl = URL.createObjectURL(new Blob([preview.html], { type: 'text/html;charset=utf-8' }));
+        targetWindow.location.href = externalPreviewUrl;
+        addRow('info', 'Превью открыто на отдельной странице. Если эта вкладка приложения остаётся открытой, console.log из новой страницы тоже будет приходить сюда.');
+        switchTab('tab-output');
+      } catch (error) {
+        writeExternalPlaceholder(targetWindow, 'Ошибка сборки', String(error && error.message ? error.message : error));
+        addRow('error', String(error && error.stack ? error.stack : error));
+        switchTab('tab-output');
+      }
+    }
+
     async function run() {
       const code = editor.getValue();
       const lang = detectAndApplyMode();
 
       $('#clearConsole').click();
 
-      if (!code.trim()) {
-        addRow('warn', 'Редактор пустой. Импортируйте файл или вставьте код.');
+      if (!code.trim() && !hasProjectFiles()) {
+        addRow('warn', 'Редактор пустой. Импортируйте один или несколько файлов или вставьте код.');
         switchTab('tab-output');
         return;
       }
@@ -1632,26 +2150,7 @@
       try {
         switchTab('tab-output');
 
-        if (['html', 'jsx', 'js', 'ts'].includes(lang)) {
-          let compiledCode = code;
-
-          if (lang === 'jsx') {
-            addRow('info', 'Компилирую React JSX через Babel...');
-            await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
-            compiledCode = Babel.transform(code, { presets: ['react', 'env'] }).code;
-          }
-
-          if (lang === 'ts') {
-            addRow('info', 'Компилирую TypeScript в JavaScript...');
-            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
-            compiledCode = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
-          }
-
-          previewBox.style.display = '';
-          const docHtml = createHtmlDocument(code, lang, compiledCode);
-          previewFrame.srcdoc = docHtml;
-          addRow('info', 'Код запущен во встроенном превью. Сообщения console.log будут здесь.');
-        } else if (lang === 'py') {
+        if (lang === 'py' && !hasProjectFiles()) {
           addRow('info', 'Запускаю Python через Pyodide. Первый запуск может занять немного времени.');
           if (!window.pyodide) {
             await loadScript('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
@@ -1660,11 +2159,18 @@
             window.pyodide.setStderr({ batched: value => addRow('error', value) });
           }
           await window.pyodide.runPythonAsync(code);
-        } else if (lang === 'css') {
-          previewBox.style.display = '';
-          previewFrame.srcdoc = '<!DOCTYPE html><html><head><style>' + code + '</style></head><body><h1>CSS импортирован</h1><p>Стиль применён к этой тестовой странице.</p></body></html>';
-          addRow('info', 'CSS показан на тестовой странице в превью.');
+          return;
         }
+
+        const preview = await buildPreviewDocument(code, lang);
+        if (!preview) {
+          addRow('warn', 'Для этого языка нет визуального превью. Используйте HTML/CSS/JS или Python-консоль.');
+          return;
+        }
+
+        previewBox.style.display = '';
+        previewFrame.srcdoc = preview.html;
+        addRow('info', preview.label);
       } catch (error) {
         addRow('error', String(error && error.stack ? error.stack : error));
       }
@@ -1672,6 +2178,7 @@
 
     $('#runBtn').addEventListener('click', run);
     $('#mobileRunBtn').addEventListener('click', run);
+    $('#openPreviewPage').addEventListener('click', openPreviewInNewPage);
 
     window.addEventListener('message', event => {
       if (event.data && event.data.type === 'mobile-console') {
