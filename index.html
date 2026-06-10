@@ -1,329 +1,2197 @@
 <!DOCTYPE html>
-<html lang="ru" class="scroll-smooth">
+<html lang="ru" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rostislav & Valida — Wedding</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        burgundy: '#5B1A24',
-                        olive: '#4F5D41',
-                        ivory: '#FAF7F2',
-                        velvet: '#1A1A1A',
-                        gold: '#C5A880',
-                        'gold-light': '#E5D4BC'
-                    },
-                    fontFamily: {
-                        serif: ['"Cormorant Garamond"', 'serif'],
-                        sans: ['"Montserrat"', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .fade-in-element {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 1.2s cubic-bezier(0.215, 0.610, 0.355, 1), transform 1.2s cubic-bezier(0.215, 0.610, 0.355, 1);
-        }
-        .fade-in-element.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .blur-backdrop {
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-    </style>
-</head>
-<body class="bg-ivory text-velvet font-sans overflow-x-hidden antialiased">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Универсальная мобильная консоль — Mobile PRO</title>
 
-    <header class="fixed top-0 left-0 w-full z-50 bg-ivory/80 blur-backdrop border-b border-gold/10">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#" class="font-serif text-2xl tracking-widest text-burgundy font-light">R & V</a>
-            <nav class="hidden md:flex space-x-8 text-xs uppercase tracking-widest font-medium text-velvet/70">
-                <a href="#details" class="hover:text-burgundy transition-colors duration-300">Наша Свадьба</a>
-                <a href="#story" class="hover:text-burgundy transition-colors duration-300">Наша История</a>
-                <a href="#gifts" class="hover:text-burgundy transition-colors duration-300">Подарки</a>
-                <a href="#gallery" class="hover:text-burgundy transition-colors duration-300">Фотографии</a>
-                <a href="#rsvp" class="hover:text-burgundy transition-colors duration-300">Подтверждение</a>
-            </nav>
-            <a href="#rsvp" class="border border-burgundy/40 text-burgundy text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-burgundy hover:text-ivory transition-all duration-500">RSVP</a>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070a12;
+      --bg-soft: #0d1220;
+      --panel: rgba(17, 24, 39, 0.92);
+      --panel-2: rgba(30, 41, 59, 0.78);
+      --panel-3: #101827;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --muted-2: #64748b;
+      --line: rgba(148, 163, 184, 0.14);
+      --accent: #7c3aed;
+      --accent-2: #38bdf8;
+      --accent-soft: rgba(124, 58, 237, 0.18);
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --err: #ef4444;
+      --radius-sm: 12px;
+      --radius: 18px;
+      --radius-lg: 28px;
+      --shadow: 0 22px 80px rgba(0, 0, 0, 0.42);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f3f6fb;
+      --bg-soft: #eaf0f8;
+      --panel: rgba(255, 255, 255, 0.92);
+      --panel-2: rgba(241, 245, 249, 0.9);
+      --panel-3: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --muted-2: #94a3b8;
+      --line: rgba(15, 23, 42, 0.10);
+      --accent: #2563eb;
+      --accent-2: #0891b2;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --shadow: 0 22px 70px rgba(15, 23, 42, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(124, 58, 237, 0.28), transparent 32rem),
+        radial-gradient(circle at 82% 12%, rgba(56, 189, 248, 0.16), transparent 26rem),
+        linear-gradient(145deg, var(--bg), var(--bg-soft));
+      color: var(--text);
+      font: 14px/1.5 var(--sans);
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    button,
+    select {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 12px;
+      font-weight: 750;
+      letter-spacing: -0.01em;
+      transition: transform 160ms ease, opacity 160ms ease, background 160ms ease, border 160ms ease;
+    }
+
+    button:active {
+      transform: scale(0.96);
+      opacity: 0.86;
+    }
+
+    button:focus-visible,
+    select:focus-visible {
+      outline: 3px solid rgba(56, 189, 248, 0.35);
+      outline-offset: 2px;
+    }
+
+    select {
+      max-width: 145px;
+      padding: 0 34px 0 12px;
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, currentColor 50%),
+        linear-gradient(135deg, currentColor 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) 18px,
+        calc(100% - 13px) 18px;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    .app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+      padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 30% 20%, #ffffff 0 8%, transparent 9%),
+        linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 20px;
+      box-shadow: 0 12px 30px rgba(124, 58, 237, 0.25);
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-title {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(14px, 4vw, 17px);
+      font-weight: 850;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-subtitle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .icon-btn {
+      width: 42px;
+      min-width: 42px;
+      padding: 0;
+      border-radius: 15px;
+      font-size: 18px;
+    }
+
+    .run-btn {
+      min-width: 98px;
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      box-shadow: 0 14px 32px rgba(37, 99, 235, 0.24);
+    }
+
+    .layout {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .screen {
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .screen-head,
+    .editor-tools,
+    .console-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--panel-2), transparent);
+    }
+
+    .screen-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .file-pill {
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .file-tabs {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 9px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .file-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .file-tabs.visible {
+      display: flex;
+    }
+
+    .file-tab {
+      min-height: 34px;
+      max-width: 190px;
+      flex: 0 0 auto;
+      justify-content: flex-start;
+      border-radius: 999px;
+      padding: 7px 11px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .file-tab.active {
+      border-color: rgba(56, 189, 248, 0.30);
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+
+    .file-tab-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-tab-ext {
+      opacity: 0.72;
+      font-size: 11px;
+    }
+
+    .project-hint {
+      flex: 0 0 auto;
+      margin-left: 2px;
+      color: var(--muted-2);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .tool-scroll {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tool-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .mini-btn {
+      min-height: 34px;
+      border-radius: 12px;
+      padding: 7px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .ghost-btn {
+      background: transparent;
+    }
+
+    .danger-btn {
+      border-color: rgba(239, 68, 68, 0.26);
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+    }
+
+    .status-chip {
+      min-height: 34px;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .status-chip.clean {
+      border-color: rgba(34, 197, 94, 0.22);
+      background: rgba(34, 197, 94, 0.12);
+      color: #86efac;
+    }
+
+    [data-theme="light"] .status-chip.clean {
+      color: #15803d;
+    }
+
+    .status-chip.issue {
+      border-color: rgba(245, 158, 11, 0.25);
+      background: rgba(245, 158, 11, 0.14);
+      color: #fbbf24;
+    }
+
+    .status-chip.error {
+      border-color: rgba(239, 68, 68, 0.25);
+      background: rgba(239, 68, 68, 0.13);
+      color: #fca5a5;
+    }
+
+    .editor-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #editor {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      font-family: var(--mono);
+    }
+
+    .drop-hint {
+      pointer-events: none;
+      position: absolute;
+      inset: 14px;
+      z-index: 2;
+      display: none;
+      place-items: center;
+      border: 2px dashed rgba(56, 189, 248, 0.45);
+      border-radius: 22px;
+      background: rgba(7, 10, 18, 0.72);
+      color: #e0f2fe;
+      font-weight: 850;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .editor-wrap.dragging .drop-hint {
+      display: grid;
+    }
+
+    .problem-panel {
+      flex: 0 0 auto;
+      max-height: 34%;
+      display: none;
+      overflow: auto;
+      border-top: 1px solid var(--line);
+      background: var(--panel-3);
+    }
+
+    .problem-panel.visible {
+      display: block;
+    }
+
+    .problem-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 9px;
+      align-items: start;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .problem-mark {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: rgba(245, 158, 11, 0.14);
+      color: #fbbf24;
+      font-size: 13px;
+    }
+
+    .problem-card.error .problem-mark {
+      background: rgba(239, 68, 68, 0.13);
+      color: #fca5a5;
+    }
+
+    .problem-main {
+      min-width: 0;
+    }
+
+    .problem-line {
+      color: var(--muted);
+      font: 12px var(--mono);
+    }
+
+    .problem-title {
+      margin-top: 2px;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .problem-action {
+      min-height: 30px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: var(--accent-soft);
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .console-body {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-rows: minmax(160px, 42%) 1fr;
+      gap: 0;
+    }
+
+    .preview-box {
+      min-height: 0;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-3);
+      overflow: hidden;
+    }
+
+    .preview-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+
+    .log {
+      min-height: 0;
+      overflow: auto;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
+        var(--bg);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .empty-log {
+      display: grid;
+      place-items: center;
+      height: 100%;
+      color: var(--muted-2);
+      text-align: center;
+      padding: 26px;
+      font-family: var(--sans);
+    }
+
+    .log-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.035);
+      word-break: break-word;
+    }
+
+    [data-theme="light"] .log-row {
+      background: rgba(15, 23, 42, 0.035);
+    }
+
+    .log-row.info {
+      border-color: rgba(56, 189, 248, 0.20);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .log-row.warn {
+      border-color: rgba(245, 158, 11, 0.22);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .log-row.error {
+      border-color: rgba(239, 68, 68, 0.24);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .log-tag {
+      align-self: start;
+      border-radius: 999px;
+      padding: 3px 7px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font: 10px var(--sans);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .log-row.error .log-tag {
+      color: #fca5a5;
+    }
+
+    .log-row.warn .log-tag {
+      color: #fbbf24;
+    }
+
+    .log-row.info .log-tag {
+      color: #7dd3fc;
+    }
+
+    .log-text {
+      min-width: 0;
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+
+    .bottom-nav {
+      display: none;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .tab-btn {
+      position: relative;
+      min-height: 48px;
+      border-radius: 18px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .tab-btn.active {
+      background: var(--panel-2);
+      color: var(--text);
+    }
+
+    .tab-btn .badge-dot {
+      position: absolute;
+      top: 9px;
+      right: 20%;
+      width: 8px;
+      height: 8px;
+      display: none;
+      border-radius: 50%;
+      background: var(--err);
+      box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.16);
+    }
+
+    .tab-btn.has-error .badge-dot {
+      display: block;
+    }
+
+    .mobile-run {
+      width: 54px;
+      min-width: 54px;
+      min-height: 48px;
+      border-radius: 18px;
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 20px;
+    }
+
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+    }
+
+    .sheet-backdrop.visible {
+      display: block;
+    }
+
+    .problem-sheet {
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 50;
+      display: none;
+      max-height: min(650px, 82vh);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .problem-sheet.visible {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sheet-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 16px 10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--panel-2), transparent);
+    }
+
+    .sheet-kicker {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .sheet-title {
+      margin-top: 3px;
+      font-size: 18px;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .sheet-close {
+      width: 40px;
+      min-width: 40px;
+      border-radius: 15px;
+      padding: 0;
+      font-size: 18px;
+    }
+
+    .sheet-content {
+      overflow: auto;
+      padding: 14px 16px 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .plain-block {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-2);
+    }
+
+    .plain-block b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .plain-block p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .code-sample {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 16px;
+      background: #020617;
+      color: #e2e8f0;
+      font: 12px/1.45 var(--mono);
+    }
+
+    [data-theme="light"] .code-sample {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(90px + env(safe-area-inset-bottom));
+      z-index: 80;
+      max-width: min(92vw, 420px);
+      transform: translate(-50%, 14px);
+      opacity: 0;
+      pointer-events: none;
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      font-weight: 800;
+      transition: opacity 180ms ease, transform 180ms ease;
+      text-align: center;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .hidden-input {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        gap: 8px;
+        padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+      }
+
+      .topbar {
+        grid-template-columns: 1fr auto;
+        border-radius: 24px;
+      }
+
+      .top-actions select,
+      .top-actions .run-btn {
+        display: none;
+      }
+
+      .layout {
+        position: relative;
+        display: block;
+      }
+
+      .screen {
+        position: absolute;
+        inset: 0;
+        display: none;
+        border-radius: 24px;
+      }
+
+      .screen.active {
+        display: flex;
+      }
+
+      .bottom-nav {
+        display: grid;
+      }
+
+      .screen-head,
+      .editor-tools,
+      .console-tools {
+        padding: 8px;
+      }
+
+
+      .file-tabs {
+        padding: 7px 8px;
+      }
+
+      .file-tab {
+        max-width: 62vw;
+        min-height: 36px;
+      }
+
+      .screen-head {
+        flex-wrap: wrap;
+      }
+
+      .file-pill {
+        max-width: 52vw;
+      }
+
+      .editor-tools {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .editor-tools > .tool-scroll {
+        width: 100%;
+      }
+
+      .status-chip {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .console-body {
+        grid-template-rows: minmax(110px, 36%) 1fr;
+      }
+
+      .preview-box {
+        min-height: 110px;
+      }
+
+      .mini-btn {
+        min-height: 38px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+      }
+
+      .brand-title {
+        font-size: 14px;
+      }
+
+      .brand-subtitle {
+        font-size: 11px;
+      }
+
+      .topbar {
+        padding: 8px;
+      }
+
+      .icon-btn {
+        width: 38px;
+        min-width: 38px;
+        min-height: 38px;
+        border-radius: 14px;
+      }
+
+      .problem-card {
+        grid-template-columns: auto 1fr;
+      }
+
+      .problem-action {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (min-width: 981px) {
+      .screen {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">⌘</div>
+        <div class="brand-text">
+          <span class="brand-title">Мобильная консоль кода</span>
+          <span class="brand-subtitle"><i class="pulse" aria-hidden="true"></i><span id="statusText">Анализатор включён</span></span>
         </div>
+      </div>
+
+      <div class="top-actions">
+        <select id="langOverride" aria-label="Выбрать язык кода">
+          <option value="auto">Авто</option>
+          <option value="html">HTML/CSS/JS</option>
+          <option value="jsx">React JSX</option>
+          <option value="js">JavaScript</option>
+          <option value="ts">TypeScript</option>
+          <option value="py">Python</option>
+        </select>
+        <button class="icon-btn" id="themeBtn" type="button" title="Сменить тему" aria-label="Сменить тему">🌓</button>
+        <button class="run-btn" id="runBtn" type="button">▶ Запуск</button>
+      </div>
     </header>
 
-    <section class="relative min-h-screen flex flex-col justify-center items-center px-4 pt-16 text-center overflow-hidden">
-        <div class="absolute inset-0 z-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-            <svg width="80%" height="80%" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M500 100 C600 300, 900 400, 500 900 C100 400, 400 300, 500 100 Z" stroke="#5B1A24" stroke-width="2"/>
-                <circle cx="500" cy="500" r="300" stroke="#C5A880" stroke-width="1" stroke-dasharray="5 5"/>
-            </svg>
+    <main class="layout" id="layout">
+      <section class="screen active" id="tab-editor" aria-label="Редактор кода">
+        <div class="screen-head">
+          <div class="screen-title">📝 Редактор <span class="file-pill" id="fileNamePill">без файла</span></div>
+          <div class="tool-scroll">
+            <button class="mini-btn" id="importBtn" type="button">📂 Импорт</button>
+            <button class="mini-btn ghost-btn" id="desktopLangBtn" type="button">Язык</button>
+          </div>
         </div>
 
-        <div class="z-10 max-w-4xl mx-auto">
-            <span class="text-xs uppercase tracking-[0.4em] text-gold font-medium mb-6 block animate-pulse">Сохраните дату</span>
-            <h1 class="font-serif text-6xl md:text-8xl lg:text-9xl text-burgundy font-light tracking-wide mb-8">
-                Rostislav <span class="italic font-normal text-gold">&</span> Valida
-            </h1>
-            <div class="w-12 h-[1px] bg-gold mx-auto mb-8"></div>
-            <p class="font-serif text-2xl md:text-3xl italic text-velvet/80 tracking-wide mb-12">07 июля 2026</p>
-            
-            <div class="inline-flex items-center space-x-4 bg-white/40 border border-gold/20 px-8 py-3 rounded-full blur-backdrop shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-olive animate-ping"></span>
-                <span class="text-xs uppercase tracking-widest text-velvet/80 font-medium">Осталось 27 дней</span>
-            </div>
+        <div class="editor-tools">
+          <div class="tool-scroll">
+            <button class="mini-btn" id="btnCopy" type="button">📋 Копировать</button>
+            <button class="mini-btn" id="btnCut" type="button">✂ Вырезать</button>
+            <button class="mini-btn" id="btnPaste" type="button">📄 Вставить</button>
+            <button class="mini-btn danger-btn" id="btnClearCode" type="button">🗑 Сброс</button>
+          </div>
+          <button class="status-chip clean" id="lintStatus" type="button">✨ Код чист</button>
         </div>
 
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-            <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+        <div class="file-tabs" id="fileTabs" aria-label="Файлы проекта"></div>
+
+        <div class="editor-wrap" id="editorWrap">
+          <div id="editor"></div>
+          <div class="drop-hint">Перетащите один или несколько файлов<br />и приложение соберёт их в проект</div>
         </div>
-    </section>
 
-    <section id="details" class="py-24 lg:py-32 px-6 max-w-7xl mx-auto border-t border-gold/10">
-        <div class="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-            
-            <div class="lg:col-span-5 fade-in-element">
-                <div class="relative p-4 border border-gold/20 bg-white shadow-xl aspect-[3/4] flex flex-col justify-between overflow-hidden group">
-                    <div class="absolute inset-0 bg-burgundy/[0.02] mix-blend-multiply"></div>
-                    <div class="absolute inset-6 border border-gold/10 pointer-events-none"></div>
-                    <div class="w-full h-full flex flex-col justify-center items-center p-8 text-center border border-dashed border-gold/20">
-                        <svg class="w-16 h-16 text-gold/40 mb-6 group-hover:scale-110 transition-transform duration-700" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M50 15 L85 50 L50 85 L15 50 Z" stroke="currentColor" stroke-width="1"/>
-                            <circle cx="50" cy="50" r="20" stroke="currentColor" stroke-width="1"/>
-                        </svg>
-                        <p class="font-serif italic text-lg text-burgundy/60">Rostislav & Valida</p>
-                        <p class="text-[9px] uppercase tracking-widest text-velvet/40 mt-2">Эстетика Свадебного Дня</p>
-                    </div>
-                </div>
-            </div>
+        <div class="problem-panel" id="problemPanel"></div>
+      </section>
 
-            <div class="lg:col-span-7 space-y-8 lg:ps-6 fade-in-element">
-                <span class="text-xs uppercase tracking-[0.3em] text-olive font-semibold block">Торжество</span>
-                <h2 class="font-serif text-4xl md:text-5xl text-burgundy font-light">Наша Свадьба</h2>
-                <p class="text-velvet/70 max-w-xl leading-relaxed">Мы счастливы пригласить вас разделить с нами самый важный и памятный день начала нашей совместной истории.</p>
-                
-                <div class="border-s-2 border-gold/30 ps-6 space-y-6 my-8">
-                    <div>
-                        <h3 class="font-serif text-xl font-medium text-burgundy">Церемония бракосочетания</h3>
-                        <p class="text-sm text-velvet/60 mt-1">07 июля 2026 • 11:00</p>
-                    </div>
-                    <div>
-                        <h4 class="text-xs uppercase tracking-widest text-gold font-medium mb-1">Место проведения</h4>
-                        <p class="text-sm text-velvet/80 leading-relaxed">Джуца, Ставропольский край, Россия, 357380</p>
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap gap-4 pt-4">
-                    <a href="https://www.google.com/maps/search/?api=1&query=@43.9928671,43.0365073,19z&query_place_id=ChIJk5wEdyt4V0ARLJaVgiKF9_Y" target="_blank" class="bg-burgundy text-ivory text-xs uppercase tracking-widest px-6 py-3 shadow-lg shadow-burgundy/10 hover:bg-velvet transition-all duration-300 flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        <span>Посмотреть карту</span>
-                    </a>
-                    <a href="#calendar" class="border border-velvet/20 text-velvet text-xs uppercase tracking-widest px-6 py-3 hover:bg-velvet hover:text-ivory hover:border-velvet transition-all duration-300 flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 002 2v12a2 2 0 002 2z"></path></svg>
-                        <span>Добавить в календарь</span>
-                    </a>
-                </div>
-            </div>
-
+      <section class="screen" id="tab-output" aria-label="Консоль вывода">
+        <div class="screen-head">
+          <div class="screen-title">📟 Консоль и превью</div>
+          <div class="tool-scroll">
+            <button class="mini-btn" id="togglePreview" type="button">👁 Превью</button>
+            <button class="mini-btn" id="openPreviewPage" type="button">↗ Отдельно</button>
+            <button class="mini-btn" id="clearConsole" type="button">Очистить</button>
+          </div>
         </div>
-    </section>
 
-    <section id="story" class="py-24 bg-white border-y border-gold/10">
-        <div class="max-w-4xl mx-auto px-6 text-center space-y-8 fade-in-element">
-            <span class="text-xs uppercase tracking-[0.3em] text-gold font-semibold block">Вступление</span>
-            <h2 class="font-serif text-4xl md:text-5xl text-burgundy font-light">Наша История</h2>
-            <div class="w-8 h-[1px] bg-gold mx-auto"></div>
-            
-            <div class="py-4 flex justify-center opacity-30">
-                <svg width="60" height="30" viewBox="0 0 60 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 15 H25 M35 15 H60 M25 15 C25 20, 35 20, 35 15 C35 10, 25 10, 25 15 Z" stroke="#5B1A24" stroke-width="1"/>
-                </svg>
-            </div>
-
-            <p class="font-serif text-xl md:text-2xl text-velvet/90 italic leading-relaxed max-w-3xl mx-auto px-4">
-                «В те дни, когда их пути ещё не пересеклись, а её образ был лишь светлой мечтой, он обращал свои молитвы к небу. Небеса услышали его зов и направили в дальний путь. Преодолев тысячи дорог, он прибыл на прекрасный Кавказ — чтобы увидеть ее! С трепетом в сердце он предложил ей самое ценное — пройти с ним до самого Рая. И она, узрев в этом стечении судеб Божественный промысел, все обдумав и взвесив, сказала: “Да”.»
-            </p>
+        <div class="console-body">
+          <div class="preview-box" id="previewBox">
+            <iframe class="preview-frame" id="previewFrame" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe>
+          </div>
+          <div class="log" id="log">
+            <div class="empty-log">Здесь появятся сообщения из console.log, ошибки запуска и результат импорта файлов.</div>
+          </div>
         </div>
-    </section>
+      </section>
+    </main>
 
-    <section id="gifts" class="py-24 lg:py-32 px-6 max-w-7xl mx-auto">
-        <div class="grid lg:grid-cols-2 gap-16 lg:gap-24">
-            
-            <div class="space-y-8 fade-in-element">
-                <span class="text-xs uppercase tracking-[0.3em] text-olive font-semibold block">Дресс-код</span>
-                <h3 class="font-serif text-3xl md:text-4xl text-burgundy font-light">Цветовая гамма</h3>
-                <p class="text-velvet/70 max-w-md leading-relaxed">
-                    Для нас самое главное — ваше присутствие! Но мы будем очень благодарны, если вы поддержите благородную цветовую гамму нашей свадьбы при выборе нарядов.
-                </p>
-                
-                <div class="grid grid-cols-4 gap-4 pt-4">
-                    <div class="group text-center">
-                        <div class="w-full aspect-square rounded-full bg-[#5B1A24] border border-gold/20 shadow-md transform group-hover:scale-105 transition-transform duration-500 mb-2"></div>
-                        <span class="text-[10px] uppercase tracking-wider text-velvet/60 font-medium">Burgundy</span>
-                    </div>
-                    <div class="group text-center">
-                        <div class="w-full aspect-square rounded-full bg-[#4F5D41] border border-gold/20 shadow-md transform group-hover:scale-105 transition-transform duration-500 mb-2"></div>
-                        <span class="text-[10px] uppercase tracking-wider text-velvet/60 font-medium">Olive Green</span>
-                    </div>
-                    <div class="group text-center">
-                        <div class="w-full aspect-square rounded-full bg-[#FAF7F2] border border-gold/30 shadow-md transform group-hover:scale-105 transition-transform duration-500 mb-2"></div>
-                        <span class="text-[10px] uppercase tracking-wider text-velvet/60 font-medium">Ivory</span>
-                    </div>
-                    <div class="group text-center">
-                        <div class="w-full aspect-square rounded-full bg-[#1A1A1A] border border-gold/20 shadow-md transform group-hover:scale-105 transition-transform duration-500 mb-2"></div>
-                        <span class="text-[10px] uppercase tracking-wider text-velvet/60 font-medium">Black</span>
-                    </div>
-                </div>
-            </div>
+    <nav class="bottom-nav" aria-label="Нижняя навигация">
+      <button class="tab-btn active" data-target="tab-editor" type="button">📝<span>Код</span></button>
+      <button class="tab-btn" data-target="tab-output" id="outputNavBtn" type="button">📟<span>Консоль</span><i class="badge-dot"></i></button>
+      <button class="mobile-run" id="mobileRunBtn" type="button" aria-label="Запустить код">▶</button>
+    </nav>
+  </div>
 
-            <div class="space-y-8 bg-white p-8 lg:p-12 border border-gold/10 shadow-sm flex flex-col justify-between fade-in-element">
-                <div>
-                    <div class="flex items-center space-x-3 mb-6">
-                        <span class="p-2 bg-burgundy/5 rounded-full text-burgundy">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.5 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                        </span>
-                        <span class="text-xs uppercase tracking-[0.3em] text-gold font-semibold">Пожелания</span>
-                    </div>
-                    <h3 class="font-serif text-3xl md:text-4xl text-burgundy font-light mb-6">Предпочтения по подаркам</h3>
-                    <p class="text-velvet/70 text-sm leading-relaxed space-y-4">
-                        Мы понимаем, что дарить цветы на свадьбу — это прекрасная традиция, но, к сожалению, мы не сможем насладиться их красотой в полной мере... 
-                    </p>
-                    <p class="text-velvet/70 text-sm leading-relaxed mt-4 bg-ivory/50 p-4 border-l-2 border-burgundy/30 italic">
-                        Если хотите поддержать нас, мы будем искренне благодарны за вклад в бюджет нашей будущей семьи — мы обязательно купим цветы позже…
-                    </p>
-                </div>
-            </div>
+  <input class="hidden-input" id="fileInput" type="file" multiple accept=".html,.htm,.css,.js,.mjs,.cjs,.jsx,.ts,.tsx,.py,.json,.txt,.md,.xml,.svg" />
 
-        </div>
-    </section>
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <aside class="problem-sheet" id="problemSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-kicker" id="sheetKicker">Проблема</div>
+        <div class="sheet-title" id="sheetTitle">Что не так в коде</div>
+      </div>
+      <button class="sheet-close" id="sheetClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="sheet-content" id="sheetContent"></div>
+  </aside>
 
-    <section id="gallery" class="py-24 bg-white border-t border-gold/10">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center max-w-2xl mx-auto space-y-4 mb-16 fade-in-element">
-                <span class="text-xs uppercase tracking-[0.3em] text-olive font-semibold block">Вместе запечатлим моменты</span>
-                <h2 class="font-serif text-4xl md:text-5xl text-burgundy font-light">Фотографии</h2>
-                <p class="text-velvet/60 text-sm">Поделитесь вашими фотографиями с нашей свадьбы! Давайте вместе сохраним этот день в памяти. Не забудьте использовать хэштеги <span class="text-burgundy font-medium">#RV</span> при публикации (так нам будет проще их найти).</p>
-            </div>
+  <div class="toast" id="toast"></div>
 
-            <div class="grid lg:grid-cols-12 gap-12 items-center">
-                <div class="lg:col-span-7 fade-in-element">
-                    <div class="border-2 border-dashed border-gold/30 p-12 text-center bg-ivory/30 hover:border-burgundy/50 transition-colors duration-500 rounded-lg group cursor-pointer">
-                        <input type="file" id="file-upload" class="hidden" multiple max="30">
-                        <label for="file-upload" class="cursor-pointer block space-y-4">
-                            <div class="flex justify-center">
-                                <svg class="w-12 h-12 text-gold group-hover:text-burgundy transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <p class="text-sm text-velvet/80 font-medium">Перетащите свои фотографии сюда или нажмите, чтобы выбрать файлы</p>
-                            <p class="text-xs text-velvet/40">Вы можете загрузить еще до 30 файлов. Максимальный размер файла: 20Mb.</p>
-                            <span class="inline-block bg-burgundy text-ivory text-xs uppercase tracking-widest px-6 py-2.5 mt-2 hover:bg-velvet transition-colors duration-300">Загрузить</span>
-                        </label>
-                    </div>
-                </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ace.js"></script>
 
-                <div class="lg:col-span-5 fade-in-element">
-                    <div class="bg-ivory/50 border border-gold/20 p-8 rounded-lg flex flex-col items-center text-center space-y-6">
-                        <h4 class="font-serif text-xl text-burgundy font-medium">Поделитесь моментами здесь!</h4>
-                        
-                        <div class="w-40 h-40 bg-white p-3 border border-gold/20 shadow-inner relative flex items-center justify-center">
-                            <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-velvet/80">
-                                <path d="M5 5 H30 V30 H5 Z M10 10 H25 V25 H10 Z" fill="currentColor"/>
-                                <path d="M70 5 H95 V30 H70 Z M75 10 H90 V25 H75 Z" fill="currentColor"/>
-                                <path d="M5 70 H30 V95 H5 Z M10 75 H25 V90 H10 Z" fill="currentColor"/>
-                                <path d="M40 5 H45 V20 H40 Z M50 10 H60 V15 H50 Z M40 25 H55 V30 H40 Z" fill="currentColor"/>
-                                <path d="M5 40 H20 V45 H5 Z M15 50 H30 V60 H15 Z" fill="currentColor"/>
-                                <path d="M40 40 H60 V60 H40 Z M45 45 H55 V55 H45 Z" fill="currentColor"/>
-                                <path d="M70 40 H85 V45 H70 Z M75 50 H95 V55 H75 Z" fill="currentColor"/>
-                                <path d="M40 70 H45 V90 H40 Z M55 75 H65 V85 H55 Z M50 90 H70 V95 H50 Z" fill="currentColor"/>
-                                <path d="M75 70 H90 V75 H75 Z M70 80 H85 V95 H70 Z" fill="currentColor"/>
-                            </svg>
-                        </div>
+  <script>
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
 
-                        <p class="text-xs text-velvet/60 leading-relaxed max-w-xs">
-                            Используйте этот QR-код, чтобы гости могли мгновенно поделиться своими снимками! Просто наведите камеру телефона для автоматического перехода.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    const STORAGE = {
+      theme: 'ucc_mobile_pro_theme',
+      code: 'ucc_mobile_pro_code',
+      lang: 'ucc_mobile_pro_lang',
+      preview: 'ucc_mobile_pro_preview_visible',
+      project: 'ucc_mobile_pro_project_files'
+    };
 
-    <section id="rsvp" class="py-24 lg:py-32 px-6 max-w-3xl mx-auto">
-        <div class="bg-white border border-gold/20 p-8 md:p-16 shadow-2xl relative overflow-hidden fade-in-element rounded-sm">
-            <div class="absolute top-0 left-0 w-full h-1.5 bg-burgundy"></div>
+    const logEl = $('#log');
+    const previewFrame = $('#previewFrame');
+    const previewBox = $('#previewBox');
+    const problemPanel = $('#problemPanel');
+    const lintStatus = $('#lintStatus');
+    const outputNavBtn = $('#outputNavBtn');
+    const fileInput = $('#fileInput');
+    const fileNamePill = $('#fileNamePill');
+    const editorWrap = $('#editorWrap');
+    const fileTabs = $('#fileTabs');
 
-            <div class="text-center space-y-4 mb-12">
-                <span class="text-xs uppercase tracking-[0.3em] text-gold font-semibold block">Пожалуйста, ответьте</span>
-                <h2 class="font-serif text-4xl text-burgundy font-light">Подтверждение присутствия</h2>
-                <p class="text-velvet/60 text-xs">Мы с нетерпением ждем встречи с вами! Пожалуйста, сообщите о вашем решении до <span class="font-medium text-burgundy">26 июня 2026 года</span>.</p>
-            </div>
+    let activeIssues = [];
+    let lintErrorsCount = 0;
+    let lintTimer = 0;
+    let toastTimer = 0;
+    let lastImportedFileName = '';
+    let projectFiles = new Map();
+    let activeFileName = '';
+    let isSwitchingFile = false;
+    let activePreviewUrl = '';
+    let externalPreviewUrl = '';
 
-            <form class="space-y-8" onsubmit="event.preventDefault(); alert('Спасибо за ваш ответ!');">
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="relative z-0 w-full group">
-                        <input type="text" name="first_name" required class="block py-2.5 px-0 w-full text-sm text-velvet bg-transparent border-0 border-b border-velvet/20 appearance-none focus:outline-none focus:ring-0 focus:border-burgundy peer transition-colors duration-300" placeholder=" " />
-                        <label class="peer-focus:font-medium absolute text-xs text-velvet/40 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-burgundy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 uppercase tracking-wider">Имя *</label>
-                    </div>
-                    <div class="relative z-0 w-full group">
-                        <input type="text" name="last_name" required class="block py-2.5 px-0 w-full text-sm text-velvet bg-transparent border-0 border-b border-velvet/20 appearance-none focus:outline-none focus:ring-0 focus:border-burgundy peer transition-colors duration-300" placeholder=" " />
-                        <label class="peer-focus:font-medium absolute text-xs text-velvet/40 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-burgundy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 uppercase tracking-wider">Фамилия *</label>
-                    </div>
-                </div>
+    const editor = ace.edit('editor');
+    editor.setOptions({
+      fontSize: window.innerWidth < 480 ? '13.5px' : '14px',
+      showPrintMargin: false,
+      wrap: true,
+      useWorker: false,
+      highlightActiveLine: true,
+      scrollPastEnd: 0.22,
+      tabSize: 2,
+      useSoftTabs: true,
+      enableBasicAutocompletion: true,
+      enableLiveAutocompletion: false
+    });
+    editor.renderer.setPadding(12);
+    editor.renderer.setScrollMargin(10, 10, 10, 10);
 
-                <div class="space-y-3">
-                    <label class="text-xs uppercase tracking-widest text-velvet/50 block mb-2">Будете ли вы присутствовать? *</label>
-                    <div class="flex space-x-6">
-                        <label class="flex items-center space-x-3 cursor-pointer group">
-                            <input type="radio" name="attendance" value="yes" required class="w-4 h-4 text-burgundy border-velvet/20 focus:ring-burgundy accent-burgundy">
-                            <span class="text-sm text-velvet/80 group-hover:text-burgundy transition-colors duration-300">Да, с удовольствием</span>
-                        </label>
-                        <label class="flex items-center space-x-3 cursor-pointer group">
-                            <input type="radio" name="attendance" value="no" class="w-4 h-4 text-burgundy border-velvet/20 focus:ring-burgundy accent-burgundy">
-                            <span class="text-sm text-velvet/80 group-hover:text-burgundy transition-colors duration-300">К сожалению, не смогу</span>
-                        </label>
-                    </div>
-                </div>
+    function showToast(text) {
+      const toast = $('#toast');
+      toast.textContent = text;
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('visible'), 2100);
+    }
 
-                <div class="relative z-0 w-full group">
-                    <textarea name="comments" rows="3" class="block py-2.5 px-0 w-full text-sm text-velvet bg-transparent border-0 border-b border-velvet/20 appearance-none focus:outline-none focus:ring-0 focus:border-burgundy peer transition-colors duration-300" placeholder=" "></textarea>
-                    <label class="peer-focus:font-medium absolute text-xs text-velvet/40 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-burgundy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 uppercase tracking-wider">Комментарии или вопросы *</label>
-                </div>
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
 
-                <button type="submit" class="w-full bg-burgundy text-ivory text-xs uppercase tracking-[0.2em] font-medium py-4 shadow-xl hover:bg-velvet transition-all duration-500 transform hover:-translate-y-0.5">
-                    Отправить
-                </button>
-            </form>
-        </div>
-    </section>
+    function readableBytes(bytes) {
+      if (bytes < 1024) return bytes + ' Б';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
+      return (bytes / 1024 / 1024).toFixed(1) + ' МБ';
+    }
 
-    <footer class="py-12 bg-velvet text-ivory/40 text-center text-xs space-y-4 tracking-widest border-t border-gold/10">
-        <p class="font-serif text-xl text-gold/80 italic font-light tracking-widest">Rostislav & Valida</p>
-        <p class="text-[10px] uppercase">Создано с помощью Свадебного Ассистента • Premium Edition 2026</p>
-    </footer>
+    function switchTab(targetId) {
+      $$('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
+      $$('.screen').forEach(screen => screen.classList.toggle('active', screen.id === targetId));
+      if (targetId === 'tab-editor') {
+        setTimeout(() => {
+          editor.resize();
+          editor.focus();
+        }, 60);
+      }
+    }
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const animatedElements = document.querySelectorAll('.fade-in-element');
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, {
-                threshold: 0.1
-            });
+    $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.target)));
 
-            animatedElements.forEach(el => observer.observe(el));
+    function applyTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      editor.setTheme(isDark ? 'ace/theme/tomorrow_night_eighties' : 'ace/theme/chrome');
+    }
+
+    const savedTheme = localStorage.getItem(STORAGE.theme);
+    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    applyTheme();
+
+    $('#themeBtn').addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem(STORAGE.theme, next);
+      applyTheme();
+      showToast(next === 'dark' ? 'Тёмная тема включена' : 'Светлая тема включена');
+    });
+
+    const savedLang = localStorage.getItem(STORAGE.lang);
+    if (savedLang) $('#langOverride').value = savedLang;
+
+    $('#desktopLangBtn').addEventListener('click', () => {
+      const select = $('#langOverride');
+      select.focus();
+      if (typeof select.showPicker === 'function') select.showPicker();
+      showToast('Язык можно выбрать сверху справа');
+    });
+
+    function addRow(kind, text) {
+      const empty = logEl.querySelector('.empty-log');
+      if (empty) empty.remove();
+
+      const names = {
+        log: 'лог',
+        info: 'инфо',
+        warn: 'внимание',
+        error: 'ошибка'
+      };
+
+      const row = document.createElement('div');
+      row.className = 'log-row ' + (kind || 'log');
+      row.innerHTML = '<span class="log-tag">' + (names[kind] || kind || 'лог') + '</span><pre class="log-text">' + escapeHtml(text) + '</pre>';
+      logEl.appendChild(row);
+      logEl.scrollTop = logEl.scrollHeight;
+
+      if (kind === 'error') outputNavBtn.classList.add('has-error');
+    }
+
+    $('#clearConsole').addEventListener('click', () => {
+      logEl.innerHTML = '<div class="empty-log">Консоль очищена. Запустите код или импортируйте файл, чтобы увидеть новые сообщения.</div>';
+      outputNavBtn.classList.remove('has-error');
+    });
+
+    $('#togglePreview').addEventListener('click', () => {
+      const hidden = previewBox.style.display === 'none';
+      previewBox.style.display = hidden ? '' : 'none';
+      localStorage.setItem(STORAGE.preview, hidden ? '1' : '0');
+      showToast(hidden ? 'Превью включено' : 'Превью скрыто');
+    });
+
+    if (localStorage.getItem(STORAGE.preview) === '0') previewBox.style.display = 'none';
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Скопировано');
+      } catch (error) {
+        addRow('error', 'Нет доступа к буферу обмена. Попробуйте выделить текст вручную.');
+      }
+    }
+
+    $('#btnCopy').addEventListener('click', () => {
+      const text = editor.getSelectedText() || editor.getValue();
+      copyToClipboard(text);
+      editor.focus();
+    });
+
+    $('#btnCut').addEventListener('click', async () => {
+      const text = editor.getSelectedText();
+      if (!text) {
+        showToast('Сначала выделите фрагмент');
+        editor.focus();
+        return;
+      }
+      await copyToClipboard(text);
+      editor.session.replace(editor.selection.getRange(), '');
+      editor.focus();
+    });
+
+    $('#btnPaste').addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        editor.insert(text);
+        showToast('Вставлено');
+      } catch (error) {
+        addRow('error', 'Нет доступа к буферу. На телефоне можно вставить долгим нажатием в редакторе.');
+      }
+      editor.focus();
+    });
+
+    $('#btnClearCode').addEventListener('click', () => {
+      if (!editor.getValue().trim()) return;
+      if (confirm('Стереть весь код из редактора?')) {
+        editor.setValue('', -1);
+        localStorage.removeItem(STORAGE.code);
+        clearProjectState();
+        fileNamePill.textContent = 'без файла';
+        lastImportedFileName = '';
+        $('#clearConsole').click();
+        showToast('Редактор очищен');
+      }
+      editor.focus();
+    });
+
+    const DEFAULT_CODE =
+`<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      font-family: system-ui, sans-serif;
+      background: #111827;
+      color: white;
+    }
+    .card {
+      max-width: 320px;
+      padding: 24px;
+      border-radius: 24px;
+      background: #1f2937;
+      text-align: center;
+    }
+  <\/style>
+</head>
+<body>
+  <main class="card">
+    <h1>Код готов к запуску 🚀</h1>
+    <p>Нажмите «Запуск», а сообщения из console.log появятся в консоли.</p>
+  </main>
+
+  <script>
+    var message = "Здесь анализатор покажет предупреждение про var";
+    console.log(message);
+  <\/script>
+</body>
+</html>`;
+
+    function getFileExt(fileName) {
+      return (fileName.split('.').pop() || '').toLowerCase();
+    }
+
+    function fileIcon(fileName) {
+      const ext = getFileExt(fileName);
+      if (['html', 'htm'].includes(ext)) return '🌐';
+      if (ext === 'css') return '🎨';
+      if (['js', 'mjs', 'cjs'].includes(ext)) return '⚙️';
+      if (['ts', 'tsx'].includes(ext)) return '🔷';
+      if (ext === 'jsx') return '⚛️';
+      if (ext === 'py') return '🐍';
+      return '📄';
+    }
+
+    function uniqueFileName(name, existingMap) {
+      const normalized = name || 'file.txt';
+      if (!existingMap.has(normalized)) return normalized;
+
+      const dot = normalized.lastIndexOf('.');
+      const base = dot > 0 ? normalized.slice(0, dot) : normalized;
+      const ext = dot > 0 ? normalized.slice(dot) : '';
+      let index = 2;
+      let candidate = base + '-' + index + ext;
+
+      while (existingMap.has(candidate)) {
+        index++;
+        candidate = base + '-' + index + ext;
+      }
+
+      return candidate;
+    }
+
+    function projectFileList() {
+      return Array.from(projectFiles.values());
+    }
+
+    function hasProjectFiles() {
+      return projectFiles.size > 0;
+    }
+
+    function saveProject() {
+      if (!hasProjectFiles()) {
+        localStorage.removeItem(STORAGE.project);
+        return;
+      }
+
+      const payload = {
+        activeFileName,
+        files: projectFileList().map(file => ({
+          name: file.name,
+          content: file.content,
+          size: file.size || new Blob([file.content || '']).size,
+          lastModified: file.lastModified || Date.now()
+        }))
+      };
+
+      localStorage.setItem(STORAGE.project, JSON.stringify(payload));
+    }
+
+    function loadProject() {
+      try {
+        const raw = localStorage.getItem(STORAGE.project);
+        if (!raw) return false;
+
+        const payload = JSON.parse(raw);
+        if (!payload || !Array.isArray(payload.files) || !payload.files.length) return false;
+
+        projectFiles = new Map();
+        payload.files.forEach(file => {
+          if (!file || !file.name) return;
+          projectFiles.set(file.name, {
+            name: file.name,
+            content: String(file.content || ''),
+            size: Number(file.size || 0),
+            lastModified: Number(file.lastModified || Date.now())
+          });
         });
-    </script>
+
+        if (!projectFiles.size) return false;
+        activeFileName = projectFiles.has(payload.activeFileName) ? payload.activeFileName : projectFileList()[0].name;
+        return true;
+      } catch (error) {
+        localStorage.removeItem(STORAGE.project);
+        return false;
+      }
+    }
+
+    function saveActiveEditorFile() {
+      if (!activeFileName || !projectFiles.has(activeFileName)) return;
+
+      const file = projectFiles.get(activeFileName);
+      file.content = editor.getValue();
+      file.size = new Blob([file.content]).size;
+      projectFiles.set(activeFileName, file);
+      saveProject();
+    }
+
+    function clearProjectState() {
+      projectFiles.clear();
+      activeFileName = '';
+      lastImportedFileName = '';
+      localStorage.removeItem(STORAGE.project);
+      renderFileTabs();
+    }
+
+    function renderFileTabs() {
+      fileTabs.innerHTML = '';
+
+      if (!projectFiles.size) {
+        fileTabs.classList.remove('visible');
+        fileNamePill.textContent = lastImportedFileName || 'без файла';
+        return;
+      }
+
+      fileTabs.classList.add('visible');
+      projectFileList().forEach(file => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'file-tab' + (file.name === activeFileName ? ' active' : '');
+        button.title = file.name;
+        button.innerHTML = '<span aria-hidden="true">' + fileIcon(file.name) + '</span><span class="file-tab-name">' + escapeHtml(file.name) + '</span><span class="file-tab-ext">' + escapeHtml(readableBytes(file.size || new Blob([file.content || '']).size)) + '</span>';
+        button.addEventListener('click', () => setActiveFile(file.name));
+        fileTabs.appendChild(button);
+      });
+
+      const hint = document.createElement('span');
+      hint.className = 'project-hint';
+      hint.textContent = projectFiles.size > 1 ? 'Сборка проекта' : 'Один файл';
+      fileTabs.appendChild(hint);
+
+      fileNamePill.textContent = activeFileName || 'без файла';
+    }
+
+    function setActiveFile(fileName, options = {}) {
+      if (!projectFiles.has(fileName)) return;
+      if (!options.skipSave) saveActiveEditorFile();
+
+      const file = projectFiles.get(fileName);
+      activeFileName = file.name;
+      lastImportedFileName = file.name;
+      isSwitchingFile = true;
+      editor.setValue(file.content || '', -1);
+      editor.clearSelection();
+      isSwitchingFile = false;
+
+      const langFromExt = extensionLang(file.name);
+      if (langFromExt !== 'auto') {
+        $('#langOverride').value = langFromExt;
+        localStorage.setItem(STORAGE.lang, langFromExt);
+      }
+
+      renderFileTabs();
+      detectAndApplyMode();
+      saveProject();
+      setTimeout(() => editor.resize(), 40);
+    }
+
+    if (loadProject()) {
+      setActiveFile(activeFileName, { skipSave: true });
+    } else {
+      editor.setValue(localStorage.getItem(STORAGE.code) || DEFAULT_CODE, -1);
+      renderFileTabs();
+    }
+
+    function extensionLang(fileName) {
+      const ext = (fileName.split('.').pop() || '').toLowerCase();
+      const map = {
+        html: 'html',
+        htm: 'html',
+        js: 'js',
+        mjs: 'js',
+        cjs: 'js',
+        jsx: 'jsx',
+        ts: 'ts',
+        tsx: 'ts',
+        py: 'py',
+        css: 'css',
+        json: 'js',
+        svg: 'html',
+        txt: 'auto',
+        md: 'auto'
+      };
+      return map[ext] || 'auto';
+    }
+
+    function detectLang(code) {
+      const override = $('#langOverride').value;
+      if (override !== 'auto') return override;
+      if (/<!doctype html|<\s*html\b|<style[\s>]|<script[\s>]/i.test(code)) return 'html';
+      if (/import\s+React|from\s+['"]react['"]|<[A-Z][\w.]*[\s/>]/.test(code)) return 'jsx';
+      if (/\binterface\s+\w+|:\s*(number|string|boolean|unknown|any)\b|type\s+\w+\s*=/.test(code)) return 'ts';
+      if (/^\s*(def|class)\s+\w+|\bprint\s*\(|^\s*import\s+\w+/m.test(code) && !/[{};]/.test(code)) return 'py';
+      return 'js';
+    }
+
+    function applyMode(lang) {
+      const modeMap = {
+        html: 'html',
+        jsx: 'javascript',
+        js: 'javascript',
+        ts: 'typescript',
+        py: 'python',
+        css: 'css'
+      };
+      editor.session.setMode('ace/mode/' + (modeMap[lang] || 'javascript'));
+    }
+
+    function makeIssue({ level = 'warn', line = 1, title, message, simple, why, fix, example }) {
+      return {
+        level,
+        line: Math.max(1, line || 1),
+        title,
+        message: message || title,
+        simple: simple || message || title,
+        why: why || 'Такой фрагмент может запутать код или привести к неожиданному поведению.',
+        fix: fix || 'Проверьте эту строку и перепишите её более явно.',
+        example: example || ''
+      };
+    }
+
+    function runLinter(code, lang) {
+      const issues = [];
+      const lines = code.split('\n');
+
+      const whileTrueLine = lines.findIndex(line => /\bwhile\s*\(\s*true\s*\)/.test(line)) + 1;
+      if (whileTrueLine && !/\bbreak\b/.test(code)) {
+        issues.push(makeIssue({
+          level: 'error',
+          line: whileTrueLine,
+          title: 'Бесконечный цикл while(true)',
+          simple: 'Код может зависнуть, потому что цикл повторяется бесконечно и в нём нет выхода.',
+          why: 'while(true) работает постоянно. Если внутри нет break, return или другого понятного выхода, страница может перестать отвечать.',
+          fix: 'Добавьте условие остановки или break внутри цикла.',
+          example: 'let count = 0;\nwhile (count < 10) {\n  count++;\n}'
+        }));
+      }
+
+      const forEverLine = lines.findIndex(line => /\bfor\s*\(\s*;\s*;\s*\)/.test(line)) + 1;
+      if (forEverLine && !/\bbreak\b/.test(code)) {
+        issues.push(makeIssue({
+          level: 'error',
+          line: forEverLine,
+          title: 'Бесконечный цикл for(;;)',
+          simple: 'Цикл написан без начала, условия и шага. Он будет крутиться бесконечно.',
+          why: 'for(;;) — это специальная форма вечного цикла. Без break или return приложение может зависнуть.',
+          fix: 'Задайте понятное условие цикла или добавьте безопасную точку выхода.',
+          example: 'for (let i = 0; i < 10; i++) {\n  console.log(i);\n}'
+        }));
+      }
+
+      if (['js', 'ts', 'jsx', 'html'].includes(lang)) {
+        lines.forEach((line, index) => {
+          const rowNum = index + 1;
+          const trimmed = line.trim();
+
+          if (/\bvar\b/.test(trimmed) && !/^\s*(\/\/|\*)/.test(trimmed)) {
+            issues.push(makeIssue({
+              line: rowNum,
+              title: 'Старое объявление var',
+              simple: 'Здесь переменная объявлена через var. Сейчас обычно используют const или let.',
+              why: 'var имеет область видимости функции, а не блока. Из-за этого переменная может быть доступна там, где вы её не ждёте.',
+              fix: 'Используйте const, если значение не меняется, или let, если значение нужно изменить.',
+              example: 'const name = "Анна";\nlet score = 0;'
+            }));
+          }
+
+          if (/\bdebugger\b/.test(trimmed) && !/^\s*(\/\/|\*)/.test(trimmed)) {
+            issues.push(makeIssue({
+              line: rowNum,
+              title: 'Остался debugger',
+              simple: 'В коде осталась команда для отладки. У пользователя она может остановить выполнение страницы.',
+              why: 'debugger нужен только разработчику. В готовом приложении он мешает запуску и выглядит как зависание.',
+              fix: 'Удалите строку debugger или закомментируйте её на время.',
+              example: '// debugger;'
+            }));
+          }
+
+          if (/\{\s*\}/.test(trimmed) && !/=\s*\{\s*\}/.test(trimmed) && !/import\s*\{/.test(trimmed)) {
+            issues.push(makeIssue({
+              line: rowNum,
+              title: 'Пустой блок кода',
+              simple: 'Фигурные скобки есть, но внутри ничего не выполняется.',
+              why: 'Пустой блок часто означает, что логика случайно не дописана или была удалена.',
+              fix: 'Добавьте нужное действие внутрь блока или удалите пустой блок.',
+              example: 'if (isReady) {\n  startApp();\n}'
+            }));
+          }
+
+          const nesting = Math.floor((line.match(/^\s*/)[0].replace(/\t/g, '  ').length) / 2);
+          if (nesting > 5 && trimmed) {
+            issues.push(makeIssue({
+              line: rowNum,
+              title: 'Слишком глубокая вложенность',
+              simple: 'Код слишком сильно вложен внутрь условий или циклов. Его станет трудно читать и исправлять.',
+              why: 'Когда блоков слишком много, легко ошибиться с логикой и сложно понять, какая часть за что отвечает.',
+              fix: 'Вынесите часть логики в отдельную функцию или сделайте ранний выход через return.',
+              example: 'function canOpen(user) {\n  if (!user) return false;\n  if (!user.active) return false;\n  return true;\n}'
+            }));
+          }
+
+          if (/console\.log\(/.test(trimmed) && /пароль|password|token|secret|ключ/i.test(trimmed)) {
+            issues.push(makeIssue({
+              level: 'error',
+              line: rowNum,
+              title: 'Секретные данные выводятся в консоль',
+              simple: 'В консоль может попасть пароль, токен или ключ. Это небезопасно.',
+              why: 'Консоль могут увидеть другие люди, расширения браузера или инструменты отладки.',
+              fix: 'Не выводите секреты в console.log. Показывайте только безопасные сообщения.',
+              example: 'console.log("Пользователь авторизован");'
+            }));
+          }
+        });
+
+        const openScript = (code.match(/<script\b/gi) || []).length;
+        const closeScript = (code.match(/<\/script>/gi) || []).length;
+        if (lang === 'html' && openScript !== closeScript) {
+          issues.push(makeIssue({
+            level: 'error',
+            line: 1,
+            title: 'Не закрыт тег script',
+            simple: 'В HTML есть открытый <script>, но нет закрывающего <\/script>.',
+            why: 'Браузер может считать весь остальной код частью скрипта, из-за чего страница сломается.',
+            fix: 'Проверьте каждый <script> и добавьте закрывающий тег.',
+            example: '<script>\n  console.log("ok");\n<\\/script>'
+          }));
+        }
+      }
+
+      if (lang === 'py') {
+        lines.forEach((line, index) => {
+          if (/\bwhile\s+True\s*:/.test(line) && !/\bbreak\b/.test(code)) {
+            issues.push(makeIssue({
+              level: 'error',
+              line: index + 1,
+              title: 'Бесконечный цикл while True',
+              simple: 'Python-код может выполняться бесконечно, потому что у цикла нет выхода.',
+              why: 'while True повторяется постоянно. В браузере это может заморозить Python-движок.',
+              fix: 'Добавьте условие остановки или break.',
+              example: 'count = 0\nwhile count < 10:\n    count += 1'
+            }));
+          }
+        });
+      }
+
+      activeIssues = issues;
+      lintErrorsCount = issues.filter(issue => issue.level === 'error').length;
+      renderIssues();
+      renderAceAnnotations(issues);
+      return issues;
+    }
+
+    function renderAceAnnotations(issues) {
+      editor.session.setAnnotations(issues.map(issue => ({
+        row: Math.max(0, issue.line - 1),
+        column: 0,
+        text: issue.title + ': ' + issue.simple,
+        type: issue.level === 'error' ? 'error' : 'warning'
+      })));
+    }
+
+    function renderIssues() {
+      problemPanel.innerHTML = '';
+
+      if (!activeIssues.length) {
+        lintStatus.className = 'status-chip clean';
+        lintStatus.textContent = '✨ Код чист';
+        problemPanel.classList.remove('visible');
+        $('#statusText').textContent = 'Анализатор включён';
+        return;
+      }
+
+      const hasError = activeIssues.some(issue => issue.level === 'error');
+      lintStatus.className = 'status-chip ' + (hasError ? 'error' : 'issue');
+      lintStatus.textContent = (hasError ? '⛔ ' : '⚠️ ') + 'Проблема · ' + activeIssues.length;
+      $('#statusText').textContent = hasError ? 'Есть критическая проблема' : 'Есть предупреждения';
+
+      activeIssues.forEach((issue, index) => {
+        const card = document.createElement('div');
+        card.className = 'problem-card ' + (issue.level === 'error' ? 'error' : 'warn');
+        card.innerHTML =
+          '<div class="problem-mark">' + (issue.level === 'error' ? '!' : '?') + '</div>' +
+          '<div class="problem-main">' +
+            '<div class="problem-line">Строка ' + issue.line + '</div>' +
+            '<div class="problem-title">' + escapeHtml(issue.title) + '</div>' +
+          '</div>' +
+          '<button class="problem-action" type="button" data-issue="' + index + '">Проблема</button>';
+        card.addEventListener('click', event => {
+          if (event.target.closest('button')) return;
+          editor.gotoLine(issue.line, 0, true);
+          switchTab('tab-editor');
+        });
+        problemPanel.appendChild(card);
+      });
+
+      problemPanel.querySelectorAll('[data-issue]').forEach(btn => {
+        btn.addEventListener('click', event => {
+          const index = Number(event.currentTarget.dataset.issue);
+          openProblemSheet(activeIssues[index]);
+        });
+      });
+    }
+
+    lintStatus.addEventListener('click', () => {
+      if (!activeIssues.length) {
+        showToast('Проблем не найдено');
+        return;
+      }
+      problemPanel.classList.toggle('visible');
+      if (problemPanel.classList.contains('visible')) showToast('Нажмите «Проблема», чтобы увидеть объяснение');
+    });
+
+    function openProblemSheet(issue) {
+      if (!issue) return;
+      $('#sheetKicker').textContent = (issue.level === 'error' ? 'Критическая проблема' : 'Предупреждение') + ' · строка ' + issue.line;
+      $('#sheetTitle').textContent = issue.title;
+      $('#sheetContent').innerHTML =
+        '<div class="plain-block"><b>Простыми словами</b><p>' + escapeHtml(issue.simple) + '</p></div>' +
+        '<div class="plain-block"><b>Почему это плохо</b><p>' + escapeHtml(issue.why) + '</p></div>' +
+        '<div class="plain-block"><b>Как исправить</b><p>' + escapeHtml(issue.fix) + '</p></div>' +
+        (issue.example ? '<pre class="code-sample">' + escapeHtml(issue.example) + '</pre>' : '') +
+        '<button class="run-btn" id="gotoProblemLine" type="button" style="width:100%; margin-top:12px;">Перейти к строке ' + issue.line + '</button>';
+
+      $('#sheetBackdrop').classList.add('visible');
+      $('#problemSheet').classList.add('visible');
+
+      $('#gotoProblemLine').addEventListener('click', () => {
+        closeProblemSheet();
+        switchTab('tab-editor');
+        setTimeout(() => {
+          editor.gotoLine(issue.line, 0, true);
+          editor.focus();
+        }, 80);
+      });
+    }
+
+    function closeProblemSheet() {
+      $('#sheetBackdrop').classList.remove('visible');
+      $('#problemSheet').classList.remove('visible');
+    }
+
+    $('#sheetClose').addEventListener('click', closeProblemSheet);
+    $('#sheetBackdrop').addEventListener('click', closeProblemSheet);
+    window.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeProblemSheet();
+    });
+
+    function detectAndApplyMode() {
+      const code = editor.getValue();
+      const lang = detectLang(code);
+      applyMode(lang);
+      runLinter(code, lang);
+      return lang;
+    }
+
+    editor.session.on('change', () => {
+      if (!isSwitchingFile) {
+        if (activeFileName && projectFiles.has(activeFileName)) {
+          const file = projectFiles.get(activeFileName);
+          file.content = editor.getValue();
+          file.size = new Blob([file.content]).size;
+          projectFiles.set(activeFileName, file);
+          saveProject();
+          renderFileTabs();
+        } else {
+          localStorage.setItem(STORAGE.code, editor.getValue());
+        }
+      }
+
+      clearTimeout(lintTimer);
+      lintTimer = setTimeout(detectAndApplyMode, 180);
+    });
+
+    $('#langOverride').addEventListener('change', () => {
+      localStorage.setItem(STORAGE.lang, $('#langOverride').value);
+      detectAndApplyMode();
+      showToast('Режим языка обновлён');
+    });
+
+    async function readProjectFile(file, existingMap) {
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        throw new Error('Файл «' + file.name + '» слишком большой: ' + readableBytes(file.size) + '. Лучше импортировать файлы до 5 МБ.');
+      }
+
+      const text = await file.text();
+      const safeName = uniqueFileName(file.name, existingMap);
+      return {
+        name: safeName,
+        content: text,
+        size: file.size,
+        lastModified: file.lastModified || Date.now()
+      };
+    }
+
+    async function importFiles(fileList) {
+      const files = Array.from(fileList || []).filter(Boolean);
+      if (!files.length) return;
+
+      const hasCurrentCode = editor.getValue().trim() || projectFiles.size;
+      const confirmText = files.length === 1
+        ? 'Заменить текущий код файлом «' + files[0].name + '»?'
+        : 'Заменить текущий проект этими файлами?\n\n' + files.map(file => '• ' + file.name).join('\n');
+
+      if (hasCurrentCode && !confirm(confirmText)) {
+        fileInput.value = '';
+        return;
+      }
+
+      try {
+        const nextFiles = new Map();
+        for (const file of files) {
+          const projectFile = await readProjectFile(file, nextFiles);
+          nextFiles.set(projectFile.name, projectFile);
+        }
+
+        projectFiles = nextFiles;
+        const htmlEntry = projectFileList().find(file => /(^|\/|\\)index\.html?$/i.test(file.name)) || projectFileList().find(file => /\.html?$/i.test(file.name));
+        const firstRunnable = htmlEntry || projectFileList().find(file => /\.(js|jsx|ts|tsx|css)$/i.test(file.name)) || projectFileList()[0];
+
+        activeFileName = firstRunnable.name;
+        lastImportedFileName = firstRunnable.name;
+        localStorage.removeItem(STORAGE.code);
+        setActiveFile(activeFileName, { skipSave: true });
+
+        const names = projectFileList().map(file => file.name).join(', ');
+        const totalSize = projectFileList().reduce((sum, file) => sum + (file.size || 0), 0);
+        addRow('info', 'Импортировано файлов: ' + projectFiles.size + '. Общий размер: ' + readableBytes(totalSize) + '. Файлы: ' + names + '.');
+
+        if (projectFiles.size > 1) {
+          addRow('info', 'Теперь при запуске приложение собирает проект: HTML берётся из index.html, CSS вставляется в <head>, JS вставляется перед </body>.');
+          showToast('Проект импортирован');
+        } else {
+          showToast('Файл импортирован');
+        }
+
+        switchTab('tab-editor');
+      } catch (error) {
+        addRow('error', 'Не удалось импортировать файлы: ' + String(error && error.message ? error.message : error));
+        switchTab('tab-output');
+      } finally {
+        fileInput.value = '';
+      }
+    }
+
+    $('#importBtn').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', event => importFiles(event.target.files));
+
+    ;['dragenter', 'dragover'].forEach(name => {
+      editorWrap.addEventListener(name, event => {
+        event.preventDefault();
+        editorWrap.classList.add('dragging');
+      });
+    });
+
+    ;['dragleave', 'drop'].forEach(name => {
+      editorWrap.addEventListener(name, event => {
+        event.preventDefault();
+        if (name === 'drop') importFiles(event.dataTransfer.files);
+        editorWrap.classList.remove('dragging');
+      });
+    });
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector('script[src="' + src + '"]')) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Не удалось загрузить библиотеку: ' + src));
+        document.head.appendChild(script);
+      });
+    }
+
+    function buildConsoleCaptureScript() {
+      return `<script>
+        (function () {
+          function safe(value) {
+            try {
+              if (typeof value === 'string') return value;
+              return JSON.stringify(value, null, 2);
+            } catch (error) {
+              return String(value);
+            }
+          }
+
+          function post(payload) {
+            try {
+              if (window.parent && window.parent !== window) window.parent.postMessage(payload, '*');
+            } catch (error) {}
+
+            try {
+              if (window.opener && !window.opener.closed) window.opener.postMessage(payload, '*');
+            } catch (error) {}
+          }
+
+          function send(level, args) {
+            post({
+              type: 'mobile-console',
+              level: level,
+              args: Array.prototype.slice.call(args).map(safe)
+            });
+          }
+
+          ['log', 'info', 'warn', 'error'].forEach(function (level) {
+            var original = console[level];
+            console[level] = function () {
+              send(level, arguments);
+              if (original) original.apply(console, arguments);
+            };
+          });
+
+          window.onerror = function (message, source, line, column) {
+            send('error', [String(message) + ' — строка ' + line + (column ? ', колонка ' + column : '')]);
+          };
+
+          window.onunhandledrejection = function (event) {
+            send('error', ['Promise error: ' + (event.reason && event.reason.message ? event.reason.message : event.reason)]);
+          };
+        })();
+      <\/script>`;
+    }
+
+    function createHtmlDocument(code, lang, compiledCode) {
+      const capture = buildConsoleCaptureScript();
+
+      if (lang === 'html') {
+        if (/<head[^>]*>/i.test(code)) return code.replace(/<head([^>]*)>/i, '<head$1>' + capture);
+        if (/<html[^>]*>/i.test(code)) return code.replace(/<html([^>]*)>/i, '<html$1><head>' + capture + '</head>');
+        return '<!DOCTYPE html><html><head>' + capture + '</head><body>' + code + '</body></html>';
+      }
+
+      return '<!DOCTYPE html><html lang="ru"><head>' +
+        '<meta charset="UTF-8" />' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1" />' +
+        capture +
+        '</head><body><div id="root"></div><script>' + compiledCode + '<\/script></body></html>';
+    }
+
+
+    function normalizeFileRef(value) {
+      let ref = String(value || '').trim().replace(/\\/g, '/');
+      ref = ref.split('#')[0].split('?')[0];
+      try { ref = decodeURIComponent(ref); } catch (error) {}
+      ref = ref.replace(/^\.\//, '').replace(/^\//, '');
+      return ref;
+    }
+
+    function findProjectFile(ref) {
+      const normalized = normalizeFileRef(ref);
+      if (!normalized) return null;
+      if (projectFiles.has(normalized)) return projectFiles.get(normalized);
+
+      const noDot = normalized.replace(/^\.\//, '');
+      if (projectFiles.has(noDot)) return projectFiles.get(noDot);
+
+      const baseName = noDot.split('/').pop();
+      return projectFileList().find(file => file.name === baseName || file.name.endsWith('/' + baseName)) || null;
+    }
+
+    function isStyleFile(name) {
+      return /\.css$/i.test(name);
+    }
+
+    function isScriptFile(name) {
+      return /\.(js|mjs|cjs|jsx|ts|tsx)$/i.test(name);
+    }
+
+    function escapeAttribute(value) {
+      return String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    }
+
+    function safeStyleContent(value) {
+      return String(value || '').replace(/<\/style/gi, '<\\/style');
+    }
+
+    function safeScriptContent(value) {
+      return String(value || '').replace(/<\/script/gi, '<\\/script');
+    }
+
+    function insertIntoHead(html, content) {
+      if (!content) return html;
+      if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, content + '\n</head>');
+      if (/<body([^>]*)>/i.test(html)) return html.replace(/<body([^>]*)>/i, '<head>' + content + '\n</head><body$1>');
+      return '<head>' + content + '\n</head>' + html;
+    }
+
+    function insertBeforeBodyEnd(html, content) {
+      if (!content) return html;
+      if (/<\/body>/i.test(html)) return html.replace(/<\/body>/i, content + '\n</body>');
+      return html + '\n' + content;
+    }
+
+    async function transpileProjectScript(file) {
+      const ext = getFileExt(file.name);
+      let code = file.content || '';
+
+      if (ext === 'jsx') {
+        addRow('info', 'Компилирую JSX-файл «' + file.name + '» через Babel...');
+        await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
+        code = Babel.transform(code, { presets: ['react', 'env'] }).code;
+      }
+
+      if (['ts', 'tsx'].includes(ext)) {
+        addRow('info', 'Компилирую TypeScript-файл «' + file.name + '» в JavaScript...');
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
+        if (window.ts.transpileModule) {
+          code = window.ts.transpileModule(code, {
+            compilerOptions: {
+              target: window.ts.ScriptTarget.ES2020,
+              jsx: window.ts.JsxEmit ? window.ts.JsxEmit.React : undefined
+            }
+          }).outputText;
+        } else {
+          code = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
+        }
+      }
+
+      return safeScriptContent(code);
+    }
+
+    async function buildProjectDocument() {
+      saveActiveEditorFile();
+
+      const files = projectFileList();
+      const htmlFile = files.find(file => /(^|\/|\\)index\.html?$/i.test(file.name)) || files.find(file => /\.html?$/i.test(file.name));
+      const cssFiles = files.filter(file => isStyleFile(file.name));
+      const scriptFiles = files.filter(file => isScriptFile(file.name));
+      const usedCss = new Set();
+      const usedScripts = new Set();
+      let html = htmlFile ? htmlFile.content : '';
+
+      if (htmlFile) {
+        html = html.replace(/<link\b([^>]*?)\bhref\s*=\s*(['"])([^'"]+)\2([^>]*)>/gi, (match, before, quote, href) => {
+          const file = findProjectFile(href);
+          if (!file || !isStyleFile(file.name)) return match;
+          usedCss.add(file.name);
+          return '<style data-project-file="' + escapeAttribute(file.name) + '">\n' + safeStyleContent(file.content) + '\n</style>';
+        });
+
+        html = html.replace(/<script\b([^>]*?)\bsrc\s*=\s*(['"])([^'"]+)\2([^>]*)>\s*<\/script>/gi, (match, before, quote, src, after) => {
+          const file = findProjectFile(src);
+          if (!file || !isScriptFile(file.name)) return match;
+          usedScripts.add(file.name);
+          const attrs = (before + ' ' + after).replace(/\s+src\s*=\s*(['"])[^'"]+\1/i, '').trim();
+          return '<script ' + (attrs ? attrs + ' ' : '') + 'data-project-file="' + escapeAttribute(file.name) + '">\n' + safeScriptContent(file.content) + '\n<\/script>';
+        });
+      } else {
+        html = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Project Preview</title></head><body><div id="root"></div></body></html>';
+      }
+
+      const missingStyles = cssFiles
+        .filter(file => !usedCss.has(file.name))
+        .map(file => '<style data-project-file="' + escapeAttribute(file.name) + '">\n' + safeStyleContent(file.content) + '\n</style>')
+        .join('\n');
+      html = insertIntoHead(html, missingStyles);
+
+      const missingScripts = [];
+      for (const file of scriptFiles) {
+        if (usedScripts.has(file.name)) continue;
+        const scriptCode = await transpileProjectScript(file);
+        missingScripts.push('<script data-project-file="' + escapeAttribute(file.name) + '">\n' + scriptCode + '\n<\/script>');
+      }
+      html = insertBeforeBodyEnd(html, missingScripts.join('\n'));
+
+      return createHtmlDocument(html, 'html', '');
+    }
+
+    async function buildPreviewDocument(code, lang) {
+      if (hasProjectFiles()) {
+        addRow('info', 'Собираю проект из ' + projectFiles.size + ' файлов...');
+        return {
+          html: await buildProjectDocument(),
+          label: 'Проект собран и запущен. Console.log из встроенного и отдельного превью будет появляться здесь.'
+        };
+      }
+
+      if (['html', 'jsx', 'js', 'ts'].includes(lang)) {
+        let compiledCode = code;
+
+        if (lang === 'jsx') {
+          addRow('info', 'Компилирую React JSX через Babel...');
+          await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
+          compiledCode = Babel.transform(code, { presets: ['react', 'env'] }).code;
+        }
+
+        if (lang === 'ts') {
+          addRow('info', 'Компилирую TypeScript в JavaScript...');
+          await loadScript('https://cdnjs.cloudflare.com/ajax/libs/typescript/5.6.3/typescript.min.js');
+          compiledCode = window.ts.transpile(code, { target: window.ts.ScriptTarget.ES2020 });
+        }
+
+        return {
+          html: createHtmlDocument(code, lang, compiledCode),
+          label: 'Код запущен во встроенном превью. Сообщения console.log будут здесь.'
+        };
+      }
+
+      if (lang === 'css') {
+        return {
+          html: createHtmlDocument('<!DOCTYPE html><html><head><style>' + safeStyleContent(code) + '</style></head><body><h1>CSS импортирован</h1><p>Стиль применён к этой тестовой странице.</p></body></html>', 'html', ''),
+          label: 'CSS показан на тестовой странице в превью.'
+        };
+      }
+
+      return null;
+    }
+
+    function writeExternalPlaceholder(targetWindow, title, text) {
+      try {
+        targetWindow.document.open();
+        targetWindow.document.write('<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escapeHtml(title) + '</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0}.box{max-width:420px;padding:24px;text-align:center}h1{font-size:24px;margin:0 0 10px}p{color:#94a3b8}</style></head><body><main class="box"><h1>' + escapeHtml(title) + '</h1><p>' + escapeHtml(text) + '</p></main></body></html>');
+        targetWindow.document.close();
+      } catch (error) {}
+    }
+
+    async function openPreviewInNewPage() {
+      const targetWindow = window.open('about:blank', '_blank');
+      if (!targetWindow) {
+        addRow('error', 'Браузер заблокировал новую вкладку. На телефоне разрешите всплывающие окна или нажмите кнопку ещё раз.');
+        switchTab('tab-output');
+        return;
+      }
+
+      writeExternalPlaceholder(targetWindow, 'Собираю превью…', 'Окно открылось сразу, чтобы мобильный браузер не заблокировал запуск.');
+
+      const code = editor.getValue();
+      const lang = detectAndApplyMode();
+      const empty = !code.trim() && !hasProjectFiles();
+
+      if (empty) {
+        writeExternalPlaceholder(targetWindow, 'Превью пустое', 'Импортируйте файлы или вставьте код, затем запустите просмотр ещё раз.');
+        addRow('warn', 'Новая вкладка открыта, но кода для превью пока нет.');
+        switchTab('tab-output');
+        return;
+      }
+
+      if (lintErrorsCount > 0) {
+        writeExternalPlaceholder(targetWindow, 'Есть критическая проблема', 'Сначала откройте «Проблема» и исправьте ошибку в коде.');
+        addRow('error', 'Отдельное превью не запущено: в коде есть критическая проблема.');
+        problemPanel.classList.add('visible');
+        switchTab('tab-editor');
+        return;
+      }
+
+      try {
+        const preview = await buildPreviewDocument(code, lang);
+        if (!preview) {
+          writeExternalPlaceholder(targetWindow, 'Нет HTML-превью', 'Для Python используйте встроенную консоль запуска.');
+          addRow('warn', 'Отдельное окно доступно для HTML/CSS/JS-проектов. Python запускается во встроенной консоли.');
+          return;
+        }
+
+        if (externalPreviewUrl) URL.revokeObjectURL(externalPreviewUrl);
+        externalPreviewUrl = URL.createObjectURL(new Blob([preview.html], { type: 'text/html;charset=utf-8' }));
+        targetWindow.location.href = externalPreviewUrl;
+        addRow('info', 'Превью открыто на отдельной странице. Если эта вкладка приложения остаётся открытой, console.log из новой страницы тоже будет приходить сюда.');
+        switchTab('tab-output');
+      } catch (error) {
+        writeExternalPlaceholder(targetWindow, 'Ошибка сборки', String(error && error.message ? error.message : error));
+        addRow('error', String(error && error.stack ? error.stack : error));
+        switchTab('tab-output');
+      }
+    }
+
+    async function run() {
+      const code = editor.getValue();
+      const lang = detectAndApplyMode();
+
+      $('#clearConsole').click();
+
+      if (!code.trim() && !hasProjectFiles()) {
+        addRow('warn', 'Редактор пустой. Импортируйте один или несколько файлов или вставьте код.');
+        switchTab('tab-output');
+        return;
+      }
+
+      if (lintErrorsCount > 0) {
+        addRow('error', 'Запуск остановлен: сначала откройте «Проблема» и исправьте критические ошибки.');
+        problemPanel.classList.add('visible');
+        switchTab('tab-editor');
+        return;
+      }
+
+      try {
+        switchTab('tab-output');
+
+        if (lang === 'py' && !hasProjectFiles()) {
+          addRow('info', 'Запускаю Python через Pyodide. Первый запуск может занять немного времени.');
+          if (!window.pyodide) {
+            await loadScript('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
+            window.pyodide = await loadPyodide();
+            window.pyodide.setStdout({ batched: value => addRow('log', value) });
+            window.pyodide.setStderr({ batched: value => addRow('error', value) });
+          }
+          await window.pyodide.runPythonAsync(code);
+          return;
+        }
+
+        const preview = await buildPreviewDocument(code, lang);
+        if (!preview) {
+          addRow('warn', 'Для этого языка нет визуального превью. Используйте HTML/CSS/JS или Python-консоль.');
+          return;
+        }
+
+        previewBox.style.display = '';
+        previewFrame.srcdoc = preview.html;
+        addRow('info', preview.label);
+      } catch (error) {
+        addRow('error', String(error && error.stack ? error.stack : error));
+      }
+    }
+
+    $('#runBtn').addEventListener('click', run);
+    $('#mobileRunBtn').addEventListener('click', run);
+    $('#openPreviewPage').addEventListener('click', openPreviewInNewPage);
+
+    window.addEventListener('message', event => {
+      if (event.data && event.data.type === 'mobile-console') {
+        addRow(event.data.level || 'log', (event.data.args || []).join(' '));
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      editor.setFontSize(window.innerWidth < 480 ? 13.5 : 14);
+      editor.resize();
+    });
+
+    detectAndApplyMode();
+  </script>
 </body>
 </html>
