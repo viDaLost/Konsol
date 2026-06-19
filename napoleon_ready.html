@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наполеон Бонапарт: Император, Законодатель, Миф</title>
+    <!-- Google Fonts: Playfair Display для заголовков, Inter для текста -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP & ScrollTrigger для плавных премиальных анимаций -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'georgia', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        imperial: {
+                            gold: '#D4AF37',
+                            goldLight: '#F3E5AB',
+                            darkGold: '#AA7C11',
+                            blue: '#0B1D3A',
+                            dark: '#070B11',
+                            slate: '#1E293B',
+                            red: '#8C1D1D'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Кастомный премиальный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070B11;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #AA7C11;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+        
+        /* Свечение для золотых элементов */
+        .gold-glow {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+        .gold-border-gradient {
+            border-image: linear-gradient(to right, #AA7C11, #D4AF37, #AA7C11) 1;
+        }
+        
+        /* Плавные переходы для интерактивных элементов */
+        .transition-epic {
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Эффект шума для реалистичной текстуры */
+        .noise-bg {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="bg-imperial-dark text-stone-100 font-sans overflow-x-hidden noise-bg">
+
+    <!-- ФОНОВЫЙ ХОЛСТ ДЛЯ ИНТЕРАКТИВНЫХ ЧАСТИЦ -->
+    <canvas id="particles-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-45"></canvas>
+
+    <!-- НАВИГАЦИОННАЯ ПАНЕЛЬ -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-imperial-dark/90 backdrop-blur-md border-b border-imperial-gold/20 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="#hero" class="flex items-center space-x-3 group">
+                <!-- Герб Наполеона (Золотая пчела в упрощенном SVG) -->
+                <svg class="w-8 h-8 text-imperial-gold transition-transform duration-500 group-hover:rotate-180" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C11.5 2 11 3.5 11 5C11 5.5 11.2 6.1 11.5 6.6C9.5 7.1 8 8.9 8 11V13C8 13.5 7.5 14 7 14C5.5 14 4.5 15 4.5 16C4.5 17 5.5 18 7 18C8.5 18 9.5 17 9.5 16C9.5 15.5 10 15 10.5 15H13.5C14 15 14.5 15.5 14.5 16C14.5 17 15.5 18 17 18C18.5 18 19.5 17 19.5 16C19.5 15 18.5 14 17 14C16.5 14 16 13.5 16 13V11C16 8.9 14.5 7.1 12.5 6.6C12.8 6.1 13 5.5 13 5C13 3.5 12.5 2 12 2ZM12 8C13.7 8 15 9.3 15 11V13H9V11C9 9.3 10.3 8 12 8ZM6.2 11.5C5 12 4 13.2 4 14.5C4 16 5 17 6.2 16.5C7 16.1 7.2 15 7.2 14C7.2 13 6.8 12.2 6.2 11.5ZM17.8 11.5C17.2 12.2 16.8 13 16.8 14C16.8 15 17 16.1 17.8 16.5C19 17 20 16 20 14.5C20 13.2 19 12 17.8 11.5Z"/>
+                </svg>
+                <span class="font-serif tracking-widest text-lg font-semibold bg-gradient-to-r from-imperial-goldLight via-imperial-gold to-imperial-goldLight bg-clip-text text-transparent">NAPOLEON</span>
+            </a>
+            
+            <!-- Ссылки -->
+            <div class="hidden md:flex items-center space-x-8 text-sm uppercase tracking-widest font-medium">
+                <a href="#timeline" class="hover:text-imperial-gold transition-colors duration-300">Хронология</a>
+                <a href="#battles" class="hover:text-imperial-gold transition-colors duration-300">Сражения</a>
+                <a href="#code" class="hover:text-imperial-gold transition-colors duration-300">Наследие</a>
+                <a href="#quotes" class="hover:text-imperial-gold transition-colors duration-300">Цитаты</a>
+                <a href="#quiz" class="hover:text-imperial-gold transition-colors duration-300">Тест</a>
+            </div>
+
+            <!-- Управление атмосферой (Web Audio & Озвучка) -->
+            <div class="flex items-center space-x-4">
+                <button id="synth-audio-btn" onclick="toggleAtmosphere()" class="p-2 border border-imperial-gold/30 rounded-full hover:bg-imperial-gold/10 transition-epic flex items-center justify-center group" title="Включить эмбиент генератор">
+                    <svg id="sound-icon-off" class="w-5 h-5 text-stone-400 group-hover:text-imperial-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                    </svg>
+                    <svg id="sound-icon-on" class="w-5 h-5 text-imperial-gold hidden animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                </button>
+                <a href="#timeline" class="bg-gradient-to-r from-imperial-darkGold to-imperial-gold hover:from-imperial-gold hover:to-imperial-goldLight text-imperial-dark px-5 py-2 rounded-full font-medium text-xs tracking-widest uppercase transition-epic shadow-lg shadow-imperial-gold/20">Начать Исследование</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ГЛАВНЫЙ ЭКРАН (HERO) -->
+    <header id="hero" class="relative min-h-screen flex items-center justify-center pt-24 overflow-hidden z-10">
+        <!-- Задний план с картиной Давида в качестве эстетического оверлея (затемненный) -->
+        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[10000ms] scale-105 pointer-events-none" 
+             style="background-image: linear-gradient(to bottom, rgba(7, 11, 17, 0.85), rgba(7, 11, 17, 0.95)), url('https://images.unsplash.com/photo-1599733589046-10c005739ef9?auto=format&fit=crop&w=2000&q=80');"
+             id="hero-bg">
+        </div>
+        
+        <div class="relative max-w-5xl mx-auto px-6 text-center z-10">
+            <div id="hero-badge" class="inline-flex items-center space-x-2 bg-imperial-gold/10 border border-imperial-gold/30 px-4 py-1.5 rounded-full mb-6 opacity-0 translate-y-4">
+                <span class="w-2 h-2 rounded-full bg-imperial-gold animate-ping"></span>
+                <span class="text-xs tracking-widest uppercase font-semibold text-imperial-goldLight">Музей Цифровой Истории</span>
+            </div>
+            
+            <h1 id="hero-title" class="font-serif text-5xl md:text-8xl font-bold tracking-tight mb-6 opacity-0 translate-y-8">
+                <span class="block text-stone-300 font-light italic text-3xl md:text-5xl mb-2">Вся история жизни</span>
+                <span class="bg-gradient-to-r from-amber-100 via-imperial-goldLight to-imperial-gold bg-clip-text text-transparent">НАПОЛЕОНА БОНАПАРТА</span>
+            </h1>
+
+            <p id="hero-desc" class="text-stone-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-light opacity-0 translate-y-8">
+                От корсиканского кадета до Повелителя Европы и изгнанника на затерянном острове. Интерактивное путешествие сквозь великие победы, реформы законодательства и сокрушительное падение.
+            </p>
+
+            <div id="hero-actions" class="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 translate-y-8">
+                <a href="#timeline" class="w-full sm:w-auto bg-gradient-to-r from-imperial-darkGold to-imperial-gold text-imperial-dark px-8 py-4 rounded-full font-semibold tracking-wider uppercase text-sm hover:scale-105 active:scale-95 transition-epic shadow-xl shadow-imperial-gold/20">
+                    Открыть Хронологию
+                </a>
+                <a href="#battles" class="w-full sm:w-auto border border-stone-500/30 hover:border-imperial-gold/60 bg-stone-900/40 backdrop-blur-sm hover:bg-stone-900/60 px-8 py-4 rounded-full font-semibold tracking-wider uppercase text-sm transition-epic">
+                    Карта Сражений
+                </a>
+            </div>
+        </div>
+
+        <!-- Нижний индикатор прокрутки -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-2 opacity-70 animate-bounce cursor-pointer" onclick="document.getElementById('timeline').scrollIntoView()">
+            <span class="text-xs uppercase tracking-widest text-imperial-gold">Листайте вниз</span>
+            <svg class="w-5 h-5 text-imperial-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+        </div>
+    </header>
+
+    <!-- РАЗДЕЛ: ИНТЕРАКТИВНАЯ ХРОНОЛОГИЯ -->
+    <section id="timeline" class="relative py-24 z-10 bg-gradient-to-b from-imperial-dark to-slate-950">
+        <div class="max-w-7xl mx-auto px-6">
+            
+            <div class="text-center mb-16">
+                <h2 class="font-serif text-4xl md:text-6xl font-bold mb-4 text-stone-100">Имперская Хроника</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-transparent via-imperial-gold to-transparent mx-auto mb-6"></div>
+                <p class="text-stone-400 max-w-xl mx-auto">Интерактивный путь сквозь ключевые эпохи жизни Бонапарта. Выберите период ниже или пролистайте хронологическую шкалу.</p>
+            </div>
+
+            <!-- Навигация по эпохам -->
+            <div class="flex flex-wrap justify-center gap-2 mb-16 max-w-4xl mx-auto">
+                <button onclick="filterTimeline('all')" class="timeline-filter-btn active bg-imperial-gold text-imperial-dark px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-epic">
+                    Вся жизнь
+                </button>
+                <button onclick="filterTimeline('corsica')" class="timeline-filter-btn border border-stone-700 hover:border-imperial-gold text-stone-300 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-epic">
+                    Корсика & Юность (1769-1793)
+                </button>
+                <button onclick="filterTimeline('rise')" class="timeline-filter-btn border border-stone-700 hover:border-imperial-gold text-stone-300 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-epic">
+                    Восхождение (1796-1804)
+                </button>
+                <button onclick="filterTimeline('empire')" class="timeline-filter-btn border border-stone-700 hover:border-imperial-gold text-stone-300 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-epic">
+                    Триумф Империи (1804-1811)
+                </button>
+                <button onclick="filterTimeline('fall')" class="timeline-filter-btn border border-stone-700 hover:border-imperial-gold text-stone-300 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-epic">
+                    Крах & Изгнание (1812-1821)
+                </button>
+            </div>
+
+            <!-- ШКАЛА ВРЕМЕНИ -->
+            <div class="relative border-l-2 border-stone-800 ml-4 md:mx-auto md:max-w-4xl timeline-container">
+                
+                <!-- Событие 1 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:justify-between items-center relative transition-all duration-500" data-era="corsica">
+                    <!-- Хронологическая точка -->
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg shadow-imperial-gold/30"></div>
+                    
+                    <!-- Содержимое слева -->
+                    <div class="md:w-[45%] md:text-right md:pr-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">15 Августа 1769</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Рождение Льва</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">В Аяччо, на острове Корсика, в семье мелкопоместного дворянина Карло Буонапарте рождается второй сын — Наполеоне. Остров лишь недавно вошел в состав Франции, и юноша растет ярым корсиканским патриотом, недолюбливающим французских завоевателей.</p>
+                    </div>
+                    <!-- Изображение / Оверлей справа -->
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1549692520-acc6669e2f0c?auto=format&fit=crop&w=800&q=80" onerror="this.src='https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80'" alt="Корсика Аяччо" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Родина Наполеона — Остров Корсика</div>
+                    </div>
+                </div>
+
+                <!-- Событие 2 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:flex-row-reverse md:justify-between items-center relative transition-all duration-500" data-era="corsica">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-left md:pl-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">1779 — 1785</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Бриенн и Военная Школа в Париже</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">Наполеон уезжает во Францию. В Бриеннской военной школе замкнутый мальчик терпит насмешки из-за корсиканского акцента, но поражает преподавателей математическими способностями и страстью к чтению. В 1785 году он досрочно оканчивает престижную Военную школу Парижа в чине подпоручика артиллерии.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1548625361-155deee223d2?auto=format&fit=crop&w=800&q=80" alt="Старая военная школа" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Парижское военное училище</div>
+                    </div>
+                </div>
+
+                <!-- Событие 3 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:justify-between items-center relative transition-all duration-500" data-era="rise">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-right md:pr-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">18 Декабря 1793</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Триумф под Тулоном</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">Франция охвачена революционным пламенем. Город Тулон поднимает мятеж и впускает британский флот. Молодой капитан Бонапарт предлагает гениальный план штурма фортов, выбивая англичан. За это блестящее взятие Тулона 24-летний Наполеон получает звание бригадного генерала.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80" alt="Осада Тулона" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Сражение при Тулоне</div>
+                    </div>
+                </div>
+
+                <!-- Событие 4 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:flex-row-reverse md:justify-between items-center relative transition-all duration-500" data-era="rise">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-left md:pl-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">1796 — 1799</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Итальянский триумф и Тайны Египта</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">Назначенный командующим Итальянской армией, Наполеон громит превосходящие австрийские силы в серии молниеносных сражений (Монтенотте, Лоди, Арколе). Затем он организует Египетский поход, мечтая сокрушить могущество Британии на Востоке. Экспедиция открывает миру Розеттский камень и основывает египтологию.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1601999109332-542b18dbec57?auto=format&fit=crop&w=800&q=80" alt="Пирамиды Гизы" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Битва у Пирамид</div>
+                    </div>
+                </div>
+
+                <!-- Событие 5 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:justify-between items-center relative transition-all duration-500" data-era="rise">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-right md:pr-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">9 Ноября 1799 (18 Брюмера)</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Захват власти: Директория пала</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">Вернувшись в охваченный политическим кризисом Париж, Наполеон при поддержке соратников осуществляет бескровный государственный переворот 18 брюмера. Неэффективная Директория упразднена. Создается Консулат, и Наполеон становится Первым Консулом с неограниченной диктаторской властью.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80" alt="Французский переворот" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Зал заседаний Совета Пятисот</div>
+                    </div>
+                </div>
+
+                <!-- Событие 6 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:flex-row-reverse md:justify-between items-center relative transition-all duration-500" data-era="empire">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-left md:pl-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">2 Декабря 1804</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Коронация в соборе Нотр-Дам</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">В присутствии Папы Римского Пия VII в Париже происходит грандиозная церемония. Наполеон выхватывает корону из рук понтифика и водружает её себе на голову сам, подчеркивая, что взял власть своими силами. Он становится Императором французов Наполеоном I.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1545128485-c400e7702796?auto=format&fit=crop&w=800&q=80" alt="Корона императора" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Корона Французской Империи</div>
+                    </div>
+                </div>
+
+                <!-- Событие 7 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:justify-between items-center relative transition-all duration-500" data-era="empire">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-right md:pr-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">2 Декабря 1805</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Битва трех императоров: Аустерлиц</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">Вершина полководческого гения Наполеона. Великая Армия сталкивается со значительно превосходящими силами русско-австрийской коалиции. Пойдя на умышленный отход на фланге, Наполеон вынуждает союзников ослабить центр (Праценские высоты) и наносит рассекающий кинжальный удар, уничтожая врага.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=800&q=80" alt="Поле боя" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Слава Аустерлица</div>
+                    </div>
+                </div>
+
+                <!-- Событие 8 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:flex-row-reverse md:justify-between items-center relative transition-all duration-500" data-era="fall">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-left md:pl-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">Июнь — Декабрь 1812</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Роковое вторжение в Россию</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">Стремясь заставить императора Александра I соблюдать Континентальную блокаду, Наполеон вторгается в Россию во главе 600-тысячной «Великой Армии». После кровопролитной Бородинской битвы русские войска сдают Москву. Однако «скифская тактика» Кутузова, партизанские рейды и суровые морозы приводят к гибели французской армии при отступлении.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1531266752426-aad472b7bbf4?auto=format&fit=crop&w=800&q=80" alt="Снежная зима" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Гибель Великой Армии во льдах</div>
+                    </div>
+                </div>
+
+                <!-- Событие 9 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:justify-between items-center relative transition-all duration-500" data-era="fall">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-right md:pr-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">1814 — 1815</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Отречение, Эльба и Сто Дней</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">После разгрома в Битве Наций под Лейпцигом, союзники вступают в Париж. Наполеон отрекается от престола в Фонтенбло и ссылается на крохотный остров Эльба. Спустя неполный год он совершает дерзкий побег, высаживается во Франции и без единого выстрела триумфально берет власть — этот период войдет в историю как «Сто дней».</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?auto=format&fit=crop&w=800&q=80" alt="Океан остров" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Каменистый форпост - Эльба</div>
+                    </div>
+                </div>
+
+                <!-- Событие 10 -->
+                <div class="timeline-item mb-16 pl-8 md:pl-0 md:flex md:flex-row-reverse md:justify-between items-center relative transition-all duration-500" data-era="fall">
+                    <div class="absolute left-0 top-1.5 md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-imperial-dark border-4 border-imperial-gold z-10 shadow-lg"></div>
+                    
+                    <div class="md:w-[45%] md:text-left md:pl-8">
+                        <span class="inline-block px-3 py-1 bg-imperial-gold/10 text-imperial-goldLight rounded text-xs font-bold uppercase tracking-wider mb-2">5 Мая 1821</span>
+                        <h3 class="font-serif text-2xl font-semibold mb-3 text-stone-200">Последнее Ватерлоо и Вечный покой</h3>
+                        <p class="text-stone-400 text-sm leading-relaxed">18 июня 1815 года в решающей битве при Ватерлоо объединенные силы Веллингтона и Блюхера наносят Наполеону окончательное поражение. Он вновь отрекается и отправляется под конвоем на далекий обитаемый скалистый остров Святой Елены в Южной Атлантике, где умирает в возрасте 51 года, оставив после себя бессмертную легенду.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:w-[45%] relative rounded-xl overflow-hidden aspect-video border border-stone-800 group hover:border-imperial-gold/40 transition-epic">
+                        <img src="https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80" alt="Одинокий утес" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-epic duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-imperial-dark/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-xs text-stone-400">Остров Святой Елены в Атлантическом океане</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- РАЗДЕЛ: ТАКТИКА И ВЕЛИКИЕ СРАЖЕНИЯ -->
+    <section id="battles" class="py-24 bg-imperial-dark border-t border-imperial-gold/10 z-10 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            
+            <div class="text-center mb-16">
+                <h2 class="font-serif text-4xl md:text-6xl font-bold mb-4 text-stone-100">Карта Сражений</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-transparent via-imperial-gold to-transparent mx-auto mb-6"></div>
+                <p class="text-stone-400 max-w-xl mx-auto">Наполеон провел более 60 битв — больше, чем Александр Македонский, Ганнибал и Цезарь вместе взятые. Изучите тактику величайших из них.</p>
+            </div>
+
+            <!-- Сетка: Селекторы слева, Интерактивный тактический дисплей справа -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Меню Битв (4 колонки) -->
+                <div class="lg:col-span-4 flex flex-col space-y-3">
+                    <button onclick="selectBattle('arcole')" id="btn-arcole" class="battle-btn text-left p-5 rounded-xl border border-imperial-gold/20 bg-stone-900/50 hover:bg-stone-900/90 hover:border-imperial-gold/60 transition-epic flex items-center justify-between group active-battle">
+                        <div>
+                            <h4 class="font-serif text-lg font-semibold text-imperial-goldLight group-hover:text-white transition-colors">Битва на Аркольском мосту</h4>
+                            <span class="text-xs text-stone-400">1796 г. • Итальянская кампания</span>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-imperial-gold opacity-100 transition-opacity"></span>
+                    </button>
+
+                    <button onclick="selectBattle('austerlitz')" id="btn-austerlitz" class="battle-btn text-left p-5 rounded-xl border border-stone-800/60 bg-stone-950/40 hover:bg-stone-900/90 hover:border-imperial-gold/60 transition-epic flex items-center justify-between group">
+                        <div>
+                            <h4 class="font-serif text-lg font-semibold text-stone-300 group-hover:text-white transition-colors">Битва под Аустерлицем</h4>
+                            <span class="text-xs text-stone-400">1805 г. • Война третьей коалиции</span>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-imperial-gold opacity-0 transition-opacity"></span>
+                    </button>
+
+                    <button onclick="selectBattle('borodino')" id="btn-borodino" class="battle-btn text-left p-5 rounded-xl border border-stone-800/60 bg-stone-950/40 hover:bg-stone-900/90 hover:border-imperial-gold/60 transition-epic flex items-center justify-between group">
+                        <div>
+                            <h4 class="font-serif text-lg font-semibold text-stone-300 group-hover:text-white transition-colors">Бородинское сражение</h4>
+                            <span class="text-xs text-stone-400">1812 г. • Вторжение в Россию</span>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-imperial-gold opacity-0 transition-opacity"></span>
+                    </button>
+
+                    <button onclick="selectBattle('waterloo')" id="btn-waterloo" class="battle-btn text-left p-5 rounded-xl border border-stone-800/60 bg-stone-950/40 hover:bg-stone-900/90 hover:border-imperial-gold/60 transition-epic flex items-center justify-between group">
+                        <div>
+                            <h4 class="font-serif text-lg font-semibold text-stone-300 group-hover:text-white transition-colors">Сражение при Ватерлоо</h4>
+                            <span class="text-xs text-stone-400">1815 г. • Кампания «Ста дней»</span>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-imperial-gold opacity-0 transition-opacity"></span>
+                    </button>
+                </div>
+
+                <!-- Тактический дисплей (8 колонок) -->
+                <div class="lg:col-span-8 bg-stone-950/80 border border-imperial-gold/30 rounded-2xl p-6 md:p-8 gold-glow transition-epic" id="battle-details-container">
+                    
+                    <div id="battle-content">
+                        <!-- Динамически обновляемый контент через JS -->
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- РАЗДЕЛ: ГРАЖДАНСКОЕ НАСЛЕДИЕ И КОДЕКС -->
+    <section id="code" class="py-24 bg-gradient-to-b from-slate-950 to-imperial-dark z-10 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Текст слева -->
+                <div class="lg:col-span-6 space-y-6">
+                    <span class="text-xs font-semibold tracking-widest text-imperial-gold uppercase block">Законодательное бессмертие</span>
+                    <h2 class="font-serif text-4xl md:text-5xl font-bold text-stone-100 leading-tight">«Моя истинная слава не в том, что я выиграл сорок сражений...»</h2>
+                    <div class="w-20 h-1 bg-imperial-gold"></div>
+                    <p class="text-stone-300 leading-relaxed font-light">
+                        Так говорил Наполеон на исходе жизни. Он понимал, что созданный им <strong class="text-imperial-goldLight">Гражданский Кодекс (Code Civil)</strong>, принятый в 1804 году, окажется куда долговечнее пушечного пороха. Кодекс Наполеона полностью разрушил феодальные сословия, закрепил равенство всех перед законом, свободу вероисповедания и заложил фундамент современного континентального гражданского права большинства стран мира.
+                    </p>
+                    <p class="text-stone-400 text-sm">
+                        Он также реформировал систему образования (основал Лицеи), ввел единую метрическую систему и создал Французский Банк, функционирующий до сих пор.
+                    </p>
+                    
+                    <!-- Интерактивные вкладки кодекса -->
+                    <div class="space-y-3 pt-4">
+                        <div class="border-b border-stone-800 pb-3 cursor-pointer group" onclick="toggleCodeSection(0)">
+                            <div class="flex items-center justify-between text-stone-200 group-hover:text-imperial-gold transition-colors duration-300">
+                                <span class="font-serif font-semibold">1. Равенство граждан перед законом</span>
+                                <svg id="arrow-0" class="w-4 h-4 text-stone-500 group-hover:text-imperial-gold transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                            <p id="desc-0" class="text-stone-400 text-xs mt-2 pl-2 hidden transition-all duration-300">Были уничтожены все феодальные привилегии первородства и сословий. Каждому гражданину, вне зависимости от его происхождения, гарантировались равные права и свободы.</p>
+                        </div>
+
+                        <div class="border-b border-stone-800 pb-3 cursor-pointer group" onclick="toggleCodeSection(1)">
+                            <div class="flex items-center justify-between text-stone-200 group-hover:text-imperial-gold transition-colors duration-300">
+                                <span class="font-serif font-semibold">2. Священное право собственности</span>
+                                <svg id="arrow-1" class="w-4 h-4 text-stone-500 group-hover:text-imperial-gold transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                            <p id="desc-1" class="text-stone-400 text-xs mt-2 pl-2 hidden transition-all duration-300">Частная собственность стала неприкосновенной и свободной от феодальных ограничений, что послужило невероятным толчком для развития свободной рыночной экономики во всей Европе.</p>
+                        </div>
+
+                        <div class="border-b border-stone-800 pb-3 cursor-pointer group" onclick="toggleCodeSection(2)">
+                            <div class="flex items-center justify-between text-stone-200 group-hover:text-imperial-gold transition-colors duration-300">
+                                <span class="font-serif font-semibold">3. Светский характер государства</span>
+                                <svg id="arrow-2" class="w-4 h-4 text-stone-500 group-hover:text-imperial-gold transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                            <p id="desc-2" class="text-stone-400 text-xs mt-2 pl-2 hidden transition-all duration-300">Институт брака был выведен из ведения церкви в гражданское русло. Была законодательно закреплена свобода вероисповедания.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D-образное изображение книги справа (Элегантно сверстанная HTML-книга с анимацией при наведении) -->
+                <div class="lg:col-span-6 flex justify-center">
+                    <div class="relative w-80 h-96 bg-stone-900 border border-imperial-gold/30 rounded-lg p-6 flex flex-col justify-between shadow-2xl transition-all duration-500 hover:rotate-2 hover:-translate-y-2 group" style="box-shadow: 10px 10px 40px rgba(0,0,0,0.8), -1px -1px 20px rgba(212,175,55,0.05)">
+                        <!-- Имитация золотого переплета книги -->
+                        <div class="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-imperial-darkGold via-imperial-gold to-imperial-darkGold rounded-l-lg border-r border-black/40"></div>
+                        
+                        <!-- Золотой орнамент -->
+                        <div class="border border-imperial-gold/20 flex-1 p-4 rounded flex flex-col justify-between relative">
+                            <!-- Имперский венок сверху -->
+                            <div class="flex justify-center text-imperial-gold opacity-80 group-hover:scale-110 transition-transform duration-700">
+                                <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2a10 10 0 0 0-10 10 10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-4-9h2V9H8v2zm6-2h-2v2h2V9zm-2 5a3 3 0 0 1-3-3v-1H6v1a5 5 0 0 0 5 5h2a5 5 0 0 0 5-5v-1h-3v1a3 3 0 0 1-3 3z"/>
+                                </svg>
+                            </div>
+                            
+                            <!-- Название -->
+                            <div class="text-center space-y-2">
+                                <span class="text-[10px] tracking-widest uppercase text-imperial-gold">PARIS • 1804</span>
+                                <h3 class="font-serif text-3xl font-bold tracking-tight text-stone-100">CODE<br>CIVIL</h3>
+                                <div class="w-12 h-[1px] bg-imperial-gold mx-auto"></div>
+                                <span class="text-[9px] text-stone-400 uppercase tracking-widest">DES FRANÇAIS</span>
+                            </div>
+
+                            <div class="text-center text-[10px] text-stone-500 italic">
+                                «Мой истинный триумф»
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- РАЗДЕЛ: МУДРОСТЬ И ИНТЕРАКТИВНЫЕ ЦИТАТЫ -->
+    <section id="quotes" class="py-24 bg-imperial-dark relative border-t border-b border-imperial-gold/15 z-10">
+        <div class="max-w-5xl mx-auto px-6">
+            
+            <div class="text-center mb-12">
+                <span class="text-xs font-semibold tracking-widest text-imperial-gold uppercase block mb-1">Голос Императора</span>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-stone-100">Великие Изречения</h2>
+            </div>
+
+            <!-- Контейнер цитаты -->
+            <div class="bg-stone-900/40 backdrop-blur-md border border-stone-800 rounded-2xl p-8 md:p-12 text-center relative overflow-hidden shadow-2xl">
+                <!-- Огромные кавычки -->
+                <div class="absolute -top-10 left-6 text-stone-800 text-[180px] font-serif pointer-events-none select-none opacity-40">“</div>
+                
+                <div class="relative z-10 min-h-[160px] flex flex-col justify-center">
+                    <p id="quote-text" class="font-serif text-xl md:text-3xl text-stone-200 leading-relaxed italic mb-8">
+                        «Каждый солдат носит в своем ранце маршальский жезл».
+                    </p>
+                    <span id="quote-context" class="text-sm uppercase tracking-widest text-imperial-gold font-medium">
+                        Стимул для молодых солдат Великой Армии
+                    </span>
+                </div>
+
+                <!-- Управление интерактивной озвучкой & переключением -->
+                <div class="flex justify-center items-center gap-4 mt-8">
+                    <!-- Кнопка сгенерировать новую -->
+                    <button onclick="nextQuote()" class="bg-gradient-to-r from-imperial-darkGold to-imperial-gold hover:from-imperial-gold hover:to-imperial-goldLight text-imperial-dark px-6 py-3 rounded-full font-semibold text-xs tracking-wider uppercase transition-epic">
+                        Следующая мысль
+                    </button>
+                    <!-- Кнопка озвучки -->
+                    <button onclick="speakCurrentQuote()" class="p-3 border border-stone-700 hover:border-imperial-gold text-stone-400 hover:text-imperial-gold rounded-full transition-epic flex items-center justify-center" title="Озвучить цитату голосом">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- РАЗДЕЛ: ИНТЕРАКТИВНЫЙ ТЕСТ-КВИЗ -->
+    <section id="quiz" class="py-24 bg-gradient-to-b from-imperial-dark to-slate-950 z-10 relative">
+        <div class="max-w-4xl mx-auto px-6">
+            
+            <div class="text-center mb-12">
+                <span class="text-xs font-semibold tracking-widest text-imperial-gold uppercase block mb-1">Испытание ума</span>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-stone-100">Насколько хорошо вы знаете Императора?</h2>
+                <div class="w-16 h-1 bg-imperial-gold mx-auto mt-4"></div>
+            </div>
+
+            <!-- Карточка квиза -->
+            <div class="bg-stone-900/60 backdrop-blur-md border border-imperial-gold/20 rounded-2xl p-6 md:p-10 shadow-2xl relative" id="quiz-card">
+                
+                <!-- Прогресс -->
+                <div class="flex justify-between items-center text-xs text-stone-400 uppercase tracking-wider mb-6">
+                    <span id="quiz-progress-text">Вопрос 1 из 5</span>
+                    <span id="quiz-score-text" class="text-imperial-gold">Очки: 0</span>
+                </div>
+                <!-- Индикатор заполнения -->
+                <div class="w-full h-1 bg-stone-800 rounded-full mb-8 overflow-hidden">
+                    <div id="quiz-progress-bar" class="w-1/5 h-full bg-gradient-to-r from-imperial-darkGold to-imperial-gold transition-all duration-500"></div>
+                </div>
+
+                <!-- Вопрос -->
+                <h3 id="quiz-question" class="font-serif text-xl md:text-2xl text-stone-200 mb-8 font-medium">Какой остров послужил местом рождения Наполеона?</h3>
+
+                <!-- Варианты -->
+                <div class="grid grid-cols-1 gap-4" id="quiz-options">
+                    <!-- Будет наполнено через JS -->
+                </div>
+
+                <!-- Кнопка Далее -->
+                <div class="flex justify-end mt-8">
+                    <button id="quiz-next-btn" onclick="nextQuestion()" class="hidden bg-gradient-to-r from-imperial-darkGold to-imperial-gold text-imperial-dark px-6 py-3 rounded-full font-semibold text-xs tracking-wider uppercase transition-epic shadow-lg">
+                        Следующий Вопрос
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ПОДВАЛ (FOOTER) -->
+    <footer class="bg-imperial-dark py-12 border-t border-imperial-gold/15 relative z-10 text-stone-500 text-sm">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center space-x-3">
+                <svg class="w-6 h-6 text-imperial-gold" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C11.5 2 11 3.5 11 5C11 5.5 11.2 6.1 11.5 6.6C9.5 7.1 8 8.9 8 11V13C8 13.5 7.5 14 7 14C5.5 14 4.5 15 4.5 16C4.5 17 5.5 18 7 18C8.5 18 9.5 17 9.5 16C9.5 15.5 10 15 10.5 15H13.5C14 15 14.5 15.5 14.5 16C14.5 17 15.5 18 17 18C18.5 18 19.5 17 19.5 16C19.5 15 18.5 14 17 14C16.5 14 16 13.5 16 13V11C16 8.9 14.5 7.1 12.5 6.6C12.8 6.1 13 5.5 13 5C13 3.5 12.5 2 12 2ZM12 8C13.7 8 15 9.3 15 11V13H9V11C9 9.3 10.3 8 12 8ZM6.2 11.5C5 12 4 13.2 4 14.5C4 16 5 17 6.2 16.5C7 16.1 7.2 15 7.2 14C7.2 13 6.8 12.2 6.2 11.5ZM17.8 11.5C17.2 12.2 16.8 13 16.8 14C16.8 15 17 16.1 17.8 16.5C19 17 20 16 20 14.5C20 13.2 19 12 17.8 11.5Z"/>
+                </svg>
+                <span class="font-serif tracking-widest text-sm font-semibold bg-gradient-to-r from-imperial-goldLight via-imperial-gold to-imperial-goldLight bg-clip-text text-transparent uppercase">NAPOLEON BONAPARTE</span>
+            </div>
+            
+            <p class="text-center md:text-left text-xs text-stone-500">
+                © 2026 Исторический музей-презентация. Создано с уважением к фактам.
+            </p>
+            
+            <div class="flex space-x-6 text-xs text-stone-400">
+                <a href="#hero" class="hover:text-imperial-gold transition-colors">Вверх</a>
+                <a href="#timeline" class="hover:text-imperial-gold transition-colors">Хронология</a>
+                <a href="#battles" class="hover:text-imperial-gold transition-colors">Сражения</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS СЦЕНАРИИ ДЛЯ ИНТЕРАКТИВА -->
+    <script>
+        // --- 1. КИНЕМАТОГРАФИЧЕСКАЯ АНИМАЦИЯ ПОДГРУЗКИ (GSAP) ---
+        window.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Начальные анимации Hero
+            const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
+            tl.to('#hero-badge', { opacity: 1, y: 0, delay: 0.3 })
+              .to('#hero-title', { opacity: 1, y: 0 }, '-=0.9')
+              .to('#hero-desc', { opacity: 1, y: 0 }, '-=0.9')
+              .to('#hero-actions', { opacity: 1, y: 0 }, '-=0.9');
+
+            // Анимации прокрутки шкалы времени (Fade in при появлении)
+            gsap.utils.toArray('.timeline-item').forEach(item => {
+                gsap.fromTo(item, 
+                    { opacity: 0, y: 50 },
+                    { 
+                        opacity: 1, 
+                        y: 0, 
+                        scrollTrigger: {
+                            trigger: item,
+                            start: 'top 85%',
+                            toggleActions: 'play none none none'
+                        }
+                    }
+                );
+            });
+
+            // Инициализация первой битвы в селекторе
+            selectBattle('arcole');
+        });
+
+        // --- 2. ФОНОВЫЕ ЧАСТИЦЫ ДЛЯ ИММЕРСИВНОГО ЭФФЕКТА (HTML5 CANVAS) ---
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.2 + 0.5;
+                this.speedX = Math.random() * 0.2 - 0.1;
+                this.speedY = Math.random() * -0.3 - 0.1; // Поднимаются вверх
+                this.alpha = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(212, 175, 55, ${this.alpha})`; // Свечение частиц золотого цвета
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+
+        // --- 3. ИНТЕРАКТИВНОЕ АУДИО ТЕМАТИЧЕСКИХ ШУМОВ И СИНТЕЗАТОРА (WEB AUDIO API) ---
+        let audioCtx = null;
+        let ambientOscillator = null;
+        let ambientGain = null;
+        let filterNode = null;
+        let isAtmosphereOn = false;
+
+        function toggleAtmosphere() {
+            if (!isAtmosphereOn) {
+                // Инициализация контекста, если ещё не создан
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                // Создаем глубокий королевский гул/аккорд (A-minor/C-major)
+                ambientOscillator = audioCtx.createOscillator();
+                ambientOscillator.type = 'triangle'; // Мягкий тон
+                ambientOscillator.frequency.value = 55; // Низкая нота Ля (A1)
+
+                filterNode = audioCtx.createBiquadFilter();
+                filterNode.type = 'lowpass';
+                filterNode.frequency.value = 300; // Срез высоких шумов для мягкости
+
+                ambientGain = audioCtx.createGain();
+                ambientGain.gain.setValueAtTime(0.001, audioCtx.currentTime); // Плавное нарастание
+                ambientGain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 3.0); // Тихий расслабленный гул
+
+                // Подключение цепи
+                ambientOscillator.connect(filterNode);
+                filterNode.connect(ambientGain);
+                ambientGain.connect(audioCtx.destination);
+
+                // Запуск генератора
+                ambientOscillator.start();
+
+                document.getElementById('sound-icon-off').classList.add('hidden');
+                document.getElementById('sound-icon-on').classList.remove('hidden');
+                isAtmosphereOn = true;
+            } else {
+                // Плавное затухание перед стопом
+                if (ambientGain) {
+                    ambientGain.gain.setValueAtTime(ambientGain.gain.value, audioCtx.currentTime);
+                    ambientGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 1.0);
+                    setTimeout(() => {
+                        if (ambientOscillator) {
+                            ambientOscillator.stop();
+                            ambientOscillator.disconnect();
+                        }
+                    }, 1000);
+                }
+                document.getElementById('sound-icon-off').classList.remove('hidden');
+                document.getElementById('sound-icon-on').classList.add('hidden');
+                isAtmosphereOn = false;
+            }
+        }
+
+
+        // --- 4. ФИЛЬТРАЦИЯ ВРЕМЕННОЙ ШКАЛЫ (CHRONOLOGY) ---
+        function filterTimeline(era) {
+            const items = document.querySelectorAll('.timeline-item');
+            const buttons = document.querySelectorAll('.timeline-filter-btn');
+
+            // Управление активными кнопками
+            buttons.forEach(btn => {
+                btn.classList.remove('active', 'bg-imperial-gold', 'text-imperial-dark');
+                btn.classList.add('border', 'border-stone-700', 'text-stone-300');
+            });
+            event.target.classList.add('active', 'bg-imperial-gold', 'text-imperial-dark');
+            event.target.classList.remove('border', 'border-stone-700', 'text-stone-300');
+
+            // Анимация скрытия/показа элементов через GSAP
+            items.forEach(item => {
+                const itemEra = item.getAttribute('data-era');
+                if (era === 'all' || itemEra === era) {
+                    item.style.display = 'flex';
+                    gsap.fromTo(item, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 });
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Обновление ScrollTrigger для корректного скролла
+            ScrollTrigger.refresh();
+        }
+
+
+        // --- 5. ТАКТИЧЕСКИЙ АНАЛИЗАТОР СРАЖЕНИЙ (БИТВЫ) ---
+        const battlesData = {
+            arcole: {
+                title: "Аркольский Мост (1796 год)",
+                desc: "В ходе тяжелейшего наступления на вечно маневрирующие австрийские войска, Наполеон сталкивается с непреодолимой плотностью пушечного огня у моста через реку Альпоне.",
+                tactic: "Осознав, что штурм затягивается и дух армии увядает, Бонапарт лично выхватывает триколор и мчится вперед, увлекая за собой застывшие под обстрелом колонны в бескомпромиссную атаку.",
+                forces: "Франция: ~19 000 человек • Австрия: ~24 000 человек",
+                outcome: "Победа Франции. Прорыв австрийских позиций заставил Альвинци отступить.",
+                mapSvg: `
+                    <svg viewBox="0 0 400 200" class="w-full h-48 bg-stone-900 border border-imperial-gold/10 rounded-xl mb-4">
+                        <line x1="200" y1="0" x2="200" y2="200" stroke="#0B1D3A" stroke-width="20" stroke-dasharray="5 5" opacity="0.3"/>
+                        <text x="180" y="30" fill="#2563EB" font-size="10" transform="rotate(-90 180 30)">Река Альпоне</text>
+                        <!-- Мост -->
+                        <rect x="185" y="90" width="30" height="20" fill="#AA7C11"/>
+                        <text x="175" y="125" fill="#D4AF37" font-size="8">Мост</text>
+                        <!-- Австрийцы -->
+                        <g fill="#EF4444" opacity="0.8">
+                            <rect x="230" y="40" width="40" height="15"/>
+                            <rect x="230" y="80" width="40" height="15"/>
+                            <rect x="230" y="120" width="40" height="15"/>
+                            <text x="280" y="90" fill="#EF4444" font-size="8">Австрийцы</text>
+                        </g>
+                        <!-- Французы -->
+                        <g fill="#3B82F6" opacity="0.8">
+                            <rect x="80" y="90" width="40" height="15"/>
+                            <path d="M125 97.5 L175 97.5" stroke="#3B82F6" stroke-width="2" marker-end="url(#arrow)"/>
+                            <text x="50" y="110" fill="#3B82F6" font-size="8">Наполеон</text>
+                        </g>
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#3B82F6"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                `
+            },
+            austerlitz: {
+                title: "Триумф под Аустерлицем (1805 год)",
+                desc: "Наполеон заманил превосходящие союзные силы русских и австрийцев в хитрую ловушку на Праценских высотах.",
+                tactic: "Умышленно ослабив свой правый фланг, он спровоцировал Кутузова атаковать. Как только коалиция сместила основные силы на холмы, Наполеон нанес мощный удар в опустевший центр, разрезав противника пополам.",
+                forces: "Франция: ~73 000 человек • Коалиция: ~86 000 человек",
+                outcome: "Катастрофическое поражение Третьей коалиции. Австрия выходит из войны.",
+                mapSvg: `
+                    <svg viewBox="0 0 400 200" class="w-full h-48 bg-stone-900 border border-imperial-gold/10 rounded-xl mb-4">
+                        <!-- Высоты -->
+                        <path d="M 120 100 Q 200 50 280 100" fill="none" stroke="#D4AF37" stroke-width="1" stroke-dasharray="3 3"/>
+                        <text x="160" y="80" fill="#D4AF37" font-size="9">Праценские высоты</text>
+                        <!-- Русско-австрийские войска, ушедшие на фланг -->
+                        <g fill="#EF4444" opacity="0.8">
+                            <rect x="220" y="130" width="40" height="15" transform="rotate(10 220 130)"/>
+                            <rect x="270" y="135" width="40" height="15" transform="rotate(10 270 135)"/>
+                            <path d="M 230 110 L 250 130" stroke="#EF4444" stroke-width="2" stroke-dasharray="2 2"/>
+                            <text x="240" y="165" fill="#EF4444" font-size="8">Атакующие Коалиции</text>
+                        </g>
+                        <!-- Ударный кулак Сульта в центр -->
+                        <g fill="#3B82F6" opacity="0.8">
+                            <rect x="180" y="105" width="40" height="15"/>
+                            <path d="M 150 112.5 L 175 112.5" stroke="#3B82F6" stroke-width="2" marker-end="url(#arrow)"/>
+                            <text x="120" y="125" fill="#3B82F6" font-size="8">Корпус Сульта</text>
+                        </g>
+                    </svg>
+                `
+            },
+            borodino: {
+                title: "Бородино: Сражение гигантов (1812 год)",
+                desc: "Грандиозная лобовая схватка у села Бородино под Москвой. Самый кровавый однодневный бой в истории войн на тот момент.",
+                tactic: "Кутузов закрепился в фортификациях (Багратионовы флеши, батарея Раевского). Наполеон отказался от глубокого обходного маневра Даву и предпринял фронтальный штурм огромной артиллерийской мощи, стянув резервы.",
+                forces: "Франция: ~135 000 человек • Россия: ~120 000 человек",
+                outcome: "Пиррова победа Наполеона. Российская армия удержала дух и отступила боеспособной.",
+                mapSvg: `
+                    <svg viewBox="0 0 400 200" class="w-full h-48 bg-stone-900 border border-imperial-gold/10 rounded-xl mb-4">
+                        <!-- Русские укрепления (Флеши) -->
+                        <path d="M 230 60 L 240 70 L 230 80 M 230 110 L 240 120 L 230 130" fill="none" stroke="#EF4444" stroke-width="3"/>
+                        <text x="250" y="105" fill="#EF4444" font-size="9">Флеши и Батарея</text>
+                        <!-- Наступающие колонны французов -->
+                        <g fill="#3B82F6" opacity="0.8">
+                            <rect x="80" y="60" width="35" height="15"/>
+                            <rect x="80" y="110" width="35" height="15"/>
+                            <path d="M 120 67 L 210 67" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="4 2"/>
+                            <path d="M 120 117 L 210 117" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="4 2"/>
+                            <text x="70" y="140" fill="#3B82F6" font-size="8">Штурм в лоб</text>
+                        </g>
+                    </svg>
+                `
+            },
+            waterloo: {
+                title: "Ватерлоо: Закат Империи (1815 год)",
+                desc: "Финальная точка карьеры Бонапарта против объединенных англо-голландских войск Веллингтона.",
+                tactic: "Наполеон долго выжидал, пока подсохнет грязь, упустив время. Попытки пробить каре союзников захлебнулись, а во фланг французам ударили подоспевшие пруссаки Блюхера.",
+                forces: "Франция: ~72 000 человек • Союзники & Пруссия: ~118 000 человек",
+                outcome: "Разрушительное поражение Франции, падение династии Бонапартов.",
+                mapSvg: `
+                    <svg viewBox="0 0 400 200" class="w-full h-48 bg-stone-900 border border-imperial-gold/10 rounded-xl mb-4">
+                        <!-- Линия Веллингтона -->
+                        <rect x="180" y="40" width="100" height="15" fill="#EF4444" opacity="0.8"/>
+                        <text x="180" y="30" fill="#EF4444" font-size="9">Линия Веллингтона</text>
+                        <!-- Приход Пруссаков -->
+                        <g fill="#FFA500" opacity="0.8">
+                            <rect x="290" y="110" width="40" height="15"/>
+                            <path d="M 285 117 L 230 117" stroke="#FFA500" stroke-width="2" stroke-dasharray="3 3"/>
+                            <text x="290" y="140" fill="#FFA500" font-size="8">Пруссаки (Блюхер)</text>
+                        </g>
+                        <!-- Ослабевшие атаки Императорской Гвардии -->
+                        <g fill="#3B82F6" opacity="0.8">
+                            <rect x="80" y="90" width="50" height="20"/>
+                            <text x="60" y="130" fill="#3B82F6" font-size="8">Императорская Гвардия</text>
+                        </g>
+                    </svg>
+                `
+            }
+        };
+
+        function selectBattle(key) {
+            const data = battlesData[key];
+            if (!data) return;
+
+            // Обновление состояния кнопок
+            document.querySelectorAll('.battle-btn').forEach(btn => {
+                btn.classList.remove('active-battle', 'border-imperial-gold/60', 'bg-stone-900/90');
+                btn.classList.add('border-stone-800/60', 'bg-stone-950/40');
+                btn.querySelector('span').classList.add('opacity-0');
+                btn.querySelector('span').classList.remove('opacity-100');
+                
+                // Сброс цвета заголовков кнопок
+                btn.querySelector('h4').classList.remove('text-imperial-goldLight');
+                btn.querySelector('h4').classList.add('text-stone-300');
+            });
+
+            const activeBtn = document.getElementById(`btn-${key}`);
+            activeBtn.classList.add('active-battle', 'border-imperial-gold/60', 'bg-stone-900/90');
+            activeBtn.querySelector('span').classList.remove('opacity-0');
+            activeBtn.querySelector('span').classList.add('opacity-100');
+            activeBtn.querySelector('h4').classList.add('text-imperial-goldLight');
+
+            // Анимация замены контента
+            const container = document.getElementById('battle-content');
+            gsap.to(container, { opacity: 0, y: 15, duration: 0.2, onComplete: () => {
+                container.innerHTML = `
+                    <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                        <div>
+                            <h3 class="font-serif text-3xl font-bold text-stone-100">${data.title}</h3>
+                            <p class="text-xs text-imperial-gold uppercase tracking-wider font-semibold mt-1">${data.forces}</p>
+                        </div>
+                    </div>
+                    
+                    ${data.mapSvg}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div>
+                            <h5 class="text-xs font-bold uppercase tracking-widest text-imperial-goldLight mb-2">Суть маневра</h5>
+                            <p class="text-stone-300 text-sm leading-relaxed">${data.tactic}</p>
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-bold uppercase tracking-widest text-imperial-goldLight mb-2">Общая обстановка</h5>
+                            <p class="text-stone-300 text-sm leading-relaxed">${data.desc}</p>
+                            <div class="mt-4 pt-3 border-t border-stone-800/80">
+                                <span class="text-xs font-bold text-stone-200">Итог: </span>
+                                <span class="text-xs text-stone-400">${data.outcome}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                gsap.to(container, { opacity: 1, y: 0, duration: 0.4 });
+            }});
+        }
+
+
+        // --- 6. АККОРДЕОН ДЛЯ КОДЕКСА ---
+        function toggleCodeSection(index) {
+            const desc = document.getElementById(`desc-${index}`);
+            const arrow = document.getElementById(`arrow-${index}`);
+            const isHidden = desc.classList.contains('hidden');
+
+            // Скрываем все сначала
+            for(let i=0; i<3; i++) {
+                document.getElementById(`desc-${i}`).classList.add('hidden');
+                document.getElementById(`arrow-${i}`).classList.remove('rotate-180');
+            }
+
+            if (isHidden) {
+                desc.classList.remove('hidden');
+                arrow.classList.add('rotate-180');
+                gsap.fromTo(desc, { opacity: 0, height: 0 }, { opacity: 1, height: 'auto', duration: 0.3 });
+            }
+        }
+
+
+        // --- 7. ГЕНЕРАТОР ЦИТАТ И ОЗВУЧКА ---
+        const quotesList = [
+            { text: "«Каждый солдат носит в своем ранце маршальский жезл».", context: "Стимул для молодых солдат Великой Армии" },
+            { text: "«Воображение правит миром».", context: "Философский взгляд Наполеона на лидерство" },
+            { text: "«От великого до смешного — один только шаг».", context: "Сказано во время драматичного отступления из России в 1812 году" },
+            { text: "«Не мешайте врагу совершать ошибки — в этом суть искусства войны».", context: "Ключевое правило наполеоновской военной доктрины" },
+            { text: "«Моя истинная слава не в сорока выигранных битвах, а в моем Гражданском кодексе».", context: "Размышления на острове Святой Елены" },
+            { text: "«Успех — самый великий оратор в мире».", context: "О природе власти и верности подданных" }
+        ];
+
+        let currentQuoteIndex = 0;
+
+        function nextQuote() {
+            currentQuoteIndex = (currentQuoteIndex + 1) % quotesList.length;
+            const quote = quotesList[currentQuoteIndex];
+
+            const textEl = document.getElementById('quote-text');
+            const contextEl = document.getElementById('quote-context');
+
+            gsap.to([textEl, contextEl], { opacity: 0, y: -10, duration: 0.2, onComplete: () => {
+                textEl.innerText = quote.text;
+                contextEl.innerText = quote.context;
+                gsap.to([textEl, contextEl], { opacity: 1, y: 0, duration: 0.4 });
+            }});
+        }
+
+        function speakCurrentQuote() {
+            if ('speechSynthesis' in window) {
+                // Останавливаем текущую речь, если идет
+                window.speechSynthesis.cancel();
+                
+                const rawText = quotesList[currentQuoteIndex].text.replace(/[«»]/g, '');
+                const utterance = new SpeechSynthesisUtterance(rawText);
+                utterance.lang = 'ru-RU';
+                utterance.rate = 0.85; // Немного замедленный, величавый тон
+                utterance.pitch = 0.9; // Слегка более глубокий баритон
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Синтез речи не поддерживается вашим браузером.");
+            }
+        }
+
+
+        // --- 8. ИНТЕРАКТИВНЫЙ ИСТОРИЧЕСКИЙ КВИЗ ---
+        const quizData = [
+            {
+                question: "В каком году Наполеон провозгласил себя Императором французов?",
+                options: ["1799", "1804", "1812", "1815"],
+                correct: 1,
+                fact: "2 декабря 1804 года в соборе Нотр-Дам Наполеон сам водрузил корону на свою голову."
+            },
+            {
+                question: "Какое сражение называют «Битвой трех императоров»?",
+                options: ["Битва под Аустерлицем", "Бородинское сражение", "Битва под Лейпцигом", "Сражение при Ватерлоо"],
+                correct: 0,
+                fact: "Под Аустерлицем (1805 г.) Наполеон нанес поражение объединенной армии императора Александра I и Франца II."
+            },
+            {
+                question: "Как называлось последнее прижизненное правление Наполеона во Франции?",
+                options: ["Директория", "Великая Эра", "Сто Дней", "Консулат"],
+                correct: 2,
+                fact: "Правление с момента триумфального возвращения с Эльбы до повторного отречения длилось ровно 100 дней."
+            },
+            {
+                question: "Какое наследие Наполеон считал своей главной прижизненной славой?",
+                options: ["Взятие Москвы", "Свой Гражданский Кодекс", "Осаду Тулона", "Орден Почетного легиона"],
+                correct: 1,
+                fact: "Гражданский кодекс Наполеона 1804 года до сих пор лежит в основе гражданского права всей Западной Европы."
+            },
+            {
+                question: "Где провел свои последние годы и скончался Наполеон?",
+                options: ["На острове Корсика", "На острове Эльба", "В Париже", "На острове Святой Елены"],
+                correct: 3,
+                fact: "Наполеон умер в английском изгнании на острове Святой Елены в Южной Атлантике в 1821 году."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        function loadQuestion() {
+            isAnswered = false;
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+            
+            const q = quizData[currentQuestionIndex];
+            
+            // Обновление прогресс-бара
+            const progressPercent = ((currentQuestionIndex + 1) / quizData.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progressPercent}%`;
+            document.getElementById('quiz-progress-text').innerText = `Вопрос ${currentQuestionIndex + 1} из ${quizData.length}`;
+            document.getElementById('quiz-score-text').innerText = `Очки: ${score}`;
+            
+            // Текст вопроса
+            document.getElementById('quiz-question').innerText = q.question;
+            
+            // Наполнение вариантов
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border border-stone-800 bg-stone-950/40 hover:bg-stone-900/60 hover:border-imperial-gold/50 transition-epic text-sm text-stone-300 hover:text-white flex items-center justify-between group";
+                btn.innerHTML = `
+                    <span>${opt}</span>
+                    <span class="w-4 h-4 rounded-full border border-stone-700 flex items-center justify-center text-[10px] text-transparent group-hover:border-imperial-gold/50">✓</span>
+                `;
+                btn.onclick = () => selectOption(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIdx, clickedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+            
+            const q = quizData[currentQuestionIndex];
+            const optionsContainer = document.getElementById('quiz-options');
+            const buttons = optionsContainer.querySelectorAll('button');
+            
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true; // Отключаем клики
+                btn.classList.remove('hover:border-imperial-gold/50', 'hover:bg-stone-900/60');
+                
+                if (idx === q.correct) {
+                    // Правильный ответ подсвечиваем зеленым
+                    btn.classList.add('border-emerald-500/50', 'bg-emerald-950/20', 'text-emerald-300');
+                    btn.querySelector('span:last-child').classList.remove('text-transparent');
+                    btn.querySelector('span:last-child').classList.add('bg-emerald-500', 'text-emerald-950', 'border-emerald-500');
+                } else if (idx === selectedIdx) {
+                    // Неправильный выбор подсвечиваем красным
+                    btn.classList.add('border-rose-500/50', 'bg-rose-950/20', 'text-rose-300');
+                    btn.querySelector('span:last-child').innerHTML = '✗';
+                    btn.querySelector('span:last-child').classList.remove('text-transparent');
+                    btn.querySelector('span:last-child').classList.add('bg-rose-500', 'text-rose-950', 'border-rose-500');
+                }
+            });
+
+            if (selectedIdx === q.correct) {
+                score += 20; // 20 очков за верный ответ
+                document.getElementById('quiz-score-text').innerText = `Очки: ${score}`;
+            }
+
+            // Создаем плашку с историческим фактом
+            const factBox = document.createElement('div');
+            factBox.className = "mt-6 p-4 rounded-xl bg-imperial-gold/5 border border-imperial-gold/20 text-xs text-stone-400 leading-relaxed opacity-0 translate-y-2 transition-epic";
+            factBox.innerHTML = `<strong class="text-imperial-goldLight">Исторический факт:</strong> ${q.fact}`;
+            optionsContainer.appendChild(factBox);
+            setTimeout(() => {
+                factBox.classList.remove('opacity-0', 'translate-y-2');
+            }, 100);
+
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                // Финал квиза
+                showQuizResult();
+            }
+        }
+
+        function showQuizResult() {
+            const card = document.getElementById('quiz-card');
+            
+            let evaluation = "";
+            if (score === 100) evaluation = "Потрясающий результат! Вы — настоящий Император исторических знаний!";
+            else if (score >= 60) evaluation = "Отличные знания! Вы превосходно разбираетесь в эпохе Наполеона.";
+            else evaluation = "Хорошая попытка. Изучите хронологию выше, чтобы раскрыть больше фактов о Бонапарте.";
+
+            card.innerHTML = `
+                <div class="text-center py-8 space-y-6">
+                    <div class="inline-flex justify-center text-imperial-gold">
+                        <!-- Нарисованный золотой лавровый венок -->
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2a10 10 0 0 0-10 10 10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-4-9h2V9H8v2zm6-2h-2v2h2V9zm-2 5a3 3 0 0 1-3-3v-1H6v1a5 5 0 0 0 5 5h2a5 5 0 0 0 5-5v-1h-3v1a3 3 0 0 1-3 3z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-serif text-3xl font-bold text-stone-100">Тестирование Завершено</h3>
+                    <p class="text-lg text-imperial-goldLight">Набрано очков: <strong class="text-3xl block mt-2 text-white">${score} / 100</strong></p>
+                    <p class="text-stone-400 text-sm max-w-md mx-auto leading-relaxed">${evaluation}</p>
+                    
+                    <button onclick="restartQuiz()" class="mt-4 bg-gradient-to-r from-imperial-darkGold to-imperial-gold text-imperial-dark px-8 py-3 rounded-full font-semibold text-xs tracking-wider uppercase transition-epic">
+                        Пройти Снова
+                    </button>
+                </div>
+            `;
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            // Восстанавливаем оригинальную разметку квиза
+            const card = document.getElementById('quiz-card');
+            card.innerHTML = `
+                <div class="flex justify-between items-center text-xs text-stone-400 uppercase tracking-wider mb-6">
+                    <span id="quiz-progress-text">Вопрос 1 из 5</span>
+                    <span id="quiz-score-text" class="text-imperial-gold">Очки: 0</span>
+                </div>
+                <div class="w-full h-1 bg-stone-800 rounded-full mb-8 overflow-hidden">
+                    <div id="quiz-progress-bar" class="w-1/5 h-full bg-gradient-to-r from-imperial-darkGold to-imperial-gold transition-all duration-500"></div>
+                </div>
+                <h3 id="quiz-question" class="font-serif text-xl md:text-2xl text-stone-200 mb-8 font-medium"></h3>
+                <div class="grid grid-cols-1 gap-4" id="quiz-options"></div>
+                <div class="flex justify-end mt-8">
+                    <button id="quiz-next-btn" onclick="nextQuestion()" class="hidden bg-gradient-to-r from-imperial-darkGold to-imperial-gold text-imperial-dark px-6 py-3 rounded-full font-semibold text-xs tracking-wider uppercase transition-epic shadow-lg">
+                        Следующий Вопрос
+                    </button>
+                </div>
+            `;
+            loadQuestion();
+        }
+
+        // Инициализация стартового вопроса
+        loadQuestion();
+    </script>
+
+</body>
+</html>
