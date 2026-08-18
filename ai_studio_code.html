@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinetic — Vision</title>
+  
+  <!-- Шрифт Inter для чистого швейцарского минимализма -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      background-color: #080808;
+      color: #f2f2f2;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      scroll-behavior: auto; /* Позволяет JS полностью контролировать интерполяцию */
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      overflow-x: hidden;
+      min-height: 400vh; /* Задает длину скролла для таймлайна */
+    }
+
+    /* Фоновый полноэкранный видеоконтейнер */
+    .video-viewport {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+      background: #080808;
+    }
+
+    .video-viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0.85;
+      transform: translateZ(0); /* Аппаратное ускорение */
+    }
+
+    /* Мягкий виньеточный градиент для читаемости текста */
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at center,
+        rgba(8, 8, 8, 0.2) 0%,
+        rgba(8, 8, 8, 0.6) 100%
+      );
+    }
+
+    /* Контейнер секций с текстом */
+    .scroll-container {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Каждая секция занимает экран */
+    .section {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 10vw;
+    }
+
+    .section-1 { align-items: flex-start; }
+    .section-2 { align-items: flex-end; text-align: right; }
+    .section-3 { align-items: center; text-align: center; }
+    .section-4 { align-items: flex-start; }
+
+    .content-box {
+      max-width: 580px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .content-box.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 1.2rem;
+    }
+
+    .headline {
+      font-size: clamp(2rem, 4.5vw, 3.8rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      margin-bottom: 1rem;
+    }
+
+    .subtext {
+      font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+      font-weight: 300;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    /* Минималистичный индикатор прогресса (тонкая линия справа) */
+    .progress-bar-wrap {
+      position: fixed;
+      right: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 120px;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.15);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .progress-bar-fill {
+      width: 100%;
+      height: 0%;
+      background: #ffffff;
+      transition: height 0.1s linear;
+    }
+
+    /* Поддержка Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      .content-box {
+        transition: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Полноэкранный фоновый плеер -->
+  <div class="video-viewport">
+    <!-- 
+      Вставьте прямой URL к вашему .mp4 видеофайлу. 
+      Если вы экспортировали видео из Google Flow, укажите путь к файлу или прямой CDN URL.
+    -->
+    <video 
+      id="scrubVideo" 
+      muted 
+      playsinline 
+      webkit-playsinline 
+      preload="auto"
+      src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">
+    </video>
+    <div class="video-overlay"></div>
+  </div>
+
+  <!-- Индикатор прогресса -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Секции: строго 2-3 коротких текста, без лишних кнопок/UI -->
+  <main class="scroll-container">
+    
+    <section class="section section-1">
+      <div class="content-box">
+        <p class="tag">01 / Concept</p>
+        <h1 class="headline">Форма света.</h1>
+        <p class="subtext">Материя рождается из непрерывного движения частиц.</p>
+      </div>
+    </section>
+
+    <section class="section section-2">
+      <div class="content-box">
+        <p class="tag">02 / Dimension</p>
+        <h2 class="headline">Чистая глубина.</h2>
+        <p class="subtext">Никаких границ между цифровым и физическим пространством.</p>
+      </div>
+    </section>
+
+    <section class="section section-3">
+      <div class="content-box">
+        <p class="tag">03 / Synthesis</p>
+        <h2 class="headline">Точный фокус.</h2>
+        <p class="subtext">Каждый кадр синхронизирован с вашим ритмом.</p>
+      </div>
+    </section>
+
+    <section class="section section-4">
+      <div class="content-box">
+        <p class="tag">04 / Horizon</p>
+        <h2 class="headline">Новая реальность.</h2>
+        <p class="subtext">Будущее начинается в точке замирания.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const video = document.getElementById('scrubVideo');
+    const progressFill = document.getElementById('progressFill');
+    const contentBoxes = document.querySelectorAll('.content-box');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let targetTime = 0;
+    let currentTime = 0;
+    let lastTimestamp = performance.now();
+    let isVideoReady = false;
+
+    // Гарантируем, что видео ВСЕГДА стоит на паузе
+    video.pause();
+
+    video.addEventListener('loadedmetadata', () => {
+      isVideoReady = true;
+      video.currentTime = 0;
+    });
+
+    // Обработка появления текста при приближении к центру экрана
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          } else {
+            entry.target.classList.remove('visible');
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+
+    contentBoxes.forEach((box) => observer.observe(box));
+
+    // Основной цикл анимации с экспоненциальным сглаживанием
+    function renderLoop(timestamp) {
+      const dt = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      // 1. Вычисляем глобальный прогресс скролла [0 ... 1]
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollProgress = maxScroll > 0 ? Math.min(Math.max(window.scrollY / maxScroll, 0), 1) : 0;
+
+      // Обновляем визуальный индикатор
+      if (progressFill) {
+        progressFill.style.height = `${scrollProgress * 100}%`;
+      }
+
+      if (isVideoReady && video.duration) {
+        // Замораживаем на последнем кадре (вычитаем 0.04s, чтобы избежать черного экрана в конце)
+        const maxDuration = Math.max(0, video.duration - 0.04);
+        targetTime = scrollProgress * maxDuration;
+
+        if (prefersReducedMotion) {
+          currentTime = targetTime;
+        } else {
+          // Экспоненциальное сглаживание: current += (target - current) * (1 - Math.exp(-dt * 8))
+          const smoothingFactor = 1 - Math.exp(-dt * 8);
+          currentTime += (targetTime - currentTime) * smoothingFactor;
+        }
+
+        // Применяем таймкод только если разница ощутима (минимизирует нагрузку декодера)
+        if (Math.abs(video.currentTime - currentTime) > 0.001) {
+          video.currentTime = currentTime;
+        }
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+
+    // Запуск цикла
+    requestAnimationFrame(renderLoop);
+
+    // Дополнительная страховка: на мобильных устройствах сразу ставим на паузу при тачах
+    window.addEventListener('touchstart', () => video.pause(), { passive: true });
+  </script>
+</body>
+</html>
