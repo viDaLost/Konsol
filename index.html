@@ -1,294 +1,688 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kinetic — Vision</title>
-  
-  <!-- Шрифт Inter для чистого швейцарского минимализма -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,maximum-scale=1">
+  <meta name="theme-color" content="#2c7a7b">
+  <title>Моисей: путь по Нилу — 3D Runner</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    *, *::before, *::after { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+      background: #1a365d; font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      color: #fff;
     }
-
-    html {
-      background-color: #080808;
-      color: #f2f2f2;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      scroll-behavior: auto; /* Позволяет JS полностью контролировать интерполяцию */
-      -webkit-font-smoothing: antialiased;
+    #canvas-container { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+    
+    /* UI Overlay */
+    #ui-layer {
+      position: absolute; inset: 0; z-index: 10; pointer-events: none;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px) 16px;
     }
-
-    body {
-      overflow-x: hidden;
-      min-height: 400vh; /* Задает длину скролла для таймлайна */
+    .hud {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px);
+      padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
-
-    /* Фоновый полноэкранный видеоконтейнер */
-    .video-viewport {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1;
-      overflow: hidden;
-      pointer-events: none;
-      background: #080808;
+    .hud-stat { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .hud-stat span { color: #fbd38d; font-size: 18px; }
+    
+    /* Screens / Modals */
+    .modal-overlay {
+      position: absolute; inset: 0; z-index: 20;
+      background: radial-gradient(circle at center, rgba(15,23,42,0.85), rgba(7,11,20,0.96));
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 24px; text-align: center; pointer-events: auto;
+      transition: opacity 0.3s ease;
     }
-
-    .video-viewport video {
+    .modal-overlay.hidden { opacity: 0; pointer-events: none; }
+    
+    .card {
+      background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 28px 24px; border-radius: 24px; max-width: 380px; width: 100%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 20px rgba(245,158,11,0.15);
+    }
+    h1 { margin: 0 0 8px 0; font-size: 26px; color: #fbbf24; text-shadow: 0 2px 10px rgba(251,191,36,0.3); }
+    p { margin: 0 0 20px 0; font-size: 14px; line-height: 1.5; color: #cbd5e1; }
+    
+    .btn {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: #1e1b4b; border: none; font-size: 17px; font-weight: 800;
+      padding: 14px 28px; border-radius: 999px; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(245,158,11,0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      opacity: 0.85;
-      transform: translateZ(0); /* Аппаратное ускорение */
     }
-
-    /* Мягкий виньеточный градиент для читаемости текста */
-    .video-overlay {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(
-        circle at center,
-        rgba(8, 8, 8, 0.2) 0%,
-        rgba(8, 8, 8, 0.6) 100%
-      );
+    .btn:active { transform: scale(0.96); box-shadow: 0 2px 10px rgba(245,158,11,0.3); }
+    
+    .controls-hint {
+      display: flex; justify-content: center; gap: 12px; margin-top: 18px;
+      font-size: 12px; color: #94a3b8;
     }
-
-    /* Контейнер секций с текстом */
-    .scroll-container {
-      position: relative;
-      z-index: 2;
+    .key-badge {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      padding: 3px 8px; border-radius: 6px; font-weight: 600; color: #fff;
     }
-
-    /* Каждая секция занимает экран */
-    .section {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 0 10vw;
+    
+    /* Touch Steering Controls for Mobile */
+    .touch-controls {
+      position: absolute; bottom: 20px; left: 0; right: 0;
+      display: flex; justify-content: space-between; padding: 0 24px;
+      pointer-events: none; z-index: 12;
     }
-
-    .section-1 { align-items: flex-start; }
-    .section-2 { align-items: flex-end; text-align: right; }
-    .section-3 { align-items: center; text-align: center; }
-    .section-4 { align-items: flex-start; }
-
-    .content-box {
-      max-width: 580px;
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    .touch-btn {
+      pointer-events: auto; width: 68px; height: 68px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
+      font-size: 26px; color: #fff; user-select: none;
     }
-
-    .content-box.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .tag {
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.4);
-      margin-bottom: 1.2rem;
-    }
-
-    .headline {
-      font-size: clamp(2rem, 4.5vw, 3.8rem);
-      font-weight: 400;
-      line-height: 1.1;
-      letter-spacing: -0.03em;
-      color: #ffffff;
-      margin-bottom: 1rem;
-    }
-
-    .subtext {
-      font-size: clamp(0.95rem, 1.2vw, 1.15rem);
-      font-weight: 300;
-      line-height: 1.6;
-      color: rgba(255, 255, 255, 0.65);
-    }
-
-    /* Минималистичный индикатор прогресса (тонкая линия справа) */
-    .progress-bar-wrap {
-      position: fixed;
-      right: 2rem;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 120px;
-      width: 1px;
-      background: rgba(255, 255, 255, 0.15);
-      z-index: 10;
-      pointer-events: none;
-    }
-
-    .progress-bar-fill {
-      width: 100%;
-      height: 0%;
-      background: #ffffff;
-      transition: height 0.1s linear;
-    }
-
-    /* Поддержка Reduced Motion */
-    @media (prefers-reduced-motion: reduce) {
-      .content-box {
-        transition: none;
-        opacity: 1;
-        transform: none;
-      }
+    .touch-btn:active { background: rgba(245,158,11,0.4); border-color: #f59e0b; }
+    
+    #shield-indicator {
+      position: absolute; top: 75px; left: 50%; transform: translateX(-50%);
+      background: rgba(56, 189, 248, 0.25); border: 1px solid #38bdf8;
+      color: #38bdf8; font-weight: 700; font-size: 13px;
+      padding: 4px 14px; border-radius: 999px; display: none;
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+  <div id="canvas-container"></div>
 
-  <!-- Полноэкранный фоновый плеер -->
-  <div class="video-viewport">
-    <!-- 
-      Вставьте прямой URL к вашему .mp4 видеофайлу. 
-      Если вы экспортировали видео из Google Flow, укажите путь к файлу или прямой CDN URL.
-    -->
-   <div class="video-viewport">
-  <video 
-    id="scrubVideo" 
-    muted 
-    playsinline 
-    webkit-playsinline 
-    preload="auto"
-    src="bg-video.mp4"> <!-- Локальный путь к скачанному файлу -->
-  </video>
-  <div class="video-overlay"></div>
-</div>
-
-  <!-- Индикатор прогресса -->
-  <div class="progress-bar-wrap">
-    <div class="progress-bar-fill" id="progressFill"></div>
+  <div id="ui-layer">
+    <div class="hud">
+      <div class="hud-stat">🌊 <span id="dist-val">0</span> м</div>
+      <div class="hud-stat">🪷 <span id="score-val">0</span></div>
+    </div>
+    <div id="shield-indicator">🛡️ ЗАЩИТА АКТИВНА</div>
   </div>
 
-  <!-- Секции: строго 2-3 коротких текста, без лишних кнопок/UI -->
-  <main class="scroll-container">
-    
-    <section class="section section-1">
-      <div class="content-box">
-        <p class="tag">01 / Concept</p>
-        <h1 class="headline">Форма света.</h1>
-        <p class="subtext">Материя рождается из непрерывного движения частиц.</p>
-      </div>
-    </section>
+  <div class="touch-controls">
+    <button class="touch-btn" id="btn-left">◀</button>
+    <button class="touch-btn" id="btn-right">▶</button>
+  </div>
 
-    <section class="section section-2">
-      <div class="content-box">
-        <p class="tag">02 / Dimension</p>
-        <h2 class="headline">Чистая глубина.</h2>
-        <p class="subtext">Никаких границ между цифровым и физическим пространством.</p>
+  <!-- Start Screen -->
+  <div id="start-modal" class="modal-overlay">
+    <div class="card">
+      <h1>Моисей: Путь по Нилу</h1>
+      <p>Спасите корзинку с младенцем Моисеем! Лавируйте по течению великого Нила, уворачивайтесь от крокодилов и порогов, собирайте лотосы веры.</p>
+      <button class="btn" id="start-btn">НАЧАТЬ ПУТЬ</button>
+      <div class="controls-hint">
+        <span>Управление:</span>
+        <span class="key-badge">←</span> <span class="key-badge">→</span> или <span class="key-badge">A</span> <span class="key-badge">D</span> / Свайпы
       </div>
-    </section>
+    </div>
+  </div>
 
-    <section class="section section-3">
-      <div class="content-box">
-        <p class="tag">03 / Synthesis</p>
-        <h2 class="headline">Точный фокус.</h2>
-        <p class="subtext">Каждый кадр синхронизирован с вашим ритмом.</p>
+  <!-- Game Over Screen -->
+  <div id="gameover-modal" class="modal-overlay hidden">
+    <div class="card">
+      <h1 style="color:#ef4444;">Корзинка села на мель</h1>
+      <p id="death-reason">Вы столкнулись с опасностью реки Нил.</p>
+      <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:12px; margin-bottom:18px;">
+        <div style="font-size:14px; color:#94a3b8;">Пройденное расстояние: <b id="final-dist" style="color:#fff;">0 м</b></div>
+        <div style="font-size:14px; color:#94a3b8; margin-top:4px;">Собрано лотосов: <b id="final-score" style="color:#fbbf24;">0</b></div>
       </div>
-    </section>
-
-    <section class="section section-4">
-      <div class="content-box">
-        <p class="tag">04 / Horizon</p>
-        <h2 class="headline">Новая реальность.</h2>
-        <p class="subtext">Будущее начинается в точке замирания.</p>
-      </div>
-    </section>
-
-  </main>
+      <button class="btn" id="restart-btn">ПОПРОБОВАТЬ СНОВА</button>
+    </div>
+  </div>
 
   <script>
-    const video = document.getElementById('scrubVideo');
-    const progressFill = document.getElementById('progressFill');
-    const contentBoxes = document.querySelectorAll('.content-box');
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    let targetTime = 0;
-    let currentTime = 0;
-    let lastTimestamp = performance.now();
-    let isVideoReady = false;
-
-    // Гарантируем, что видео ВСЕГДА стоит на паузе
-    video.pause();
-
-    video.addEventListener('loadedmetadata', () => {
-      isVideoReady = true;
-      video.currentTime = 0;
-    });
-
-    // Обработка появления текста при приближении к центру экрана
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          } else {
-            entry.target.classList.remove('visible');
-          }
-        });
-      },
-      { threshold: 0.4 }
-    );
-
-    contentBoxes.forEach((box) => observer.observe(box));
-
-    // Основной цикл анимации с экспоненциальным сглаживанием
-    function renderLoop(timestamp) {
-      const dt = (timestamp - lastTimestamp) / 1000;
-      lastTimestamp = timestamp;
-
-      // 1. Вычисляем глобальный прогресс скролла [0 ... 1]
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollProgress = maxScroll > 0 ? Math.min(Math.max(window.scrollY / maxScroll, 0), 1) : 0;
-
-      // Обновляем визуальный индикатор
-      if (progressFill) {
-        progressFill.style.height = `${scrollProgress * 100}%`;
+    /* ==========================================================================
+       1. SYNTHESIZED SOUND SYSTEM (Web Audio API - No External Files)
+       ========================================================================== */
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
       }
-
-      if (isVideoReady && video.duration) {
-        // Замораживаем на последнем кадре (вычитаем 0.04s, чтобы избежать черного экрана в конце)
-        const maxDuration = Math.max(0, video.duration - 0.04);
-        targetTime = scrollProgress * maxDuration;
-
-        if (prefersReducedMotion) {
-          currentTime = targetTime;
-        } else {
-          // Экспоненциальное сглаживание: current += (target - current) * (1 - Math.exp(-dt * 8))
-          const smoothingFactor = 1 - Math.exp(-dt * 8);
-          currentTime += (targetTime - currentTime) * smoothingFactor;
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
         }
-
-        // Применяем таймкод только если разница ощутима (минимизирует нагрузку декодера)
-        if (Math.abs(video.currentTime - currentTime) > 0.001) {
-          video.currentTime = currentTime;
-        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
       }
-
-      requestAnimationFrame(renderLoop);
+      collect() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+      powerup() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.linearRampToValueAtTime(880, now + 0.25);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+      hit() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.35);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+      splash() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const bufferSize = this.ctx.sampleRate * 0.15;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(600, now);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+      }
     }
 
-    // Запуск цикла
-    requestAnimationFrame(renderLoop);
+    const sfx = new SoundFX();
 
-    // Дополнительная страховка: на мобильных устройствах сразу ставим на паузу при тачах
-    window.addEventListener('touchstart', () => video.pause(), { passive: true });
+    /* ==========================================================================
+       2. THREE.JS 3D ENGINE & SCENE GENERATION
+       ========================================================================== */
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xd4af37);
+    scene.fog = new THREE.FogExp2(0xe0b978, 0.014);
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 400);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xfffaed, 0.65);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xfff3d1, 1.1);
+    dirLight.position.set(20, 40, -20);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    scene.add(dirLight);
+
+    // River Geometry & Banks
+    const RIVER_WIDTH = 13;
+    const waterGeo = new THREE.PlaneGeometry(RIVER_WIDTH, 500, 32, 64);
+    const waterMat = new THREE.MeshStandardMaterial({
+      color: 0x227799,
+      roughness: 0.1,
+      metalness: 0.2,
+      flatShading: true
+    });
+    const water = new THREE.Mesh(waterGeo, waterMat);
+    water.rotation.x = -Math.PI / 2;
+    water.receiveShadow = true;
+    scene.add(water);
+
+    // Desert Banks
+    const bankGeo = new THREE.PlaneGeometry(60, 500);
+    const bankMat = new THREE.MeshStandardMaterial({ color: 0xdfb15b, roughness: 0.9 });
+    
+    const leftBank = new THREE.Mesh(bankGeo, bankMat);
+    leftBank.rotation.x = -Math.PI / 2;
+    leftBank.position.set(-RIVER_WIDTH/2 - 30, -0.05, 0);
+    scene.add(leftBank);
+
+    const rightBank = new THREE.Mesh(bankGeo, bankMat);
+    rightBank.rotation.x = -Math.PI / 2;
+    rightBank.position.set(RIVER_WIDTH/2 + 30, -0.05, 0);
+    scene.add(rightBank);
+
+    // Background Pyramids
+    function createPyramid(x, z, s) {
+      const geo = new THREE.ConeGeometry(s, s * 1.2, 4);
+      const mat = new THREE.MeshStandardMaterial({ color: 0xc29b48, roughness: 0.95 });
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, (s * 1.2) / 2 - 2, z);
+      m.rotation.y = Math.PI / 4;
+      scene.add(m);
+    }
+    createPyramid(-70, -180, 55);
+    createPyramid(85, -220, 75);
+    createPyramid(-95, -300, 90);
+
+    /* ==========================================================================
+       3. PLAYER: WOVEN BASKET WITH BABY MOSES
+       ========================================================================== */
+    const playerGroup = new THREE.Group();
+
+    // Woven Basket Body
+    const basketGeo = new THREE.CylinderGeometry(0.85, 0.65, 0.6, 12);
+    const basketMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.8 });
+    const basket = new THREE.Mesh(basketGeo, basketMat);
+    basket.castShadow = true;
+    playerGroup.add(basket);
+
+    // White Linen Blanket Inside
+    const blanketGeo = new THREE.SphereGeometry(0.58, 10, 10, 0, Math.PI * 2, 0, Math.PI / 2);
+    const blanketMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 });
+    const blanket = new THREE.Mesh(blanketGeo, blanketMat);
+    blanket.position.y = 0.05;
+    playerGroup.add(blanket);
+
+    // Baby Moses Head
+    const headGeo = new THREE.SphereGeometry(0.2, 12, 12);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xffd1a4 });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.set(0, 0.3, 0.1);
+    playerGroup.add(head);
+
+    // Shield Aura (Visual FX for Bonus)
+    const shieldGeo = new THREE.SphereGeometry(1.2, 16, 16);
+    const shieldMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0 });
+    const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+    playerGroup.add(shieldMesh);
+
+    scene.add(playerGroup);
+
+    /* ==========================================================================
+       4. OBSTACLES & PICKUPS BUILDERS
+       ========================================================================== */
+    function createCrocodile() {
+      const croc = new THREE.Group();
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2d4a22, roughness: 0.7 });
+      
+      // Main body
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.35, 2.2), bodyMat);
+      body.castShadow = true;
+      croc.add(body);
+
+      // Snout
+      const snout = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.25, 1.0), bodyMat);
+      snout.position.set(0, -0.05, 1.4);
+      croc.add(snout);
+
+      // Eyes
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+      const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), eyeMat);
+      eyeL.position.set(0.22, 0.18, 0.8);
+      const eyeR = eyeL.clone();
+      eyeR.position.x = -0.22;
+      croc.add(eyeL, eyeR);
+
+      croc.userData = { type: 'croc', radius: 1.0, hitMsg: 'Осторожно! Нильский крокодил преградил путь.' };
+      return croc;
+    }
+
+    function createRock() {
+      const rockGeo = new THREE.DodecahedronGeometry(0.8 + Math.random() * 0.4);
+      const rockMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.95 });
+      const rock = new THREE.Mesh(rockGeo, rockMat);
+      rock.rotation.set(Math.random(), Math.random(), Math.random());
+      rock.position.y = 0.2;
+      rock.castShadow = true;
+      rock.userData = { type: 'rock', radius: 0.9, hitMsg: 'Корзинка разбилась о речные пороги.' };
+      return rock;
+    }
+
+    function createLotus() {
+      const group = new THREE.Group();
+      const leafGeo = new THREE.CylinderGeometry(0.65, 0.65, 0.04, 8);
+      const leafMat = new THREE.MeshStandardMaterial({ color: 0x15803d });
+      const leaf = new THREE.Mesh(leafGeo, leafMat);
+      group.add(leaf);
+
+      const flowerGeo = new THREE.ConeGeometry(0.35, 0.45, 6);
+      const flowerMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, emissive: 0x831843, emissiveIntensity: 0.4 });
+      const flower = new THREE.Mesh(flowerGeo, flowerMat);
+      flower.position.y = 0.22;
+      flower.rotation.x = Math.PI;
+      group.add(flower);
+
+      group.userData = { type: 'lotus', radius: 0.85 };
+      return group;
+    }
+
+    function createShieldItem() {
+      const group = new THREE.Group();
+      const orbGeo = new THREE.OctahedronGeometry(0.5, 0);
+      const orbMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.7 });
+      const orb = new THREE.Mesh(orbGeo, orbMat);
+      orb.position.y = 0.6;
+      group.add(orb);
+      group.userData = { type: 'shield', radius: 0.85 };
+      return group;
+    }
+
+    function createPalmTree(x, z) {
+      const palm = new THREE.Group();
+      const trunkGeo = new THREE.CylinderGeometry(0.2, 0.35, 4, 6);
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
+      const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+      trunk.position.y = 2;
+      trunk.rotation.z = (Math.random() - 0.5) * 0.2;
+      palm.add(trunk);
+
+      const leavesGeo = new THREE.ConeGeometry(1.8, 1.2, 6);
+      const leavesMat = new THREE.MeshStandardMaterial({ color: 0x166534, flatShading: true });
+      const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+      leaves.position.y = 4;
+      palm.add(leaves);
+
+      palm.position.set(x, 0, z);
+      return palm;
+    }
+
+    // Scenery list along the riverbanks
+    const sceneryItems = [];
+    for (let z = -200; z < 50; z += 16) {
+      const leftPalm = createPalmTree(-RIVER_WIDTH/2 - 2.5 - Math.random()*6, z);
+      const rightPalm = createPalmTree(RIVER_WIDTH/2 + 2.5 + Math.random()*6, z + 8);
+      scene.add(leftPalm, rightPalm);
+      sceneryItems.push(leftPalm, rightPalm);
+    }
+
+    /* ==========================================================================
+       5. GAME STATE & LOGIC
+       ========================================================================== */
+    const LANES = [-3.8, 0, 3.8];
+    let currentLane = 1;
+    let targetX = LANES[currentLane];
+    let gameSpeed = 22; // units per sec
+    let distance = 0;
+    let score = 0;
+    let isPlaying = false;
+    let hasShield = false;
+    let shieldTimer = 0;
+
+    const activeObjects = [];
+    const distVal = document.getElementById('dist-val');
+    const scoreVal = document.getElementById('score-val');
+    const shieldInd = document.getElementById('shield-indicator');
+
+    function spawnRow(zPos) {
+      const roll = Math.random();
+      const laneIndices = [0, 1, 2].sort(() => Math.random() - 0.5);
+
+      if (roll < 0.65) {
+        // 1 or 2 Obstacles
+        const count = Math.random() < 0.35 ? 2 : 1;
+        for (let i = 0; i < count; i++) {
+          const lane = laneIndices[i];
+          const obj = Math.random() < 0.55 ? createCrocodile() : createRock();
+          obj.position.set(LANES[lane], 0, zPos);
+          scene.add(obj);
+          activeObjects.push(obj);
+        }
+        // Maybe spawn a pickup on the free lane
+        if (Math.random() < 0.45) {
+          const freeLane = laneIndices[count];
+          const item = Math.random() < 0.85 ? createLotus() : createShieldItem();
+          item.position.set(LANES[freeLane], 0, zPos);
+          scene.add(item);
+          activeObjects.push(item);
+        }
+      } else {
+        // Pure Pickups
+        const item = Math.random() < 0.8 ? createLotus() : createShieldItem();
+        item.position.set(LANES[laneIndices[0]], 0, zPos);
+        scene.add(item);
+        activeObjects.push(item);
+      }
+    }
+
+    // Pre-populate obstacles ahead
+    function initRiverSpawns() {
+      for (let z = -35; z >= -220; z -= 26) {
+        spawnRow(z);
+      }
+    }
+
+    function resetGame() {
+      // Clear active items
+      for (const obj of activeObjects) scene.remove(obj);
+      activeObjects.length = 0;
+
+      currentLane = 1;
+      targetX = LANES[1];
+      playerGroup.position.set(0, 0, 0);
+      distance = 0;
+      score = 0;
+      gameSpeed = 22;
+      hasShield = false;
+      shieldMesh.material.opacity = 0;
+      shieldInd.style.display = 'none';
+
+      distVal.textContent = '0';
+      scoreVal.textContent = '0';
+
+      initRiverSpawns();
+    }
+
+    function gameOver(reason) {
+      isPlaying = false;
+      sfx.hit();
+      document.getElementById('death-reason').textContent = reason;
+      document.getElementById('final-dist').textContent = `${Math.floor(distance)} м`;
+      document.getElementById('final-score').textContent = score;
+      document.getElementById('gameover-modal').classList.remove('hidden');
+    }
+
+    /* ==========================================================================
+       6. CONTROLS (Swipe, Buttons, Keyboard)
+       ========================================================================== */
+    function moveLeft() {
+      if (!isPlaying) return;
+      if (currentLane > 0) {
+        currentLane--;
+        targetX = LANES[currentLane];
+        sfx.splash();
+      }
+    }
+
+    function moveRight() {
+      if (!isPlaying) return;
+      if (currentLane < 2) {
+        currentLane++;
+        targetX = LANES[currentLane];
+        sfx.splash();
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft();
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight();
+    });
+
+    document.getElementById('btn-left').addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft(); });
+    document.getElementById('btn-right').addEventListener('touchstart', (e) => { e.preventDefault(); moveRight(); });
+    document.getElementById('btn-left').addEventListener('click', moveLeft);
+    document.getElementById('btn-right').addEventListener('click', moveRight);
+
+    // Touch Swipe Gestures
+    let touchStartX = 0;
+    let touchStartY = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) moveLeft();
+        else moveRight();
+      }
+    }, { passive: true });
+
+    // Buttons
+    document.getElementById('start-btn').addEventListener('click', () => {
+      sfx.init();
+      document.getElementById('start-modal').classList.add('hidden');
+      resetGame();
+      isPlaying = true;
+    });
+
+    document.getElementById('restart-btn').addEventListener('click', () => {
+      sfx.init();
+      document.getElementById('gameover-modal').classList.add('hidden');
+      resetGame();
+      isPlaying = true;
+    });
+
+    /* ==========================================================================
+       7. ANIMATION & RENDER LOOP
+       ========================================================================== */
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = Math.min(clock.getDelta(), 0.1);
+      const time = clock.getElapsedTime();
+
+      // Gentle Water Wave & Floating Bobbing
+      const bobbing = Math.sin(time * 4) * 0.08;
+      playerGroup.position.y = bobbing;
+      playerGroup.rotation.z = Math.sin(time * 3) * 0.05;
+      playerGroup.rotation.x = Math.cos(time * 2.5) * 0.04;
+
+      // Smooth Lane Interpolation
+      playerGroup.position.x += (targetX - playerGroup.position.x) * 12 * delta;
+
+      if (isPlaying) {
+        distance += gameSpeed * delta;
+        gameSpeed += delta * 0.15; // Smooth progression
+        distVal.textContent = Math.floor(distance);
+
+        // Shield countdown
+        if (hasShield) {
+          shieldTimer -= delta;
+          shieldMesh.rotation.y += delta * 2;
+          shieldMesh.material.opacity = 0.4 + Math.sin(time * 8) * 0.2;
+          if (shieldTimer <= 0) {
+            hasShield = false;
+            shieldMesh.material.opacity = 0;
+            shieldInd.style.display = 'none';
+          }
+        }
+
+        // Move Scenery
+        for (const item of sceneryItems) {
+          item.position.z += gameSpeed * delta;
+          if (item.position.z > 25) item.position.z -= 250;
+        }
+
+        // Move & Manage Active Track Objects
+        let furthestZ = 0;
+        for (let i = activeObjects.length - 1; i >= 0; i--) {
+          const obj = activeObjects[i];
+          obj.position.z += gameSpeed * delta;
+          if (obj.position.z < furthestZ) furthestZ = obj.position.z;
+
+          // Animations
+          if (obj.userData.type === 'lotus' || obj.userData.type === 'shield') {
+            obj.rotation.y += delta * 2;
+          } else if (obj.userData.type === 'croc') {
+            obj.position.y = Math.sin(time * 5 + obj.position.x) * 0.05;
+          }
+
+          // Collision Check
+          const distToPlayer = playerGroup.position.distanceTo(obj.position);
+          if (distToPlayer < (obj.userData.radius || 1.0)) {
+            if (obj.userData.type === 'lotus') {
+              score += 10;
+              scoreVal.textContent = score;
+              sfx.collect();
+              scene.remove(obj);
+              activeObjects.splice(i, 1);
+              continue;
+            } else if (obj.userData.type === 'shield') {
+              hasShield = true;
+              shieldTimer = 7.0; // 7 sec duration
+              shieldInd.style.display = 'block';
+              sfx.powerup();
+              scene.remove(obj);
+              activeObjects.splice(i, 1);
+              continue;
+            } else {
+              // Obstacle hit
+              if (hasShield) {
+                // Break shield instead of dying
+                hasShield = false;
+                shieldTimer = 0;
+                shieldMesh.material.opacity = 0;
+                shieldInd.style.display = 'none';
+                sfx.hit();
+                scene.remove(obj);
+                activeObjects.splice(i, 1);
+                continue;
+              } else {
+                gameOver(obj.userData.hitMsg || 'Препятствие на пути!');
+                break;
+              }
+            }
+          }
+
+          // Remove behind camera
+          if (obj.position.z > 14) {
+            scene.remove(obj);
+            activeObjects.splice(i, 1);
+          }
+        }
+
+        // Keep spawning ahead
+        if (furthestZ > -220) {
+          spawnRow(furthestZ - 26);
+        }
+      }
+
+      // Camera Follow
+      camera.position.set(playerGroup.position.x * 0.3, 4.8, 7.5);
+      camera.lookAt(playerGroup.position.x * 0.4, 0.8, -12);
+
+      renderer.render(scene, camera);
+    }
+
+    // Resize Handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
   </script>
 </body>
 </html>
