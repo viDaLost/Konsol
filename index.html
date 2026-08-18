@@ -159,16 +159,17 @@
       Вставьте прямой URL к вашему .mp4 видеофайлу. 
       Если вы экспортировали видео из Google Flow, укажите путь к файлу или прямой CDN URL.
     -->
-    <video 
-      id="scrubVideo" 
-      muted 
-      playsinline 
-      webkit-playsinline 
-      preload="auto"
-      src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">
-    </video>
-    <div class="video-overlay"></div>
-  </div>
+   <div class="video-viewport">
+  <video 
+    id="scrubVideo" 
+    muted 
+    playsinline 
+    webkit-playsinline 
+    preload="auto"
+    src="bg-video.mp4"> <!-- Локальный путь к скачанному файлу -->
+  </video>
+  <div class="video-overlay"></div>
+</div>
 
   <!-- Индикатор прогресса -->
   <div class="progress-bar-wrap">
